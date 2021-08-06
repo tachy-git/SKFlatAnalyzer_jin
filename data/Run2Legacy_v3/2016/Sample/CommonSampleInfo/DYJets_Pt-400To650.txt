@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-DYJets_Pt-400To650	DYJetsToLL_Pt-400To650_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8	0.3921	1193880	460806

@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-ZGTo2LG	ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8	117.864	14372682	9832116

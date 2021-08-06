@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-TTLL_powheg	TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8	88.29	8705576	8634992

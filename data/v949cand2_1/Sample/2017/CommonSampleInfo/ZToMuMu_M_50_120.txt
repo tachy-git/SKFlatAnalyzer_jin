@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-ZToMuMu_M_50_120	ZToMuMu_NNPDF31_13TeV-powheg_M_50_120	1975	2960999	2902659

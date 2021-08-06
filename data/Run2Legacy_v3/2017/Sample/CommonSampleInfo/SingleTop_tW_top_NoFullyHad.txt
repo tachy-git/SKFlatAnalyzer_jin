@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-SingleTop_tW_top_NoFullyHad	ST_tW_top_5f_NoFullyHadronicDecays_TuneCP5_PSweights_13TeV-powheg-pythia8	19.2	5103599	5063921

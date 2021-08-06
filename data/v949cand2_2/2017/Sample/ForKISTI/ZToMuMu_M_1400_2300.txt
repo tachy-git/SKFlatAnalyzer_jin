@@ -1,2 +1,0 @@
-root://cms-xrdr.sdfarm.kr:1094///xrd/store/user/jskim/SKFlat/2017/ZToMuMu_NNPDF31_13TeV-powheg_M_1400_2300/SKFlat_v949cand2_2/181117_153434/0000/SKFlatNtuple_2017_MC_1.root
-root://cms-xrdr.sdfarm.kr:1094///xrd/store/user/jskim/SKFlat/2017/ZToMuMu_NNPDF31_13TeV-powheg_M_1400_2300/SKFlat_v949cand2_2/181117_153434/0000/SKFlatNtuple_2017_MC_2.root

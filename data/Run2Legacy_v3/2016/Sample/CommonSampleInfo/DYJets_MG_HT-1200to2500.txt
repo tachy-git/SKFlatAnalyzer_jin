@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-DYJets_MG_HT-1200to2500	DYJetsToLL_M-50_HT-1200to2500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8	0.186222	596079	596079 # k-factor 1.23 applied

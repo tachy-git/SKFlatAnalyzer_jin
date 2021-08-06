@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-WJets_MG_HT-70To100	WJetsToLNu_HT-70To100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8	1637.1	10020533	10020533 # k-factor 1.21 applied

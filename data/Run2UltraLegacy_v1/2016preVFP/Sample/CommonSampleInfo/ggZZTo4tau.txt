@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+ggZZTo4tau	GluGluToContinToZZTo4tau_13TeV_MCFM701_pythia8	0.002703	495800	495800

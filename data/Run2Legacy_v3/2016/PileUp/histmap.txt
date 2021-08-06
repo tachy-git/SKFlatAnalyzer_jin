@@ -1,3 +1,0 @@
-MC_2016 central Pileup_reweight_69p2_mb.root
-MC_2016 sig_down Pileup_reweight_69p2_mb.root
-MC_2016 sig_up Pileup_reweight_69p2_mb.root

@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-SingleTop_tW_antitop_NoFullyHad	ST_tW_antitop_5f_NoFullyHadronicDecays_13TeV-powheg_TuneCUETP8M1	19.20	8681541	8681541

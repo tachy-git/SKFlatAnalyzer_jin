@@ -1,1 +1,0 @@
-root://cms-xrdr.sdfarm.kr:1094///xrd/store/user/jskim/SKFlat/ZToMuMu_NNPDF31_13TeV-powheg_M_200_400/SKFlat_v946p1_2/180518_025914/0000/SKFlatNtuple_2.root

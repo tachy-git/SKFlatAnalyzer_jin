@@ -1,4 +1,0 @@
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2016/DYJetsToLL_M-50_HT-2500toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/SKFlat_Run2Legacy_v1/190302_173450/0000/SKFlatNtuple_2016_MC_1.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2016/DYJetsToLL_M-50_HT-2500toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/SKFlat_Run2Legacy_v1/190302_173450/0000/SKFlatNtuple_2016_MC_2.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2016/DYJetsToLL_M-50_HT-2500toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/SKFlat_Run2Legacy_v1/190302_173450/0000/SKFlatNtuple_2016_MC_3.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2016/DYJetsToLL_M-50_HT-2500toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/SKFlat_Run2Legacy_v1/190302_173450/0000/SKFlatNtuple_2016_MC_4.root

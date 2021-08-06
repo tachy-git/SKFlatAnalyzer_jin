@@ -1,5 +1,0 @@
-#DoubleEG
-SingleMuon
-#SinglePhoton
-#SingleElectron
-#DoubleMuon

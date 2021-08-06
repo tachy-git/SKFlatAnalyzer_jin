@@ -1,5 +1,0 @@
-/gv0/DATA/SKFlat/Run2Legacy_v4/2016/MC/GluGluToContinToZZTo4tau_13TeV_MCFM701_pythia8/200131_162341/0000/SKFlatNtuple_2016_MC_1.root
-/gv0/DATA/SKFlat/Run2Legacy_v4/2016/MC/GluGluToContinToZZTo4tau_13TeV_MCFM701_pythia8/200131_162341/0000/SKFlatNtuple_2016_MC_2.root
-/gv0/DATA/SKFlat/Run2Legacy_v4/2016/MC/GluGluToContinToZZTo4tau_13TeV_MCFM701_pythia8/200131_162341/0000/SKFlatNtuple_2016_MC_3.root
-/gv0/DATA/SKFlat/Run2Legacy_v4/2016/MC/GluGluToContinToZZTo4tau_13TeV_MCFM701_pythia8/200131_162341/0000/SKFlatNtuple_2016_MC_4.root
-/gv0/DATA/SKFlat/Run2Legacy_v4/2016/MC/GluGluToContinToZZTo4tau_13TeV_MCFM701_pythia8/200131_162341/0000/SKFlatNtuple_2016_MC_5.root

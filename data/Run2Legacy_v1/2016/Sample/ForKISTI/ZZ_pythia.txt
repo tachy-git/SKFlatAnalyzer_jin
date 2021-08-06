@@ -1,7 +1,0 @@
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2016/ZZ_TuneCUETP8M1_13TeV-pythia8/SKFlat_Run2Legacy_v1/190107_123824/0000/SKFlatNtuple_2016_MC_1.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2016/ZZ_TuneCUETP8M1_13TeV-pythia8/SKFlat_Run2Legacy_v1/190107_123824/0000/SKFlatNtuple_2016_MC_2.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2016/ZZ_TuneCUETP8M1_13TeV-pythia8/SKFlat_Run2Legacy_v1/190107_123824/0000/SKFlatNtuple_2016_MC_3.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2016/ZZ_TuneCUETP8M1_13TeV-pythia8/SKFlat_Run2Legacy_v1/190107_123824/0000/SKFlatNtuple_2016_MC_4.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2016/ZZ_TuneCUETP8M1_13TeV-pythia8/SKFlat_Run2Legacy_v1/190107_123824/0000/SKFlatNtuple_2016_MC_5.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2016/ZZ_TuneCUETP8M1_13TeV-pythia8/SKFlat_Run2Legacy_v1/190107_123824/0000/SKFlatNtuple_2016_MC_6.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2016/ZZ_TuneCUETP8M1_13TeV-pythia8/SKFlat_Run2Legacy_v1/190107_123824/0000/SKFlatNtuple_2016_MC_7.root

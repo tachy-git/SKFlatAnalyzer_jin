@@ -1,2 +1,0 @@
-## using values from  https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
-2018 DeepCSV All        315252  325175  NA

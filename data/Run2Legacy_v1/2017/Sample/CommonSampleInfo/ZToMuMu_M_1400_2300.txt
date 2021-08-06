@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-ZToMuMu_M_1400_2300	ZToMuMu_NNPDF31_13TeV-powheg_M_1400_2300	1.39E-3	100000	99982

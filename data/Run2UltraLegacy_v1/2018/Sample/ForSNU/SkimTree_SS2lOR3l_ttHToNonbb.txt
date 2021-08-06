@@ -1,4 +1,0 @@
-/gv0/DATA/SKFlat/Run2Legacy_v4/2018/MC_SkimTree_SS2lOR3l/ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/2020_07_09_141820/SKFlatNtuple_2018_MC_3.root
-/gv0/DATA/SKFlat/Run2Legacy_v4/2018/MC_SkimTree_SS2lOR3l/ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/2020_07_09_141820/SKFlatNtuple_2018_MC_0.root
-/gv0/DATA/SKFlat/Run2Legacy_v4/2018/MC_SkimTree_SS2lOR3l/ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/2020_07_09_141820/SKFlatNtuple_2018_MC_1.root
-/gv0/DATA/SKFlat/Run2Legacy_v4/2018/MC_SkimTree_SS2lOR3l/ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/2020_07_09_141820/SKFlatNtuple_2018_MC_2.root

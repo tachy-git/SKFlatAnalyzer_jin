@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-SingleTop_sch_Lep	ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8	3.36	9914948	6185062

@@ -1,5 +1,0 @@
-/data7/DATA/SKFlat/v949cand2_2/2017/MC_SkimTree_LRSMHighPt/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/181127_093840/0000/SKFlatNtuple_2017_MC_1.root
-/data7/DATA/SKFlat/v949cand2_2/2017/MC_SkimTree_LRSMHighPt/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/181127_093840/0000/SKFlatNtuple_2017_MC_2.root
-/data7/DATA/SKFlat/v949cand2_2/2017/MC_SkimTree_LRSMHighPt/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/181127_093840/0000/SKFlatNtuple_2017_MC_3.root
-/data7/DATA/SKFlat/v949cand2_2/2017/MC_SkimTree_LRSMHighPt/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/181127_093840/0000/SKFlatNtuple_2017_MC_4.root
-/data7/DATA/SKFlat/v949cand2_2/2017/MC_SkimTree_LRSMHighPt/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/181127_093840/0000/SKFlatNtuple_2017_MC_5.root

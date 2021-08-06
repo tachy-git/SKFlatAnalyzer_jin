@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+SingleTop_tch_top_Incl	ST_t-channel_top_4f_inclusiveDecays_13TeV_PSweights-powhegV2-madspin	136.02	68001000	68001000

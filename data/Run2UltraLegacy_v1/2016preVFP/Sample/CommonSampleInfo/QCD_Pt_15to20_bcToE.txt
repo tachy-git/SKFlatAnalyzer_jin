@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+QCD_Pt_15to20_bcToE	QCD_Pt_15to20_bcToE_TuneCUETP8M1_13TeV_pythia8	254596.	2685602	2685602

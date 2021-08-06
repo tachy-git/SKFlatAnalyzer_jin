@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-WR_MuMuJJ_WR2200_N400	WRtoNLep_MuMuJJ_WR2200_N400_NLO_2017	0.1	49000	44134

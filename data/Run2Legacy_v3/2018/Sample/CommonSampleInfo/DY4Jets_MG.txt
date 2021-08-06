@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-DY4Jets_MG	DY4JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8	54.52	2817812	2812482 ## From XSDB

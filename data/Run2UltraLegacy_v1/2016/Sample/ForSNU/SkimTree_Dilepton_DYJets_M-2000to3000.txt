@@ -1,4 +1,0 @@
-/gv0/DATA/SKFlat/Run2Legacy_v4/2016/MC_SkimTree_Dilepton/DYJetsToLL_M-2000to3000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2020_06_18_170627/SKFlatNtuple_2016_MC_0.root
-/gv0/DATA/SKFlat/Run2Legacy_v4/2016/MC_SkimTree_Dilepton/DYJetsToLL_M-2000to3000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2020_06_18_170627/SKFlatNtuple_2016_MC_1.root
-/gv0/DATA/SKFlat/Run2Legacy_v4/2016/MC_SkimTree_Dilepton/DYJetsToLL_M-2000to3000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2020_06_18_170627/SKFlatNtuple_2016_MC_2.root
-/gv0/DATA/SKFlat/Run2Legacy_v4/2016/MC_SkimTree_Dilepton/DYJetsToLL_M-2000to3000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2020_06_18_170627/SKFlatNtuple_2016_MC_3.root

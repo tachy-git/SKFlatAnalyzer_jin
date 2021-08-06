@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-ZZTo4L_powheg	ZZTo4L_13TeV_powheg_pythia8	1.256	6964071	6893887

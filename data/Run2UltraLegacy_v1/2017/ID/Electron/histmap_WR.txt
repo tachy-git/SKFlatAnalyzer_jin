@@ -1,5 +1,0 @@
-### WR analysis from Run2Legacy_v4 directory
-Trigger	Eff_DATA	WREGammaTrigger_HEEP_Barrel	WREGammaTriggerEff.root	DataEff_TH2F_Barrel	TH2F
-Trigger	Eff_DATA	WREGammaTrigger_HEEP_EndCap	WREGammaTriggerEff.root	DataEff_TH2F_EndCap	TH2F
-Trigger	Eff_MC	WREGammaTrigger_HEEP_Barrel	WREGammaTriggerEff.root	MCEff_TH2F_Barrel	TH2F
-Trigger	Eff_MC	WREGammaTrigger_HEEP_EndCap	WREGammaTriggerEff.root	MCEff_TH2F_EndCap	TH2F
