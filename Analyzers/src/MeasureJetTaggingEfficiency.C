@@ -7,7 +7,7 @@ MeasureJetTaggingEfficiency::MeasureJetTaggingEfficiency(){
 void MeasureJetTaggingEfficiency::initializeAnalyzer(){
 
   TString datapath = getenv("DATA_DIR");
-  TString btagpath = datapath+"/"+TString::Itoa(DataYear,10)+"/BTag/";
+  TString btagpath = datapath+"/"+GetEra()+"/BTag/";
 
   Taggers.clear();
   WPs.clear();

@@ -28,7 +28,7 @@ namespace JetTagging{
     if(t == DeepFlavour_g) return "DeepFlavour_g";
 
     cerr << "[JetTaggingParameters::TaggerToString] Wrong tagger enum : " << t << endl;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
 
     return "None";
   }
@@ -47,7 +47,7 @@ namespace JetTagging{
     if(s == "DeepFlavour_g") return DeepFlavour_g;
 
     cerr << "[JetTaggingParameters:: StringToTagger] Wrong tagger string : " << s << endl;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
 
     return CSVv2;
   }
@@ -62,7 +62,7 @@ namespace JetTagging{
     if(wp == Tight) return "Tight";
 
     cerr << "[JetTaggingParameters::WPToString] Wrong WP enum : " << wp << endl;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
 
     return "None";
   }
@@ -78,7 +78,7 @@ namespace JetTagging{
     if(mt == iterativefit) return "iterativefit";
 
     cerr << "[JetTaggingParameters::MeasurmentTypeToString] Wrong MeasurmentType enum : " << mt << endl;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
 
     return "None";
 

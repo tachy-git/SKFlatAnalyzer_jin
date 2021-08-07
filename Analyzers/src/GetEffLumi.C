@@ -2,6 +2,7 @@
 
 void GetEffLumi::initializeAnalyzer(){
   fChain->SetBranchStatus("*",0);
+  fChain->SetBranchStatus("IsData",1);
   if(!IsDATA){
     fChain->SetBranchStatus("gen_weight",1);
     fChain->SetBranchStatus("PDFWeights_Scale",1);

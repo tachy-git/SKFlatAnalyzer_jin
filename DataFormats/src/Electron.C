@@ -165,7 +165,7 @@ bool Electron::PassID(TString ID) const{
   if(ID=="TEST") return Pass_TESTID();
 
   cout << "[Electron::PassID] No id : " << ID << endl;
-  exit(EXIT_FAILURE);
+  exit(ENODATA);
 
   return false;
 }

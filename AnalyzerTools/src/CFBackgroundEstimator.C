@@ -10,7 +10,7 @@ CFBackgroundEstimator::CFBackgroundEstimator()
 void CFBackgroundEstimator::ReadHistograms(){
 
   TString datapath = getenv("DATA_DIR");
-  datapath = datapath+"/"+TString::Itoa(DataYear,10)+"/CFRate/";
+  datapath = datapath+"/"+GetEra()+"/CFRate/";
 
   TDirectory* origDir = gDirectory;
 
@@ -60,10 +60,6 @@ CFBackgroundEstimator::~CFBackgroundEstimator(){
 
 }
 
-void CFBackgroundEstimator::SetDataYear(int i){
-  DataYear = i;
-}
-
 double CFBackgroundEstimator::GetElectronCFRate(TString ID, TString key, double eta, double pt, int sys){
 
   //cout << "[CFBackgroundEstimator::GetElectronCFRate] ID = " << ID << ", key = " << key << endl;
@@ -85,7 +81,7 @@ double CFBackgroundEstimator::GetElectronCFRate(TString ID, TString key, double 
 
   if(mapit==map_hist_Electron.end()){
     cout << "[CFBackgroundEstimator::GetElectronCFRate] No"<< ID+"_"+key+"_"+EtaRegion+"_InvGenPt" <<endl;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
   }
 
   int this_bin = (mapit->second)->FindBin(1./pt);
@@ -120,7 +116,7 @@ double CFBackgroundEstimator::GetMuonCFRate(TString ID, TString key, double eta,
 
   if(mapit==map_hist_Muon.end()){
     cout << "[CFBackgroundEstimator::GetMuonCFRate] No"<< ID+"_"+key+"_"+EtaRegion+"_InvGenPt" <<endl;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
   }
 
   int this_bin = (mapit->second)->FindBin(1./pt,eta);

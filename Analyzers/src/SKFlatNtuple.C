@@ -22,7 +22,7 @@ void SKFlatNtuple::Loop(){
   cout << "[SKFlatNtuple::Loop] DataStream = " << DataStream << endl;
   cout << "[SKFlatNtuple::Loop] MCSample = " << MCSample << endl;
   cout << "[SKFlatNtuple::Loop] IsFastSim = " << IsFastSim << endl;
-  cout << "[SKFlatNtuple::Loop] DataYear = " << DataYear << endl;
+  cout << "[SKFlatNtuple::Loop] Era = " << GetEra() << endl;
   cout << "[SKFlatNtuple::Loop] xsec = " << xsec << endl;
   cout << "[SKFlatNtuple::Loop] sumW = " << sumW << endl;
   cout << "[SKFlatNtuple::Loop] weight_norm_1invpb = " << weight_norm_1invpb << endl;
@@ -47,9 +47,11 @@ void SKFlatNtuple::Loop(){
       cout << "[SKFlatNtuple::Loop RUNNING] " << jentry << "/" << nentries << " ("<<100.*jentry/nentries<<" %) @ " << printcurrunttime() << endl;
     }
 
-    fChain->GetEntry(jentry);
+    if(fChain->GetEntry(jentry)<0) exit(EIO);
 
+    beginEvent();
     executeEvent();
+    endEvent();
 
     //std::cout << jentry << " :" << muon_pt->size() << std::endl;
 
@@ -69,7 +71,7 @@ SKFlatNtuple::SKFlatNtuple(){
   DataStream = "";
   MCSample = "";
   IsFastSim = false;
-  DataYear = 2017;
+  SetEra("2017");
   xsec = 1.;
   sumW = 1.;
   weight_norm_1invpb = 1.;
@@ -88,6 +90,13 @@ Int_t SKFlatNtuple::GetEntry(Long64_t entry)
 // Read contents of entry.
   if (!fChain) return 0;
   return fChain->GetEntry(entry);
+}
+
+TString SKFlatNtuple::GetEraShort() const
+{
+  if(DataEra=="2016preVFP") return "2016a";
+  else if(DataEra=="2016postVFP") return "2016b";
+  else return DataEra;
 }
 
 void SKFlatNtuple::Init()

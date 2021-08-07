@@ -43,7 +43,13 @@ public:
   void SetMCSample(TString s);
 
   int DataYear;
-  void SetDataYear(int i);
+  TString DataEra;
+  void SetEra(TString era){
+    DataEra=era;
+    DataYear=TString(era(0,4)).Atoi();
+  }
+  TString GetEra() const { return DataEra; }
+  int GetYear() const { return DataYear; }
 
   bool IsDATA;
   void SetIsDATA(bool b);

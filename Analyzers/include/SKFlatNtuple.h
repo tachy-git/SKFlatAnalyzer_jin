@@ -28,8 +28,8 @@ public :
      fChain = new TChain(tname);
    }
 
-   virtual void AddFile(TString filename){
-     fChain->Add(filename);
+   virtual int AddFile(TString filename){
+     return fChain->Add(filename,-1);
    }
 
    Long64_t MaxEvent, NSkipEvent;
@@ -39,15 +39,24 @@ public :
    TString MCSample;
    bool IsFastSim;
    int DataYear;
+   TString DataEra;
    double xsec, sumW, weight_norm_1invpb;
    vector<TString> Userflags;
 
    virtual void Init();
    virtual void Loop();
 
-   virtual void executeEvent(){
+   virtual void beginEvent(){};
+   virtual void executeEvent(){};
+   virtual void endEvent(){};
 
-   };
+   virtual void SetEra(TString era){
+     DataEra=era;
+     DataYear=TString(era(0,4)).Atoi();
+   }
+   virtual TString GetEra() const { return DataEra; }
+   virtual TString GetEraShort() const;
+   virtual int GetYear() const { return DataYear; }
 
    std::string AddZeroToTime(int twodigit){
      if(twodigit<10){
@@ -67,7 +76,7 @@ public :
 
    }
 
-   TChain *fChain;
+   TChain *fChain=NULL;
 
    // Declaration of leaf types
    Bool_t          IsData;

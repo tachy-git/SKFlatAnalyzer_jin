@@ -111,7 +111,7 @@ bool FatJet::PassID(TString ID) const {
   if(ID=="tightLepVeto") return Pass_tightLepVetoJetID();
 
   cout << "[FatJet::PassID] No id : " << ID << endl;
-  exit(EXIT_FAILURE);
+  exit(ENODATA);
 
   return false;
 

@@ -49,7 +49,7 @@ bool Photon::PassID(TString ID){
   if(ID=="passMVAID_WP90") return passMVAID_WP90();
 
   cout << "[Photon::PassID] No id : " << ID << endl;
-  exit(EXIT_FAILURE);
+  exit(ENODATA);
 
   return false;
 

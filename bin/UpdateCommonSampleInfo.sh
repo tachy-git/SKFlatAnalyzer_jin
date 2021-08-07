@@ -11,7 +11,7 @@ do
 	if cat $SUMMARYFILE|grep -q "$NAME.*$PERIOD"; then
 	    OLDLINE=$(cat $SUMMARYFILE|grep "$NAME.*$PERIOD")
 	    if [ "$(echo $OLDLINE|awk '{print $3}')" -ne "${NUMS[0]}" ];then
-		echo -e "$OLDLINE\t-->\t$NAME\t$PERIOD\t${NUMS[0]}"
+		echo -e "$SUMMARYFILE: $OLDLINE\t-->\t$NAME\t$PERIOD\t${NUMS[0]}"
 		read -p "(y/n): " YES
 		[ "$YES" = "y" ] && sed -i "s/.*$NAME.*$PERIOD.*/$NAME\t$PERIOD\t${NUMS[0]}/" $SUMMARYFILE
 	    fi
@@ -35,7 +35,7 @@ do
 	    read -p "select cross section: " CROSSSECTION
 	    [ -z "$CROSSSECTION" ] && CROSSSECTION=FIXMECROSSSECTION
 	fi
-	NUMS=($(echo 'cout<<Form("%f\t%f\t",sumW->GetEntries(),sumW->GetSum())<<endl;'|root -b -l ${line}|tail -n1))
+	NUMS=($(echo 'cout<<Form("%d\t%.1f\t",(int)sumW->GetEntries(),sumW->GetSum())<<endl;'|root -b -l ${line}|tail -n1))
 
 	## for CommonSampleInfo file
 	OUT=$SKFlat_WD/data/$SKFlatV/$YEAR/Sample/CommonSampleInfo/${NAME}.txt
@@ -63,16 +63,16 @@ do
 	## for summary file
 	SUMMARYFILE=$SKFlat_WD/data/$SKFlatV/$YEAR/Sample/SampleSummary_MC.txt
 	EXISTSUMMARY=$(grep "^$NAME[^a-zA-Z0-9_]*$DASSNAME[^a-zA-Z0-9_].*$" $SUMMARYFILE)
-	if [ "$EXISTSUMMARY" != "$(echo -e "$NEWLINE")" ];then
+	if [ -z "$EXISTSUMMARY" ]
+	then
+	    echo "SampleSummary_MC.txt: add $NEWLINE"
+	    echo -e "$NEWLINE" >> $SUMMARYFILE
+	elif [ "$EXISTSUMMARY" != "$(echo -e "$NEWLINE")" ];then
 	    echo -e "SampleSummary_MC.txt: $EXISTSUMMARY --> $NEWLINE"
 	    read -p "(y/n): " YES
 	    if [ "$YES" = "y" ];then
 		sed -i "s/^$NAME[^a-zA-Z0-9_]*$DASSNAME[^a-zA-Z0-9_].*$/$NEWLINE/" $SUMMARYFILE
 	    fi
-	elif [ -z "$EXISTSUMMARY" ]
-	then
-	    echo "SampleSummary_MC.txt: add $NEWLINE"
-	    echo -e "$NEWLINE" >> $SUMMARYFILE
 	fi
     fi
 done 3< <(find $SKFlatOutputDir$SKFlatV/GetEffLumi -type f|sort)

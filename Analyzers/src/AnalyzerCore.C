@@ -34,18 +34,20 @@ AnalyzerCore::~AnalyzerCore(){
   
   //==== output rootfile
 
-  if(outfile) outfile->Close();
-  delete outfile;
+  if(outfile){
+    outfile->Close();
+    delete outfile;
+  }
 
   //==== Tools
 
-  delete mcCorr;
-  delete puppiCorr;
-  delete fakeEst;
-  delete cfEst;
-  delete pdfReweight;
-  delete muonGE;
-  delete muonGEScaleSyst;
+  if(mcCorr) delete mcCorr;
+  if(puppiCorr) delete puppiCorr;
+  if(fakeEst) delete fakeEst;
+  if(cfEst) delete cfEst;
+  if(pdfReweight) delete pdfReweight;
+  if(muonGE) delete muonGE;
+  if(muonGEScaleSyst) delete muonGEScaleSyst;
 
 }
 
@@ -82,7 +84,7 @@ Event AnalyzerCore::GetEvent(){
   ev.SetTrigger(*HLT_TriggerName);
   ev.SetMET(pfMET_Type1_pt,pfMET_Type1_phi);
   ev.SetnPV(nPV);
-  ev.SetDataYear(DataYear);
+  ev.SetEra(GetEra());
 
   return ev;
 
@@ -91,6 +93,7 @@ Event AnalyzerCore::GetEvent(){
 std::vector<Muon> AnalyzerCore::GetAllMuons(){
 
   std::vector<Muon> out;
+  if(!muon_pt) return out;
   for(unsigned int i=0; i<muon_pt->size(); i++){
 
     Muon mu;
@@ -164,6 +167,7 @@ std::vector<Muon> AnalyzerCore::GetMuons(TString id, double ptmin, double fetama
 std::vector<Electron> AnalyzerCore::GetAllElectrons(){
 
   std::vector<Electron> out;
+  if(!electron_Energy) return out;
   for(unsigned int i=0; i<electron_Energy->size(); i++){
 
     Electron el;
@@ -187,6 +191,7 @@ std::vector<Electron> AnalyzerCore::GetAllElectrons(){
     el.SetNMissingHits(electron_mHits->at(i));
     el.SetRho(Rho);
     el.SetIsGsfCtfScPixChargeConsistent(electron_isGsfCtfScPixChargeConsistent->at(i));
+    el.SetR9(electron_r9->at(i));
 
     el.SetCutBasedIDVariables(
       electron_Full5x5_SigmaIEtaIEta->at(i),
@@ -892,7 +897,7 @@ bool AnalyzerCore::PassMETFilter(){
   if(IsDATA && !Flag_eeBadScFilter) return false;
 
   if(DataYear>=2017){
-    if(!Flag_ecalBadCalibReducedMINIAODFilter) return false;
+    //if(!Flag_ecalBadCalibReducedMINIAODFilter) return false; // TODO WIP for UL
   }
 
   return true;
@@ -903,7 +908,7 @@ void AnalyzerCore::initializeAnalyzerTools(){
 
   //==== MCCorrection
   mcCorr->SetMCSample(MCSample);
-  mcCorr->SetDataYear(DataYear);
+  mcCorr->SetEra(GetEra());
   mcCorr->SetIsDATA(IsDATA);
   mcCorr->SetEventInfo(run, lumi, event);
   mcCorr->SetIsFastSim(IsFastSim);
@@ -912,15 +917,15 @@ void AnalyzerCore::initializeAnalyzerTools(){
     mcCorr->SetupJetTagging();
   }
 
-  puppiCorr->SetDataYear(DataYear);
+  puppiCorr->SetEra(GetEra());
   puppiCorr->ReadHistograms();
 
   //==== FakeBackgroundEstimator
-  fakeEst->SetDataYear(DataYear);
+  fakeEst->SetEra(GetEra());
   fakeEst->ReadHistograms();
 
   //==== CFBackgroundEstimator
-  cfEst->SetDataYear(DataYear);
+  cfEst->SetEra(GetEra());
   cfEst->ReadHistograms();
 
 }
@@ -950,28 +955,8 @@ double AnalyzerCore::GetPrefireWeight(int sys){
 }
 
 double AnalyzerCore::GetPileUpWeight(int N_pileup, int syst){
-
   if(IsDATA) return 1.;
-  else{
-
-    if(DataYear==2016){
-      return mcCorr->GetPileUpWeight(N_pileup, syst);
-    }
-    else if(DataYear==2017){
-      return mcCorr->GetPileUpWeightBySampleName(N_pileup, syst);
-    }
-    else if(DataYear==2018){
-      //==== TODO 2018 not yet added
-      return 1.;
-    }
-    else{
-      cout << "[AnalyzerCore::GetPileUpWeight] Wrong year : " << DataYear << endl;
-      exit(EXIT_FAILURE);
-      return 1.;
-    }
-
-  }
-
+  else return mcCorr->GetPileUpWeight(N_pileup, syst);
 }
 
 double AnalyzerCore::GetPDFWeight(LHAPDF::PDF* pdf_){
@@ -1910,9 +1895,9 @@ void AnalyzerCore::FillHist(TString histname,
 void AnalyzerCore::FillHist(TString histname,
           double value_x, double value_y, double value_z,
           double weight,
-          int n_binx, double *xbins,
-          int n_biny, double *ybins,
-          int n_binz, double *zbins){
+          int n_binx, const double *xbins,
+          int n_biny, const double *ybins,
+          int n_binz, const double *zbins){
   
   TH3D *this_hist = GetHist3D(histname);
   if( !this_hist ){
