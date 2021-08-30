@@ -302,7 +302,7 @@ for InputSample in InputSamples:
   this_dasname = ""
   this_xsec = -1
   this_sumw = -1
-  if not IsDATA:
+  if not IsDATA and args.Analyzer!="GetEffLumi":
     if not os.path.exists(SAMPLE_DATA_DIR+'/CommonSampleInfo/'+InputSample+'.txt'):
       print("No "+SAMPLE_DATA_DIR+'/CommonSampleInfo/'+InputSample+'.txt')
       exit(2)
@@ -422,6 +422,7 @@ queue {0}
       if args.Memory:
         request_memory='request_memory = '+str(args.Memory)
       print>>submit_command,'''executable = {1}.sh
+jobbatchname = {1}
 universe   = vanilla
 arguments  = $(Process)
 log = condor.log
@@ -458,7 +459,7 @@ queue {0}
       os.system('mkdir -p '+thisjob_dir)
       runCfileFullPath = thisjob_dir+'run.C'
 
-    IncludeLine = 'R__LOAD_LIBRARY(/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/lhapdf/6.2.1-gnimlf3/lib/libLHAPDF.so)\n'
+    IncludeLine = 'R__LOAD_LIBRARY(/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so)\n'
 
     out = open(runCfileFullPath, 'w')
     print>>out,'''{3}

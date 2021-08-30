@@ -883,7 +883,7 @@ std::vector<FatJet> AnalyzerCore::SmearSDMassFatJets(const std::vector<FatJet>& 
 
 bool AnalyzerCore::PassMETFilter(){
 
-  //==== https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#Moriond_2018
+  //==== https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#UL_data
 
   if(!Flag_goodVertices) return false;
   if(!IsFastSim){
@@ -893,11 +893,10 @@ bool AnalyzerCore::PassMETFilter(){
   if(!Flag_HBHENoiseIsoFilter) return false;
   if(!Flag_EcalDeadCellTriggerPrimitiveFilter) return false;
   if(!Flag_BadPFMuonFilter) return false;
-  //if(!Flag_BadChargedCandidateFilter) return false; // TODO 19/05/04 twiki says this is under review, and not recommended
-  if(IsDATA && !Flag_eeBadScFilter) return false;
-
+  if(!Flag_BadPFMuonDzFilter) return false;
+  if(!Flag_eeBadScFilter) return false;
   if(DataYear>=2017){
-    //if(!Flag_ecalBadCalibReducedMINIAODFilter) return false; // TODO WIP for UL
+    if(!Flag_ecalBadCalibFilter) return false;
   }
 
   return true;
@@ -934,18 +933,9 @@ double AnalyzerCore::GetPrefireWeight(int sys){
 
   if(IsDATA) return 1.;
   else{
-
-    if(DataYear>2017) return 1.;
-    else{
-
-      if(sys==0) return L1PrefireReweight_Central;
-      else if(sys>0) return L1PrefireReweight_Up;
-      else return L1PrefireReweight_Down;
-
-      //return mcCorr->GetPrefireWeight(photons, jets, sys);
-
-    }
-
+    if(sys==0) return L1PrefireReweight_Central;
+    else if(sys>0) return L1PrefireReweight_Up;
+    else return L1PrefireReweight_Down;
   }
 
   cout << "[AnalyzerCore::GetPrefireWeight] wtf" << endl;
