@@ -44,6 +44,7 @@ void SkimTree_Dilepton::initializeAnalyzer(){
     single_electron_triggers = {
       "HLT_Ele27_WPTight_Gsf_v",
       "HLT_Ele32_WPTight_Gsf_v",
+      "HLT_Ele32_WPTight_Gsf_L1DoubleEG_v",
     };
   }else if(DataYear==2018){
     double_triggers = {
