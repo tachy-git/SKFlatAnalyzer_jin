@@ -390,3 +390,66 @@ void Electron::SetRho(double r){
 void Electron::SetIsGsfCtfScPixChargeConsistent(bool b){
   j_isGsfCtfScPixChargeConsistent = b;
 }
+
+bool Electron::PassFilter(TString filter) const{
+  if( filter=="hltDiMu9Ele9CaloIdLTrackIdLElectronlegDphiFilter" && j_filterbits&(ULong64_t(1)<<0) ) return true;
+  else if( filter=="hltEGL1SingleEGOrFilter" && j_filterbits&(ULong64_t(1)<<1) ) return true;
+  else if( filter=="hltEle12CaloIdLTrackIdLIsoVLTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<2) ) return true;
+  else if( filter=="hltEle16Ele12Ele8CaloIdLTrackIdLDphiLeg1Filter" && j_filterbits&(ULong64_t(1)<<3) ) return true;
+  else if( filter=="hltEle16Ele12Ele8CaloIdLTrackIdLDphiLeg2Filter" && j_filterbits&(ULong64_t(1)<<4) ) return true;
+  else if( filter=="hltEle17CaloIdLTrackIdLIsoVLTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<5) ) return true;
+  else if( filter=="hltEle17CaloIdMGsfTrackIdMDphiFilter" && j_filterbits&(ULong64_t(1)<<6) ) return true;
+  else if( filter=="hltEle23CaloIdLTrackIdLIsoVLJet30TrackIsoFilter" && j_filterbits&(ULong64_t(1)<<7) ) return true;
+  else if( filter=="hltEle23Ele12CaloIdLTrackIdLIsoVLDZFilter" && j_filterbits&(ULong64_t(1)<<8) ) return true;
+  else if( filter=="hltEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg1Filter" && j_filterbits&(ULong64_t(1)<<9) ) return true;
+  else if( filter=="hltEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg2Filter" && j_filterbits&(ULong64_t(1)<<10) ) return true;
+  else if( filter=="hltEle27WPTightGsfTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<11) ) return true;
+  else if( filter=="hltEle27erWPTightGsfTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<12) ) return true;
+  else if( filter=="hltEle28WPTightGsfTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<13) ) return true;
+  else if( filter=="hltEle32L1DoubleEGWPTightGsfTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<14) ) return true;
+  else if( filter=="hltEle32WPTightGsfTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<15) ) return true;
+  else if( filter=="hltEle35noerWPTightGsfTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<16) ) return true;
+  else if( filter=="hltEle8CaloIdLTrackIdLIsoVLTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<17) ) return true;
+  else if( filter=="hltMu23TrkIsoVVLEle12CaloIdLTrackIdLIsoVLDZFilter" && j_filterbits&(ULong64_t(1)<<18) ) return true;
+  else if( filter=="hltMu23TrkIsoVVLEle12CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<19) ) return true;
+  else if( filter=="hltMu23TrkIsoVVLEle8CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<20) ) return true;
+  else if( filter=="hltMu8TrkIsoVVLEle23CaloIdLTrackIdLIsoVLDZFilter" && j_filterbits&(ULong64_t(1)<<21) ) return true;
+  else if( filter=="hltMu8TrkIsoVVLEle23CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter" && j_filterbits&(ULong64_t(1)<<22) ) return true;
+  else if( filter=="hltMu9Ele9DZFilter" && j_filterbits&(ULong64_t(1)<<23) ) return true;
+  else{
+    cout<<"[Electron::PassFilter] unknown filter "<<filter<<endl;
+    exit(ENODATA);
+  }
+  return false;
+}
+
+bool Electron::PassPath(TString path) const{
+  if( path=="HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ_v" && j_pathbits&(ULong64_t(1)<<0) ) return true;
+  else if( path=="HLT_DiMu9_Ele9_CaloIdL_TrackIdL_v" && j_pathbits&(ULong64_t(1)<<1) ) return true;
+  else if( path=="HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v" && j_pathbits&(ULong64_t(1)<<2) ) return true;
+  else if( path=="HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v" && j_pathbits&(ULong64_t(1)<<3) ) return true;
+  else if( path=="HLT_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_v" && j_pathbits&(ULong64_t(1)<<4) ) return true;
+  else if( path=="HLT_Ele17_CaloIdM_TrackIdM_PFJet30_v" && j_pathbits&(ULong64_t(1)<<5) ) return true;
+  else if( path=="HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v" && j_pathbits&(ULong64_t(1)<<6) ) return true;
+  else if( path=="HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v" && j_pathbits&(ULong64_t(1)<<7) ) return true;
+  else if( path=="HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v" && j_pathbits&(ULong64_t(1)<<8) ) return true;
+  else if( path=="HLT_Ele27_WPTight_Gsf_v" && j_pathbits&(ULong64_t(1)<<9) ) return true;
+  else if( path=="HLT_Ele27_eta2p1_WPTight_Gsf_v" && j_pathbits&(ULong64_t(1)<<10) ) return true;
+  else if( path=="HLT_Ele28_WPTight_Gsf_v" && j_pathbits&(ULong64_t(1)<<11) ) return true;
+  else if( path=="HLT_Ele32_WPTight_Gsf_L1DoubleEG_v" && j_pathbits&(ULong64_t(1)<<12) ) return true;
+  else if( path=="HLT_Ele32_WPTight_Gsf_v" && j_pathbits&(ULong64_t(1)<<13) ) return true;
+  else if( path=="HLT_Ele35_WPTight_Gsf_v" && j_pathbits&(ULong64_t(1)<<14) ) return true;
+  else if( path=="HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v" && j_pathbits&(ULong64_t(1)<<15) ) return true;
+  else if( path=="HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v" && j_pathbits&(ULong64_t(1)<<16) ) return true;
+  else if( path=="HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v" && j_pathbits&(ULong64_t(1)<<17) ) return true;
+  else if( path=="HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ_v" && j_pathbits&(ULong64_t(1)<<18) ) return true;
+  else if( path=="HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v" && j_pathbits&(ULong64_t(1)<<19) ) return true;
+  else if( path=="HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v" && j_pathbits&(ULong64_t(1)<<20) ) return true;
+  else if( path=="HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v" && j_pathbits&(ULong64_t(1)<<21) ) return true;
+  else if( path=="HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v" && j_pathbits&(ULong64_t(1)<<22) ) return true;
+  else{
+    cout<<"[Electron::PassPath] unknown path "<<path<<endl;
+    exit(ENODATA);
+  }
+  return false;
+}
