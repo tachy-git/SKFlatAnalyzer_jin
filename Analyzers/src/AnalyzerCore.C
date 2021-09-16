@@ -134,6 +134,9 @@ std::vector<Muon> AnalyzerCore::GetAllMuons(){
       mu.EA()
     );
 
+    mu.SetFilterBits(muon_filterbits->at(i));
+    mu.SetPathBits(muon_pathbits->at(i));
+
     out.push_back(mu);
 
   }
@@ -228,6 +231,9 @@ std::vector<Electron> AnalyzerCore::GetAllElectrons(){
       Rho,
       el.EA()
     );
+
+    el.SetFilterBits(electron_filterbits->at(i));
+    el.SetPathBits(electron_pathbits->at(i));
 
     out.push_back(el);
 

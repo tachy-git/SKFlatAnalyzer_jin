@@ -504,6 +504,7 @@ void {2}(){{
       ## /data7/DATA/SKFlat/v949cand2_2/2017/DATA/SingleMuon/periodB/181107_231447/0000/SKFlatNtuple_2017_DATA_100.root
       ## /data7/DATA/SKFlat/v949cand2_2/2017/MC/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/181108_152345/0000/SKFlatNtuple_2017_MC_100.root
       skimoutdir = '/gv0/DATA/SKFlat/'+SKFlatV+'/'+args.Era+'/'
+      if args.Outputdir!='': skimoutdir=args.Outputdir+'/'+SKFlatV+'/'+args.Era+'/'
       skimoutfilename = ""
       if IsDATA:
         skimoutdir += "DATA_"+args.Analyzer+"/"+InputSample+"/period"+DataPeriod+"/"
@@ -597,8 +598,8 @@ if args.Outputdir=="":
     FinalOutputPath += flag+"__"
   if IsDATA:
     FinalOutputPath += '/DATA/'
-if IsSkimTree:
-  FinalOutputPath = '/gv0/DATA/SKFlat/'+SKFlatV+'/'+args.Era+'/'
+  if IsSkimTree:
+    FinalOutputPath = '/gv0/DATA/SKFlat/'+SKFlatV+'/'+args.Era+'/'
 
 os.system('mkdir -p '+FinalOutputPath)
 

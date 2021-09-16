@@ -140,6 +140,12 @@ public:
   inline bool IsGsfCtfScPixChargeConsistent() const { return j_isGsfCtfScPixChargeConsistent; }
   inline void SetR9(double r9) { j_r9=r9; }
   inline double R9() const { return j_r9; }
+
+  void SetFilterBits(ULong64_t filterbits){ j_filterbits=filterbits; }
+  void SetPathBits(ULong64_t pathbits){ j_pathbits=pathbits; }
+  bool PassFilter(TString filter) const;
+  bool PassPath(TString path) const;
+
     
 private:
 
@@ -162,6 +168,9 @@ private:
   double j_Rho;
   int j_isGsfCtfScPixChargeConsistent;
   double j_r9;
+
+  ULong64_t j_filterbits;
+  ULong64_t j_pathbits;
 
   ClassDef(Electron,1)
 
