@@ -1127,8 +1127,8 @@ double MCCorrection::GetMCJetTagEff(JetTagging::Tagger tagger, JetTagging::WP wp
   value = this_hist->GetBinContent(this_bin);
   error = this_hist->GetBinError(this_bin);
 
-  if(value==0.) value += 0.0001;
-  if(value==1.) value += -0.0001;
+  if(value+double(sys)*error<=0.) value+double(sys)*error = 0.0001;
+  if(value+double(sys)*error>=1.) value+double(sys)*error = 0.9999;
   return value+double(sys)*error;
 }
 
