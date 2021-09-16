@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "TKey.h"
 #include "TFile.h"
 #include "TString.h"
 #include "TRegexp.h"
@@ -106,7 +107,9 @@ public:
   TH2D *hist_JetTagEff_C;
   TH2D *hist_JetTagEff_Light;
 
-  double GetMCJetTagEff(JetTagging::Tagger tagger, JetTagging::WP wp, int JetFlavor, double JetPt, double JetEta);
+  std::map< TString, TH2F* > map_hist_mcjet;
+  void SetupMCJetTagEff();
+  double GetMCJetTagEff(JetTagging::Tagger tagger, JetTagging::WP wp, int JetFlavor, double JetPt, double JetEta, int sys=0);
   double GetJetTaggingSF(JetTagging::Parameters jtp, int JetFlavor, double JetPt, double JetEta, double Jetdiscr, string Syst="central");
 
   //==== https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagSFMethods

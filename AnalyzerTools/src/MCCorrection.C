@@ -1,5 +1,4 @@
 #include "MCCorrection.h"
-#include "BTagEfficiencies/JetTagEfficiencies.C"
 
 MCCorrection::MCCorrection() : 
 IgnoreNoHist(false)
@@ -972,7 +971,7 @@ void MCCorrection::SetupJetTagging(){
   for(std::map< std::string, BTagCalibrationReader* >::iterator it=map_BTagCalibrationReader.begin(); it!=map_BTagCalibrationReader.end(); it++){
     cout << "[MCCorrection::SetJetTaggingParameters] key = " << it->first << endl;
   }
-
+  SetupMCJetTagEff();
 
 }
 
@@ -1018,7 +1017,7 @@ double MCCorrection::GetJetTaggingSF(JetTagging::Parameters jtp, int JetFlavor, 
 
 double MCCorrection::GetJetTaggingCutValue(JetTagging::Tagger tagger, JetTagging::WP wp){
 
-  if(DataYear==2016){ //2016 values: pre-Legacy (To be fixed)
+  if(DataEra=="2016preVFP"){ //2016 values: pre-Legacy (To be fixed)
     if(tagger==JetTagging::DeepCSV){
       if(wp==JetTagging::Loose)  return 0.2217;
       if(wp==JetTagging::Medium) return 0.6321;
@@ -1030,44 +1029,119 @@ double MCCorrection::GetJetTaggingCutValue(JetTagging::Tagger tagger, JetTagging
       if(wp==JetTagging::Tight)  return 0.7221;
     }
   }
-  if(DataYear==2017){
-    //if(tagger==JetTagging::CSVv2){
-    //  if(wp==JetTagging::Loose)  return 0.5803;
-    //  if(wp==JetTagging::Medium) return 0.8838;
-    //  if(wp==JetTagging::Tight)  return 0.9693;
-    //}
+  if(DataEra=="2016postVFP"){ //2016 values: pre-Legacy (To be fixed)
     if(tagger==JetTagging::DeepCSV){
-      if(wp==JetTagging::Loose)  return 0.1355; // 0.1522;
-      if(wp==JetTagging::Medium) return 0.4506; // 0.4941;
-      if(wp==JetTagging::Tight)  return 0.7738; // 0.8001;
+      if(wp==JetTagging::Loose)  return 0.2217;
+      if(wp==JetTagging::Medium) return 0.6321;
+      if(wp==JetTagging::Tight)  return 0.8953;
     }
     if(tagger==JetTagging::DeepJet){
-      if(wp==JetTagging::Loose)  return 0.0532; // 0.0521;
-      if(wp==JetTagging::Medium) return 0.3040; // 0.3033;
-      if(wp==JetTagging::Tight)  return 0.7476; // 0.7489;
+      if(wp==JetTagging::Loose)  return 0.0614;
+      if(wp==JetTagging::Medium) return 0.3093;
+      if(wp==JetTagging::Tight)  return 0.7221;
     }
   }
-  if(DataYear==2018){
+  if(DataEra=="2017"){
     if(tagger==JetTagging::DeepCSV){
-      if(wp==JetTagging::Loose)  return 0.1208; // 0.1241;
-      if(wp==JetTagging::Medium) return 0.4168; // 0.4184;
-      if(wp==JetTagging::Tight)  return 0.7665; // 0.7527;
+      if(wp==JetTagging::Loose)  return 0.1355;
+      if(wp==JetTagging::Medium) return 0.4506;
+      if(wp==JetTagging::Tight)  return 0.7738;
     }
     if(tagger==JetTagging::DeepJet){
-      if(wp==JetTagging::Loose)  return 0.0490; // 0.0494;
-      if(wp==JetTagging::Medium) return 0.2783; // 0.2770;
-      if(wp==JetTagging::Tight)  return 0.7100; // 0.7264;
+      if(wp==JetTagging::Loose)  return 0.0532;
+      if(wp==JetTagging::Medium) return 0.3040;
+      if(wp==JetTagging::Tight)  return 0.7476;
+    }
+  }
+  if(DataEra=="2018"){
+    if(tagger==JetTagging::DeepCSV){
+      if(wp==JetTagging::Loose)  return 0.1208;
+      if(wp==JetTagging::Medium) return 0.4168;
+      if(wp==JetTagging::Tight)  return 0.7665;
+    }
+    if(tagger==JetTagging::DeepJet){
+      if(wp==JetTagging::Loose)  return 0.0490;
+      if(wp==JetTagging::Medium) return 0.2783;
+      if(wp==JetTagging::Tight)  return 0.7100;
     }
   }
 
   cout << "[MCCorrection::GetJetTaggingCutValue] Wrong " << endl;
-  cout << "[MCCorrection::GetJetTaggingCutValue] DataYear = " << DataYear << endl;
+  cout << "[MCCorrection::GetJetTaggingCutValue] DataEra = " << DataEra << endl;
   cout << "[MCCorrection::GetJetTaggingCutValue] tagger = " << tagger << endl;
   cout << "[MCCorrection::GetJetTaggingCutValue] wp = " << wp << endl;
   exit(ENODATA);
 
   return 1;
 
+}
+
+void MCCorrection::SetupMCJetTagEff(){
+  cout<<"[MCCorrection::SetupMCJetTagEff] setting MCJetTagEff"<<endl;
+
+  TString datapath=getenv("DATA_DIR");
+  TString mcjetpath=datapath+"/"+DataEra+"/BTag/MeasureJetTaggingEfficiency_TTLL_TTLJ_hadded.root";
+  ifstream fcheck(mcjetpath);
+  if(!fcheck.good()){
+    cout<<"[MCCorrection::SetupMCJetTagEff] no "+mcjetpath<<endl;
+    return;
+  }
+  TFile fmcjet(mcjetpath);
+  // Denominator histogram setup first
+  vector<TString> jfs = {"B", "C", "Light"};
+  for(unsigned int i=0; i<jfs.size(); i++){
+    TString hden="Jet_"+DataEra+"_eff_"+jfs.at(i)+"_denom";
+    TH2F* this_hist=(TH2F*)fmcjet.Get(hden);
+    map_hist_mcjet[hden]=this_hist;
+    this_hist->SetDirectory(0);
+    cout<<"[MCCorrection::SetupMCJetTagEff] setting "<<hden<<endl;
+  }
+  // Numerator histogram setup and divided using "binomial option"
+  for(const auto& obj:*(fmcjet.GetListOfKeys())){
+    TH2F* this_hist=(TH2F*)((TKey*)obj)->ReadObj();
+    TString hnum=this_hist->GetName();
+    if(!hnum.Contains("num")) continue;
+    TString hden="";
+    if(hnum.Contains("_B_")) hden="Jet_"+DataEra+"_eff_B_denom";
+    else if(hnum.Contains("_C_")) hden="Jet_"+DataEra+"_eff_C_denom";
+    else hden="Jet_"+DataEra+"_eff_Light_denom";
+
+    this_hist->Divide(this_hist,map_hist_mcjet[hden],1.,1.,"b");
+    map_hist_mcjet[hnum]=this_hist;
+    this_hist->SetDirectory(0);
+    cout<<"[MCCorrection::SetupMCJetTagEff] setting "<<hnum<<endl;
+  }
+}
+
+double MCCorrection::GetMCJetTagEff(JetTagging::Tagger tagger, JetTagging::WP wp, int JetFlavor, double JetPt, double JetEta, int sys){
+
+  if(IsDATA) return 1.;
+
+  if(JetPt<20) JetPt = 20.;
+  if(JetPt>=1000.) JetPt = 999.;
+  if(JetEta>=2.5) JetEta = 2.49;
+  if(JetEta<-2.5) JetEta = -2.5;
+
+  TString jf = "";
+  if(JetFlavor == 5) jf = "B";
+  else if(JetFlavor == 4) jf = "C";
+  else if(JetFlavor == 0) jf = "Light";
+  else{
+    cout<<"[MCCorrection::GetMCJetTagEff] no JetFlavor"<<endl;
+    exit(EXIT_FAILURE);
+  }
+
+  double value = 1., error = 0., out = 1.;
+  TString hnum="Jet_"+DataEra+"_"+JetTagging::TaggerToString(tagger)+"_"+JetTagging::WPToString(wp)+"_eff_"+jf+"_num";
+  TH2F *this_hist = map_hist_mcjet[hnum];
+  int this_bin = this_hist->FindBin(JetPt,JetEta);
+  value = this_hist->GetBinContent(this_bin);
+  error = this_hist->GetBinError(this_bin);
+
+  out = value+double(sys)*error;
+  if(out<=0.) out = 0.0001;
+  if(out>=1.) out = 0.9999;
+  return out;
 }
 
 double MCCorrection::GetBTaggingReweight_1a(const vector<Jet>& jets, JetTagging::Parameters jtp, string Syst){
@@ -1096,7 +1170,7 @@ double MCCorrection::GetBTaggingReweight_1a(const vector<Jet>& jets, JetTagging:
     }
   }
 
-  return Prob_DATA/Prob_MC;
+  return (Prob_DATA/Prob_MC)>5.? 5.: (Prob_DATA/Prob_MC);
 
 }
 
