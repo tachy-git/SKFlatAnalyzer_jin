@@ -1087,13 +1087,29 @@ void MCCorrection::SetupMCJetTagEff(){
     return;
   }
   TFile fmcjet(mcjetpath);
-  for(const auto& obj:*(fmcjet.GetListOfKeys())){
-    TKey* key=(TKey*)obj;
-    TH2F* this_hist=(TH2F*)key->ReadObj();
-    TString histname=this_hist->GetName();
-    map_hist_mcjet[histname]=this_hist;
+  // Denominator histogram setup first
+  vector<TString> jfs = {"B", "C", "Light"};
+  for(unsigned int i=0; i<jfs.size(); i++){
+    TString hden="Jet_"+DataEra+"_eff_"+jfs.at(i)+"_denom";
+    TH2F* this_hist=(TH2F*)fmcjet.Get(hden);
+    map_hist_mcjet[hden]=this_hist;
     this_hist->SetDirectory(0);
-    cout<<"[MCCorrection::SetupMCJetTagEff] setting "<<histname<<endl;
+    cout<<"[MCCorrection::SetupMCJetTagEff] setting "<<hden<<endl;
+  }
+  // Numerator histogram setup and divided using "binomial option"
+  for(const auto& obj:*(fmcjet.GetListOfKeys())){
+    TH2F* this_hist=(TH2F*)((TKey*)obj)->ReadObj();
+    TString hnum=this_hist->GetName();
+    if(!hnum.Contains("num")) continue;
+    TString hden="";
+    if(hnum.Contains("_B_")) hden="Jet_"+DataEra+"_eff_B_denom";
+    else if(hnum.Contains("_C_")) hden="Jet_"+DataEra+"_eff_C_denom";
+    else hden="Jet_"+DataEra+"_eff_Light_denom";
+
+    this_hist->Divide(this_hist,map_hist_mcjet[hden],1.,1.,"b");
+    map_hist_mcjet[hnum]=this_hist;
+    this_hist->SetDirectory(0);
+    cout<<"[MCCorrection::SetupMCJetTagEff] setting "<<hnum<<endl;
   }
 }
 
@@ -1115,21 +1131,17 @@ double MCCorrection::GetMCJetTagEff(JetTagging::Tagger tagger, JetTagging::WP wp
     exit(EXIT_FAILURE);
   }
 
-  double value = 1.;
-  double error = 0.;
+  double value = 1., error = 0., out = 1.;
   TString hnum="Jet_"+DataEra+"_"+JetTagging::TaggerToString(tagger)+"_"+JetTagging::WPToString(wp)+"_eff_"+jf+"_num";
-  TString hden="Jet_"+DataEra+"_eff_"+jf+"_denom";
-
   TH2F *this_hist = map_hist_mcjet[hnum];
-  this_hist->Divide(map_hist_mcjet[hden]);
-
   int this_bin = this_hist->FindBin(JetPt,JetEta);
   value = this_hist->GetBinContent(this_bin);
   error = this_hist->GetBinError(this_bin);
 
-  if(value+double(sys)*error<=0.) value+double(sys)*error = 0.0001;
-  if(value+double(sys)*error>=1.) value+double(sys)*error = 0.9999;
-  return value+double(sys)*error;
+  out = value+double(sys)*error;
+  if(out<=0.) out = 0.0001;
+  if(out>=1.) out = 0.9999;
+  return out;
 }
 
 double MCCorrection::GetBTaggingReweight_1a(const vector<Jet>& jets, JetTagging::Parameters jtp, string Syst){
@@ -1158,7 +1170,7 @@ double MCCorrection::GetBTaggingReweight_1a(const vector<Jet>& jets, JetTagging:
     }
   }
 
-  return Prob_DATA/Prob_MC;
+  return (Prob_DATA/Prob_MC)>5.? 5.: (Prob_DATA/Prob_MC);
 
 }
 
