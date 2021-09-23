@@ -1,2 +1,2 @@
 # alias PD xsec nmc sumw
-DYJets	DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8	6077.22	204062095	135884967.0
+DYJets	DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8	6077.22	196039620	131927642.0
