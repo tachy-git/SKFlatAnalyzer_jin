@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+TTLJ_WtoCB_amcatnlo tt012j_Vcb_NLO_CP5_FXFX_RunIIAutumn18 0.1414 230169 85003
