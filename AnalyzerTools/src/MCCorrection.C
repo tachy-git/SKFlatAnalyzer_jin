@@ -1134,7 +1134,7 @@ double MCCorrection::GetMCJetTagEff(JetTagging::Tagger tagger, JetTagging::WP wp
   double value = 1., error = 0., out = 1.;
   TString hnum="Jet_"+DataEra+"_"+JetTagging::TaggerToString(tagger)+"_"+JetTagging::WPToString(wp)+"_eff_"+jf+"_num";
   TH2F *this_hist = map_hist_mcjet[hnum];
-  int this_bin = this_hist->FindBin(JetPt,JetEta);
+  int this_bin = this_hist->FindBin(JetEta,JetPt);
   value = this_hist->GetBinContent(this_bin);
   error = this_hist->GetBinError(this_bin);
 
