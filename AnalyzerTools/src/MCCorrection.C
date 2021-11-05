@@ -1028,6 +1028,17 @@ double MCCorrection::GetJetTaggingCutValue(JetTagging::Tagger tagger, JetTagging
       if(wp==JetTagging::Medium) return 0.3093;
       if(wp==JetTagging::Tight)  return 0.7221;
     }
+    if(tagger==JetTagging::DeepCvsB){
+      if(tagger==JetTagging::Loose) return 0.327;
+      if(tagger==JetTagging::Medium) return 0.370;
+      if(tagger==JetTagging::Tight) return 0.256;
+    }
+
+    if(tagger==JetTagging::DeepCvsL){
+      if(tagger==JetTagging::Loose) return 0.039;
+      if(tagger==JetTagging::Medium) return 0.098;
+      if(tagger==JetTagging::Tight) return 0.270;
+    }
   }
   if(DataEra=="2016postVFP"){ //2016 values: pre-Legacy (To be fixed)
     if(tagger==JetTagging::DeepCSV){
@@ -1039,6 +1050,17 @@ double MCCorrection::GetJetTaggingCutValue(JetTagging::Tagger tagger, JetTagging
       if(wp==JetTagging::Loose)  return 0.0614;
       if(wp==JetTagging::Medium) return 0.3093;
       if(wp==JetTagging::Tight)  return 0.7221;
+    }
+    if(tagger==JetTagging::DeepCvsB){
+      if(tagger==JetTagging::Loose) return 0.327;
+      if(tagger==JetTagging::Medium) return 0.370;
+      if(tagger==JetTagging::Tight) return 0.256;
+    }
+
+    if(tagger==JetTagging::DeepCvsL){
+      if(tagger==JetTagging::Loose) return 0.039;
+      if(tagger==JetTagging::Medium) return 0.098;
+      if(tagger==JetTagging::Tight) return 0.270;
     }
   }
   if(DataEra=="2017"){
@@ -1052,6 +1074,18 @@ double MCCorrection::GetJetTaggingCutValue(JetTagging::Tagger tagger, JetTagging
       if(wp==JetTagging::Medium) return 0.3040;
       if(wp==JetTagging::Tight)  return 0.7476;
     }
+
+    if(tagger==JetTagging::DeepCvsB){
+      if(tagger==JetTagging::Loose) return 0.4;
+      if(tagger==JetTagging::Medium) return 0.34;
+      if(tagger==JetTagging::Tight) return 0.05;
+    }
+
+    if(tagger==JetTagging::DeepCvsL){
+      if(tagger==JetTagging::Loose) return 0.03;
+      if(tagger==JetTagging::Medium) return 0.085;
+      if(tagger==JetTagging::Tight) return 0.52;
+    }
   }
   if(DataEra=="2018"){
     if(tagger==JetTagging::DeepCSV){
@@ -1064,6 +1098,18 @@ double MCCorrection::GetJetTaggingCutValue(JetTagging::Tagger tagger, JetTagging
       if(wp==JetTagging::Medium) return 0.2783;
       if(wp==JetTagging::Tight)  return 0.7100;
     }
+    if(tagger==JetTagging::DeepCvsB){
+      if(tagger==JetTagging::Loose) return 0.246;
+      if(tagger==JetTagging::Medium) return 0.325;
+      if(tagger==JetTagging::Tight) return 0.267;
+    }
+
+    if(tagger==JetTagging::DeepCvsL){
+      if(tagger==JetTagging::Loose) return 0.038;
+      if(tagger==JetTagging::Medium) return 0.099;
+      if(tagger==JetTagging::Tight) return 0.282;
+    }
+
   }
 
   cout << "[MCCorrection::GetJetTaggingCutValue] Wrong " << endl;
