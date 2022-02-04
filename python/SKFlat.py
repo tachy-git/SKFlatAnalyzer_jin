@@ -61,7 +61,7 @@ string_ThisTime = ""
 ## Environment Variables
 
 USER = os.environ['USER']
-if os.path.exists('python/UserInfo_'+USER+'.py'):
+if os.path.exists(os.environ['SKFlat_WD']+'/python/UserInfo_'+USER+'.py'):
   exec('from UserInfo_'+USER+' import *')
 else:
   print("No UserInfo file")
@@ -84,9 +84,9 @@ SampleHOSTNAME = HOSTNAME
 
 ## Check joblog email
 
+SendLogToEmail=True
 if SKFlatLogEmail=='':
-  print '[SKFlat.py] Put your email address in setup.sh'
-  exit()
+  SendLogToEmail=False
 SendLogToWeb = True
 if SKFlatLogWebDir=='':
   SendLogToWeb = False
@@ -904,33 +904,34 @@ except KeyboardInterrupt:
 
 ## Send Email now
 
-from SendEmail import *
-JobFinishEmail = '''#### Job Info ####
-HOST = {3}
-JobID = {6}
-Analyzer = {0}
-Era = {7}
-Skim = {5}
-# of Jobs = {4}
-InputSample = {1}
-{8}
-Output sent to : {2}
-'''.format(args.Analyzer,InputSamples,FinalOutputPath,HOSTNAME,NJobs,args.Skim,str_RandomNumber,args.Era,GetXSECTable(InputSamples,XsecForEachSample))
-JobFinishEmail += '''##################
-Job started at {0}
-Job finished at {1}
-'''.format(string_JobStartTime,string_ThisTime)
-
-if IsKNU:
-  JobFinishEmail += 'Queue = '+args.Queue+'\n'
-
-EmailTitle = '['+HOSTNAME+']'+' Summary of JobID '+str_RandomNumber
-if GotError:
-  JobFinishEmail = "#### ERROR OCCURED ####\n"+JobFinishEmail
-  JobFinishEmail = ErrorLog+"\n------------------------------------------------\n"+JobFinishEmail
-  EmailTitle = '[ERROR] Summary of JobID '+str_RandomNumber
-
-if IsKNU:
-  SendEmailbyGMail(USER,SKFlatLogEmail,EmailTitle,JobFinishEmail)
-else:
-  SendEmail(USER,SKFlatLogEmail,EmailTitle,JobFinishEmail)
+if SendLogToEmail: 
+  from SendEmail import *
+  JobFinishEmail = '''#### Job Info ####
+  HOST = {3}
+  JobID = {6}
+  Analyzer = {0}
+  Era = {7}
+  Skim = {5}
+  # of Jobs = {4}
+  InputSample = {1}
+  {8}
+  Output sent to : {2}
+  '''.format(args.Analyzer,InputSamples,FinalOutputPath,HOSTNAME,NJobs,args.Skim,str_RandomNumber,args.Era,GetXSECTable(InputSamples,XsecForEachSample))
+  JobFinishEmail += '''##################
+  Job started at {0}
+  Job finished at {1}
+  '''.format(string_JobStartTime,string_ThisTime)
+  
+  if IsKNU:
+    JobFinishEmail += 'Queue = '+args.Queue+'\n'
+  
+  EmailTitle = '['+HOSTNAME+']'+' Summary of JobID '+str_RandomNumber
+  if GotError:
+    JobFinishEmail = "#### ERROR OCCURED ####\n"+JobFinishEmail
+    JobFinishEmail = ErrorLog+"\n------------------------------------------------\n"+JobFinishEmail
+    EmailTitle = '[ERROR] Summary of JobID '+str_RandomNumber
+  
+  if IsKNU:
+    SendEmailbyGMail(USER,SKFlatLogEmail,EmailTitle,JobFinishEmail)
+  else:
+    SendEmail(USER,SKFlatLogEmail,EmailTitle,JobFinishEmail)

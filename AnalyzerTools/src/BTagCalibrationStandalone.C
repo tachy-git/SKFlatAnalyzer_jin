@@ -73,14 +73,21 @@ throw std::exception();
   }
 
   // make parameters
-  unsigned op = stoi(vec[0]);
+  unsigned op=10;
+  if     (vec[0]=="L"    ) op = BTagEntry::OP_LOOSE;
+  else if(vec[0]=="M"    ) op = BTagEntry::OP_MEDIUM;
+  else if(vec[0]=="T"    ) op = BTagEntry::OP_TIGHT;
+  else if(vec[0]=="shape") op = BTagEntry::OP_RESHAPING;
   if (op > 3) {
 std::cerr << "ERROR in BTagCalibration: "
           << "Invalid csv line; OperatingPoint > 3: "
           << csvLine;
 throw std::exception();
   }
-  unsigned jf = stoi(vec[3]);
+  unsigned jf = 10; 
+  if     (vec[3]=="5") jf = BTagEntry::FLAV_B;
+  else if(vec[3]=="4") jf = BTagEntry::FLAV_C;
+  else if(vec[3]=="0") jf = BTagEntry::FLAV_UDSG;
   if (jf > 2) {
 std::cerr << "ERROR in BTagCalibration: "
           << "Invalid csv line; JetFlavor > 2: "

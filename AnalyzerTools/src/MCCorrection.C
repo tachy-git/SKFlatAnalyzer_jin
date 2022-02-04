@@ -804,7 +804,6 @@ double MCCorrection::GetPileUpWeight(int N_pileup, int syst){
   if(this_bin>this_hist->GetNbinsX()) this_bin=this_hist->GetNbinsX();
 
   double pu_weight=this_hist->GetBinContent(this_bin);
-  if(pu_weight>5) pu_weight=5;
   return pu_weight;
 
 }
@@ -943,9 +942,9 @@ void MCCorrection::SetupJetTagging(){
 
       //==== Now, contructing BTagCalibrationReader obect
 
-      std::vector<std::string> systvec_L = {"up", "down"};
-      std::vector<std::string> systvec_C = {"up", "down"};
-      std::vector<std::string> systvec_B = {"up", "down"};
+      std::vector<std::string> systvec_L = {"up", "up_correlated", "up_uncorrelated", "down", "down_correlated", "down_uncorrelated"};
+      std::vector<std::string> systvec_C = {"up", "up_correlated", "up_uncorrelated", "down", "down_correlated", "down_uncorrelated"};
+      std::vector<std::string> systvec_B = {"up", "up_correlated", "up_uncorrelated", "down", "down_correlated", "down_uncorrelated"};
       if(this_mt_L=="iterativefit"){
         systvec_L = {"up_hf","down_hf","up_jes","down_jes","up_lfstats1","down_lfstats1","up_lfstats2","down_lfstats2"};
         systvec_C = {"up_cferr1","down_cferr1","up_cferr2","down_cferr2"};
@@ -1017,50 +1016,48 @@ double MCCorrection::GetJetTaggingSF(JetTagging::Parameters jtp, int JetFlavor, 
 
 double MCCorrection::GetJetTaggingCutValue(JetTagging::Tagger tagger, JetTagging::WP wp){
 
-  if(DataEra=="2016preVFP"){ //2016 values: pre-Legacy (To be fixed)
+  if(DataEra=="2016preVFP"){
     if(tagger==JetTagging::DeepCSV){
-      if(wp==JetTagging::Loose)  return 0.2217;
-      if(wp==JetTagging::Medium) return 0.6321;
-      if(wp==JetTagging::Tight)  return 0.8953;
+      if(wp==JetTagging::Loose)  return 0.2027;
+      if(wp==JetTagging::Medium) return 0.6001;
+      if(wp==JetTagging::Tight)  return 0.8819;
     }
     if(tagger==JetTagging::DeepJet){
-      if(wp==JetTagging::Loose)  return 0.0614;
-      if(wp==JetTagging::Medium) return 0.3093;
-      if(wp==JetTagging::Tight)  return 0.7221;
+      if(wp==JetTagging::Loose)  return 0.0508;
+      if(wp==JetTagging::Medium) return 0.2598;
+      if(wp==JetTagging::Tight)  return 0.6502;
     }
     if(tagger==JetTagging::DeepCvsB){
       if(wp==JetTagging::Loose) return 0.327;
       if(wp==JetTagging::Medium) return 0.370;
       if(wp==JetTagging::Tight) return 0.256;
     }
-
     if(tagger==JetTagging::DeepCvsL){
       if(wp==JetTagging::Loose) return 0.039;
       if(wp==JetTagging::Medium) return 0.098;
       if(wp==JetTagging::Tight) return 0.270;
     }
   }
-  if(DataEra=="2016postVFP"){ //2016 values: pre-Legacy (To be fixed)
+  if(DataEra=="2016postVFP"){
     if(tagger==JetTagging::DeepCSV){
-      if(wp==JetTagging::Loose)  return 0.2217;
-      if(wp==JetTagging::Medium) return 0.6321;
-      if(wp==JetTagging::Tight)  return 0.8953;
+      if(wp==JetTagging::Loose)  return 0.1918;
+      if(wp==JetTagging::Medium) return 0.5847;
+      if(wp==JetTagging::Tight)  return 0.8767;
     }
     if(tagger==JetTagging::DeepJet){
-      if(wp==JetTagging::Loose)  return 0.0614;
-      if(wp==JetTagging::Medium) return 0.3093;
-      if(wp==JetTagging::Tight)  return 0.7221;
+      if(wp==JetTagging::Loose)  return 0.0480;
+      if(wp==JetTagging::Medium) return 0.2489;
+      if(wp==JetTagging::Tight)  return 0.6377;
     }
     if(tagger==JetTagging::DeepCvsB){
-      if(wp==JetTagging::Loose) return 0.327;
-      if(wp==JetTagging::Medium) return 0.370;
-      if(wp==JetTagging::Tight) return 0.256;
+      if(wp==JetTagging::Loose) return 0.305;
+      if(wp==JetTagging::Medium) return 0.353;
+      if(wp==JetTagging::Tight) return 0.247;
     }
-
     if(tagger==JetTagging::DeepCvsL){
       if(wp==JetTagging::Loose) return 0.039;
-      if(wp==JetTagging::Medium) return 0.098;
-      if(wp==JetTagging::Tight) return 0.270;
+      if(wp==JetTagging::Medium) return 0.099;
+      if(wp==JetTagging::Tight) return 0.269;
     }
   }
   if(DataEra=="2017"){
@@ -1074,13 +1071,11 @@ double MCCorrection::GetJetTaggingCutValue(JetTagging::Tagger tagger, JetTagging
       if(wp==JetTagging::Medium) return 0.3040;
       if(wp==JetTagging::Tight)  return 0.7476;
     }
-
     if(tagger==JetTagging::DeepCvsB){
       if(wp==JetTagging::Loose) return 0.4;
       if(wp==JetTagging::Medium) return 0.34;
       if(wp==JetTagging::Tight) return 0.05;
     }
-
     if(tagger==JetTagging::DeepCvsL){
       if(wp==JetTagging::Loose) return 0.03;
       if(wp==JetTagging::Medium) return 0.085;
@@ -1103,13 +1098,11 @@ double MCCorrection::GetJetTaggingCutValue(JetTagging::Tagger tagger, JetTagging
       if(wp==JetTagging::Medium) return 0.325;
       if(wp==JetTagging::Tight) return 0.267;
     }
-
     if(tagger==JetTagging::DeepCvsL){
       if(wp==JetTagging::Loose) return 0.038;
       if(wp==JetTagging::Medium) return 0.099;
       if(wp==JetTagging::Tight) return 0.282;
     }
-
   }
 
   cout << "[MCCorrection::GetJetTaggingCutValue] Wrong " << endl;
@@ -1180,29 +1173,57 @@ double MCCorrection::GetMCJetTagEff(JetTagging::Tagger tagger, JetTagging::WP wp
   double value = 1., error = 0., out = 1.;
   TString hnum="Jet_"+DataEra+"_"+JetTagging::TaggerToString(tagger)+"_"+JetTagging::WPToString(wp)+"_eff_"+jf+"_num";
   TH2F *this_hist = map_hist_mcjet[hnum];
-  int this_bin = this_hist->FindBin(JetEta,JetPt);
+  int this_bin = this_hist->FindBin(fabs(JetEta),JetPt);
   value = this_hist->GetBinContent(this_bin);
   error = this_hist->GetBinError(this_bin);
 
   out = value+double(sys)*error;
-  if(out<=0.) out = 0.0001;
-  if(out>=1.) out = 0.9999;
+  if(out<=0.) out = 1E-10;
+  if(out>=1.) out = 1.-1E-10;
   return out;
 }
 
 double MCCorrection::GetBTaggingReweight_1a(const vector<Jet>& jets, JetTagging::Parameters jtp, string Syst){
-
+//Syst. usage ex.: "SystUpHTag"(all component variation for heavy flav(b,c).), 
+//                 "SystUpHTagCorr"(variation of heavy flav(b,c) sf only for yearly correlated components)
+//change H->L for light flav., Up->Down for downward variation, Corr->UnCorr for yearly independent components
+ 
   if(IsDATA) return 1.;
 
-  double Prob_MC(1.), Prob_DATA(1.);
+  TString SystStr(Syst);
+  double Prob_MC(1.), Prob_DATA(1.), SF(1.);
+  bool Syst_HTag=false, Syst_LTag=false; int SystDir=0, CorrType=0;
+  string SystKey;
+  if(SystStr.Contains("Syst")){
+    if     (SystStr.Contains("HTag")) Syst_HTag=true;    
+    else if(SystStr.Contains("LTag")) Syst_LTag=true;
+    if     (SystStr.Contains("Up")  ) SystDir= 1;
+    else if(SystStr.Contains("Down")) SystDir=-1;
+    if     (SystStr.Contains("UnCorr")) CorrType=-1;
+    else if(SystStr.Contains("Corr"))   CorrType= 1;
+    if(SystDir==0){ cout<<"SystStr in not correct form"<<endl; exit(ENODATA); }
+    if(!(Syst_HTag or Syst_LTag)){ cout<<"SystMode but no H/L mode assigned"<<endl; exit(ENODATA); }
+  }
+
   for(unsigned int i=0; i<jets.size(); i++){
+    int JetHadFlav = jets.at(i).hadronFlavour();
+    bool ApplySyst=false;
+    if     (Syst_HTag && (JetHadFlav==4 or JetHadFlav==5)){ ApplySyst=true; }
+    else if(Syst_LTag && (JetHadFlav==0                 )){ ApplySyst=true; }
+
+    if     (ApplySyst && CorrType==0) SystKey=SystDir>0? "up":"down";
+    else if(ApplySyst && CorrType >0) SystKey=SystDir>0? "up_correlated":"down_correlated";
+    else if(ApplySyst && CorrType <0) SystKey=SystDir>0? "up_uncorrelated":"down_uncorrelated";
+    else                              SystKey="central";
+
+
     double this_MC_Eff = GetMCJetTagEff(jtp.j_Tagger, jtp.j_WP, jets.at(i).hadronFlavour(), jets.at(i).Pt(), jets.at(i).Eta());
     double this_SF = GetJetTaggingSF(jtp,
                                      jets.at(i).hadronFlavour(),
                                      jets.at(i).Pt(),
                                      jets.at(i).Eta(),
                                      jets.at(i).GetTaggerResult(jtp.j_Tagger),
-                                     Syst );
+                                     SystKey );
     double this_DATA_Eff = this_MC_Eff*this_SF;
 
     bool isTagged = jets.at(i).GetTaggerResult(jtp.j_Tagger) > GetJetTaggingCutValue(jtp.j_Tagger, jtp.j_WP);
@@ -1216,8 +1237,10 @@ double MCCorrection::GetBTaggingReweight_1a(const vector<Jet>& jets, JetTagging:
     }
   }
 
-  return (Prob_DATA/Prob_MC)>5.? 5.: (Prob_DATA/Prob_MC);
+  if(Prob_MC>0. && Prob_DATA>0.) SF=Prob_DATA/Prob_MC;
+  else SF=0.;
 
+  return SF;
 }
 
 double MCCorrection::GetBTaggingReweight_1d(const vector<Jet>& jets, JetTagging::Parameters jtp, string Syst){

@@ -61,9 +61,18 @@ void MeasureJetTaggingEfficiency::executeEvent(){
   Particle METv = ev.GetMETVector();
 
   vector<Jet> jets = GetJets("tightLepVeto", 20., 2.5);
+  float weight = 1.;
+  float w_Gen  = ev.MCweight();
+  float w_Norm = weight_norm_1invpb*ev.GetTriggerLumi("Full");
+  float w_PU   = GetPileUpWeight(nPileUp, 0);
+  weight *= w_Gen*w_Norm*w_PU; 
+  //tagging performance depends on PU, so it is better reweight to proper PU profile
 
-  vector<double> vec_etabins = {-2.5, -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5};
-  vector<double> vec_ptbins = {20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70., 75., 80, 85., 90., 95., 100., 110., 120., 130., 140., 150., 160., 170., 180., 190., 200., 250., 300., 350., 400., 500., 600., 1000.};
+  vector<double> vec_etabins = {0.0, 0.8, 1.6, 2., 2.5};
+  vector<double> vec_ptbins = {20., 30., 50., 70., 100., 140., 200., 300., 600., 1000.};//PT bins used in POG SF measurements
+  //for average users, this binning will be sufficient. 
+  //but eta-dependence of efficiency can be larger for |eta|>~2, where track & muon detector information of jet constituents starts to get lost, which is critical in tagging.
+  //precision analysis with high-eta b may use finer binnings there, but beware of small number of b-jets in high-eta, high-pt bins if you use ttbar sample; proper optimization of bin size should be studied.
   double PtMax = vec_ptbins.at( vec_ptbins.size()-1 );
 
   const int NEtaBin = vec_etabins.size()-1;
@@ -82,11 +91,11 @@ void MeasureJetTaggingEfficiency::executeEvent(){
     if(fabs(jets.at(ij).hadronFlavour()) == 4) flav= "C";
     if(fabs(jets.at(ij).hadronFlavour()) == 0) flav= "Light";
 
-    double this_Eta = jets.at(ij).Eta();
+    double this_Eta = fabs(jets.at(ij).Eta());//POG recommendation is to use |eta|
     double this_Pt = jets.at(ij).Pt()<PtMax ? jets.at(ij).Pt() : PtMax-1; // put overflows in the last bin
 
     //==== First, fill the denominator
-    FillHist("Jet_"+DataEra+"_eff_"+flav+"_denom", this_Eta, this_Pt, ev.MCweight(), NEtaBin, etabins, NPtBin, ptbins);
+    FillHist("Jet_"+DataEra+"_eff_"+flav+"_denom", this_Eta, this_Pt, weight, NEtaBin, etabins, NPtBin, ptbins);
 
     //==== Now looping over (tagger,working point)
     for(unsigned i_m=0; i_m<Taggers.size(); i_m++){ 
@@ -98,7 +107,7 @@ void MeasureJetTaggingEfficiency::executeEvent(){
       double this_taggerresult = jets.at(ij).GetTaggerResult( JetTagging::StringToTagger(Tagger) );
 
       if(this_taggerresult>CutValue){
-        FillHist("Jet_"+DataEra+"_"+Tagger+"_"+WP+"_eff_"+flav+"_num", this_Eta, this_Pt, ev.MCweight(), NEtaBin, etabins, NPtBin, ptbins);
+        FillHist("Jet_"+DataEra+"_"+Tagger+"_"+WP+"_eff_"+flav+"_num", this_Eta, this_Pt, weight, NEtaBin, etabins, NPtBin, ptbins);
       }
     } // END Loop (tagger,working point)
   } // END Loop jet
