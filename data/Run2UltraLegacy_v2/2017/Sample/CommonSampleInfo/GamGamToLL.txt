@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+GamGamToLL GamGamToLL  13.4 400000 400000.0 
