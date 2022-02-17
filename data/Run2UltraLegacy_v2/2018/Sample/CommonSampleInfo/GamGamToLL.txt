@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+GamGamToLL GamGamToLL-private 13.4 398000 398000.0 

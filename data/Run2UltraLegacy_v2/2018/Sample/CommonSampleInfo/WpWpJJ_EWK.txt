@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+WpWpJJ_EWK WpWpJJ_EWK 0.02695 200000 200000.0 

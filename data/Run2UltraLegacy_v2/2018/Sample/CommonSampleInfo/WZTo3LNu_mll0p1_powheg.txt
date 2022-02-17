@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+WZTo3LNu_mll0p1_powheg WZTo3LNu_mllmin01_NNPDF31_TuneCP5_13TeV_powheg_pythia8 62.78 89202000 88239598.0 

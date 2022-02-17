@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+GluGluHToWWTo2L2Nu GluGluHToWWTo2L2Nu_M125_TuneCP5_13TeV_powheg2_JHUGenV714_pythia8 1.0315 6706000 6705536.0 
