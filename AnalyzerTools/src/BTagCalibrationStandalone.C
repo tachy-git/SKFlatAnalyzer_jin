@@ -40,12 +40,18 @@ BTagEntry::BTagEntry(const std::string &csvLine)
   std::stringstream buff(csvLine);
   std::vector<std::string> vec;
   std::string token;
+  std::string word="";
   while (std::getline(buff, token, ","[0])) {
-    token = BTagEntry::trimStr(token);
-    if (token.empty()) {
+    word += BTagEntry::trimStr(token);
+    if (word.empty()) {
       continue;
     }
-    vec.push_back(token);
+    if(std::count(word.begin(),word.end(),'(')-std::count(word.begin(),word.end(),')')!=0){
+      word+=",";
+      continue;
+    }
+    vec.push_back(word);
+    word="";
   }
   if (vec.size() != 11) {
 std::cerr << "ERROR in BTagCalibration: "
