@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+TG	TGJets_TuneCP5_13TeV-amcatnlo-madspin-pythia8	2.997	996000	203876
