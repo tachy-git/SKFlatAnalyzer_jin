@@ -377,6 +377,7 @@ public :
    vector<float>   *weight_largeptscales;
    vector<float>   *weight_q0;
    vector<float>   *weight_sthw2;
+   vector<float>   *weight_kHtt;
    vector<float>   *gen_phi;
    vector<float>   *gen_eta;
    vector<float>   *gen_pt;
@@ -746,6 +747,7 @@ public :
    TBranch        *b_weight_largeptscales;   //!
    TBranch        *b_weight_q0;   //!
    TBranch        *b_weight_sthw2;   //!
+   TBranch        *b_weight_kHtt;   //!
    TBranch        *b_gen_phi;   //!
    TBranch        *b_gen_eta;   //!
    TBranch        *b_gen_pt;   //!
