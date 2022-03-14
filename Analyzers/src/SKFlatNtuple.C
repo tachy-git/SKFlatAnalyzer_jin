@@ -380,6 +380,7 @@ void SKFlatNtuple::Init()
   weight_largeptscales = 0;
   weight_q0 = 0;
   weight_sthw2 = 0;
+  weight_kHtt = 0;
   gen_phi = 0;
   gen_eta = 0;
   gen_pt = 0;
@@ -724,13 +725,14 @@ void SKFlatNtuple::Init()
   fChain->SetBranchAddress("LHE_E", &LHE_E, &b_LHE_E);
   fChain->SetBranchAddress("LHE_Status", &LHE_Status, &b_LHE_Status);
   fChain->SetBranchAddress("LHE_ID", &LHE_ID, &b_LHE_ID);
-  fChain->SetBranchAddress("weight_AlphaS", &weight_AlphaS, &b_weight_AlphaS);
-  fChain->SetBranchAddress("weight_PDF", &weight_PDF, &b_weight_PDF);
-  fChain->SetBranchAddress("weight_Scale", &weight_Scale, &b_weight_Scale);
+  if(fChain->GetBranch("weight_AlphaS")) fChain->SetBranchAddress("weight_AlphaS", &weight_AlphaS, &b_weight_AlphaS);
+  if(fChain->GetBranch("weight_PDF")) fChain->SetBranchAddress("weight_PDF", &weight_PDF, &b_weight_PDF);
+  if(fChain->GetBranch("weight_Scale")) fChain->SetBranchAddress("weight_Scale", &weight_Scale, &b_weight_Scale);
   if(fChain->GetBranch("weight_alpsfact")) fChain->SetBranchAddress("weight_alpsfact", &weight_alpsfact, &b_weight_alpsfact);
   if(fChain->GetBranch("weight_largeptscales")) fChain->SetBranchAddress("weight_largeptscales", &weight_largeptscales, &b_weight_largeptscales);
   if(fChain->GetBranch("weight_q0")) fChain->SetBranchAddress("weight_q0", &weight_q0, &b_weight_q0);
   if(fChain->GetBranch("weight_sthw2")) fChain->SetBranchAddress("weight_sthw2", &weight_sthw2, &b_weight_sthw2);
+  if(fChain->GetBranch("weight_kHtt")) fChain->SetBranchAddress("weight_kHtt", &weight_kHtt, &b_weight_kHtt);
   fChain->SetBranchAddress("gen_phi", &gen_phi, &b_gen_phi);
   fChain->SetBranchAddress("gen_eta", &gen_eta, &b_gen_eta);
   fChain->SetBranchAddress("gen_pt", &gen_pt, &b_gen_pt);
