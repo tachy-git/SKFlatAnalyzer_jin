@@ -495,6 +495,8 @@ void {2}(){{
         out.write('    "'+flag+'",\n')
       out.write('  };\n')
 
+    for it_dir in set([os.path.dirname(lines_files[it_file].strip('\n')) for it_file in FileRanges[it_job]]):
+      out.write('  system("ls {}");\n'.format(it_dir))
     for it_file in FileRanges[it_job]:
       thisfilename = lines_files[it_file].strip('\n')
       out.write('  if(!m.AddFile("'+thisfilename+'")) exit(EIO);\n')
