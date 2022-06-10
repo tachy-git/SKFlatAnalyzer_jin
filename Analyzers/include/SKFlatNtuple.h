@@ -114,18 +114,12 @@ public :
    vector<float>   *jet_area;
    vector<int>     *jet_partonFlavour;
    vector<int>     *jet_hadronFlavour;
-   vector<float>   *jet_CSVv2;
    vector<float>   *jet_DeepCSV;
-   vector<float>   *jet_CvsL;
-   vector<float>   *jet_CvsB;
-   vector<float>   *jet_DeepFlavour_b;
-   vector<float>   *jet_DeepFlavour_bb;
-   vector<float>   *jet_DeepFlavour_lepb;
-   vector<float>   *jet_DeepFlavour_c;
-   vector<float>   *jet_DeepFlavour_uds;
-   vector<float>   *jet_DeepFlavour_g;
-   vector<float>   *jet_DeepCvsL;
-   vector<float>   *jet_DeepCvsB;
+   vector<float>   *jet_DeepCSV_CvsL;
+   vector<float>   *jet_DeepCSV_CvsB;
+   vector<float>   *jet_DeepJet;
+   vector<float>   *jet_DeepJet_CvsL;
+   vector<float>   *jet_DeepJet_CvsB;
    vector<float>   *jet_chargedHadronEnergyFraction;
    vector<float>   *jet_neutralHadronEnergyFraction;
    vector<float>   *jet_neutralEmEnergyFraction;
@@ -154,18 +148,9 @@ public :
    vector<float>   *fatjet_area;
    vector<int>     *fatjet_partonFlavour;
    vector<int>     *fatjet_hadronFlavour;
-   vector<float>   *fatjet_CSVv2;
    vector<float>   *fatjet_DeepCSV;
-   vector<float>   *fatjet_DeepFlavour_b;
-   vector<float>   *fatjet_DeepFlavour_bb;
-   vector<float>   *fatjet_DeepFlavour_lepb;
-   vector<float>   *fatjet_DeepFlavour_c;
-   vector<float>   *fatjet_DeepFlavour_uds;
-   vector<float>   *fatjet_DeepFlavour_g;
-   vector<float>   *fatjet_CvsL;
-   vector<float>   *fatjet_CvsB;
-   vector<float>   *fatjet_DeepCvsL;
-   vector<float>   *fatjet_DeepCvsB;
+   vector<float>   *fatjet_DeepCSV_CvsL;
+   vector<float>   *fatjet_DeepCSV_CvsB;
    vector<bool>    *fatjet_tightJetID;
    vector<bool>    *fatjet_tightLepVetoJetID;
    vector<int>     *fatjet_partonPdgId;
@@ -484,18 +469,12 @@ public :
    TBranch        *b_jet_area;   //!
    TBranch        *b_jet_partonFlavour;   //!
    TBranch        *b_jet_hadronFlavour;   //!
-   TBranch        *b_jet_CSVv2;   //!
    TBranch        *b_jet_DeepCSV;   //!
-   TBranch        *b_jet_CvsL;   //!
-   TBranch        *b_jet_CvsB;   //!
-   TBranch        *b_jet_DeepFlavour_b;   //!
-   TBranch        *b_jet_DeepFlavour_bb;   //!
-   TBranch        *b_jet_DeepFlavour_lepb;   //!
-   TBranch        *b_jet_DeepFlavour_c;   //!
-   TBranch        *b_jet_DeepFlavour_uds;   //!
-   TBranch        *b_jet_DeepFlavour_g;   //!
-   TBranch        *b_jet_DeepCvsL;   //!
-   TBranch        *b_jet_DeepCvsB;   //!
+   TBranch        *b_jet_DeepCSV_CvsL;   //!
+   TBranch        *b_jet_DeepCSV_CvsB;   //!
+   TBranch        *b_jet_DeepJet;   //!
+   TBranch        *b_jet_DeepJet_CvsL;   //!
+   TBranch        *b_jet_DeepJet_CvsB;   //!
    TBranch        *b_jet_chargedHadronEnergyFraction;   //!
    TBranch        *b_jet_neutralHadronEnergyFraction;   //!
    TBranch        *b_jet_neutralEmEnergyFraction;   //!
@@ -524,18 +503,9 @@ public :
    TBranch        *b_fatjet_area;   //!
    TBranch        *b_fatjet_partonFlavour;   //!
    TBranch        *b_fatjet_hadronFlavour;   //!
-   TBranch        *b_fatjet_CSVv2;   //!
    TBranch        *b_fatjet_DeepCSV;   //!
-   TBranch        *b_fatjet_DeepFlavour_b;   //!
-   TBranch        *b_fatjet_DeepFlavour_bb;   //!
-   TBranch        *b_fatjet_DeepFlavour_lepb;   //!
-   TBranch        *b_fatjet_DeepFlavour_c;   //!
-   TBranch        *b_fatjet_DeepFlavour_uds;   //!
-   TBranch        *b_fatjet_DeepFlavour_g;   //!
-   TBranch        *b_fatjet_CvsL;   //!
-   TBranch        *b_fatjet_CvsB;   //!
-   TBranch        *b_fatjet_DeepCvsL;   //!
-   TBranch        *b_fatjet_DeepCvsB;   //!
+   TBranch        *b_fatjet_DeepCSV_CvsL;   //!
+   TBranch        *b_fatjet_DeepCSV_CvsB;   //!
    TBranch        *b_fatjet_tightJetID;   //!
    TBranch        *b_fatjet_tightLepVetoJetID;   //!
    TBranch        *b_fatjet_partonPdgId;   //!

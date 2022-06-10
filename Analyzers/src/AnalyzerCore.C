@@ -390,18 +390,12 @@ std::vector<Jet> AnalyzerCore::GetAllJets(){
     jet.SetArea(jet_area->at(i));
     jet.SetGenFlavours(jet_partonFlavour->at(i), jet_hadronFlavour->at(i));
     std::vector<double> tvs = {
-      jet_CSVv2->at(i),
       jet_DeepCSV->at(i),
-      jet_DeepCvsL->at(i),
-      jet_DeepCvsB->at(i),
-      jet_DeepFlavour_b->at(i),
-      jet_DeepFlavour_bb->at(i),
-      jet_DeepFlavour_lepb->at(i),
-      jet_DeepFlavour_c->at(i),
-      jet_DeepFlavour_uds->at(i),
-      jet_DeepFlavour_g->at(i),
-      jet_CvsL->at(i),
-      jet_CvsB->at(i),
+      jet_DeepCSV_CvsL->at(i),
+      jet_DeepCSV_CvsB->at(i),
+      jet_DeepJet->at(i),
+      jet_DeepJet_CvsL->at(i),
+      jet_DeepJet_CvsB->at(i),
     };
     jet.SetTaggerResults(tvs);
     jet.SetEnergyFractions(jet_chargedHadronEnergyFraction->at(i), jet_neutralHadronEnergyFraction->at(i), jet_neutralEmEnergyFraction->at(i), jet_chargedEmEnergyFraction->at(i), jet_muonEnergyFraction->at(i));
@@ -456,18 +450,9 @@ std::vector<FatJet> AnalyzerCore::GetAllFatJets(){
     jet.SetArea(fatjet_area->at(i));
     jet.SetGenFlavours(fatjet_partonFlavour->at(i), fatjet_hadronFlavour->at(i));
     std::vector<double> tvs = {
-      fatjet_CSVv2->at(i),
       fatjet_DeepCSV->at(i),
-      fatjet_DeepCvsL->at(i),
-      fatjet_DeepCvsB->at(i),
-      fatjet_DeepFlavour_b->at(i),
-      fatjet_DeepFlavour_bb->at(i),
-      fatjet_DeepFlavour_lepb->at(i),
-      fatjet_DeepFlavour_c->at(i),
-      fatjet_DeepFlavour_uds->at(i),
-      fatjet_DeepFlavour_g->at(i),
-      fatjet_CvsL->at(i),
-      fatjet_CvsB->at(i),
+      fatjet_DeepCSV_CvsL->at(i),
+      fatjet_DeepCSV_CvsB->at(i),
     };
     jet.SetTaggerResults(tvs);
     jet.SetEnergyFractions(fatjet_chargedHadronEnergyFraction->at(i), fatjet_neutralHadronEnergyFraction->at(i), fatjet_neutralEmEnergyFraction->at(i), fatjet_chargedEmEnergyFraction->at(i), fatjet_muonEnergyFraction->at(i));
