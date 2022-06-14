@@ -58,6 +58,17 @@ private:
   double  j_DeepCSV;
   double  j_DeepCSV_CvsL;
   double  j_DeepCSV_CvsB;
+  double  j_particleNet_TvsQCD;
+  double  j_particleNet_WvsQCD;
+  double  j_particleNet_ZvsQCD;
+  double  j_particleNet_HbbvsQCD;
+  double  j_particleNet_HccvsQCD;
+  double  j_particleNet_H4qvsQCD;
+  double  j_particleNet_QCD;
+  double  j_particleNetMD_Xbb;
+  double  j_particleNetMD_Xcc;
+  double  j_particleNetMD_Xqq;
+  double  j_particleNetMD_QCD;
   double  j_chargedHadronEnergyFraction;
   double  j_neutralHadronEnergyFraction;
   double  j_neutralEmEnergyFraction;

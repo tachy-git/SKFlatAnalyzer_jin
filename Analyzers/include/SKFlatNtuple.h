@@ -151,6 +151,17 @@ public :
    vector<float>   *fatjet_DeepCSV;
    vector<float>   *fatjet_DeepCSV_CvsL;
    vector<float>   *fatjet_DeepCSV_CvsB;
+   vector<float>   *fatjet_particleNet_TvsQCD;
+   vector<float>   *fatjet_particleNet_WvsQCD;
+   vector<float>   *fatjet_particleNet_ZvsQCD;
+   vector<float>   *fatjet_particleNet_HbbvsQCD;
+   vector<float>   *fatjet_particleNet_HccvsQCD;
+   vector<float>   *fatjet_particleNet_H4qvsQCD;
+   vector<float>   *fatjet_particleNet_QCD;
+   vector<float>   *fatjet_particleNetMD_Xbb;
+   vector<float>   *fatjet_particleNetMD_Xcc;
+   vector<float>   *fatjet_particleNetMD_Xqq;
+   vector<float>   *fatjet_particleNetMD_QCD;
    vector<bool>    *fatjet_tightJetID;
    vector<bool>    *fatjet_tightLepVetoJetID;
    vector<int>     *fatjet_partonPdgId;
@@ -506,6 +517,17 @@ public :
    TBranch        *b_fatjet_DeepCSV;   //!
    TBranch        *b_fatjet_DeepCSV_CvsL;   //!
    TBranch        *b_fatjet_DeepCSV_CvsB;   //!
+   TBranch        *b_fatjet_particleNet_TvsQCD;   //!
+   TBranch        *b_fatjet_particleNet_WvsQCD;   //!
+   TBranch        *b_fatjet_particleNet_ZvsQCD;   //!
+   TBranch        *b_fatjet_particleNet_HbbvsQCD;   //!
+   TBranch        *b_fatjet_particleNet_HccvsQCD;   //!
+   TBranch        *b_fatjet_particleNet_H4qvsQCD;   //!
+   TBranch        *b_fatjet_particleNet_QCD;   //!
+   TBranch        *b_fatjet_particleNetMD_Xbb;   //!
+   TBranch        *b_fatjet_particleNetMD_Xcc;   //!
+   TBranch        *b_fatjet_particleNetMD_Xqq;   //!
+   TBranch        *b_fatjet_particleNetMD_QCD;   //!
    TBranch        *b_fatjet_tightJetID;   //!
    TBranch        *b_fatjet_tightLepVetoJetID;   //!
    TBranch        *b_fatjet_partonPdgId;   //!

@@ -10,6 +10,9 @@ namespace JetTagging{
   enum Tagger{
     DeepCSV, DeepCSV_CvsL, DeepCSV_CvsB,
     DeepJet, DeepJet_CvsL, DeepJet_CvsB,
+    particleNet_TvsQCD, particleNet_WvsQCD, particleNet_ZvsQCD, 
+    particleNet_HbbvsQCD, particleNet_HccvsQCD, particleNet_H4qvsQCD, particleNet_QCD, 
+    particleNetMD_Xbb, particleNetMD_Xcc, particleNetMD_Xqq, particleNetMD_QCD,
   };
   inline string TaggerToString(Tagger t){
     if(t == DeepCSV) return "DeepCSV";
@@ -18,7 +21,18 @@ namespace JetTagging{
     if(t == DeepJet) return "DeepJet";
     if(t == DeepJet_CvsL) return "DeepJet_CvsL";
     if(t == DeepJet_CvsB) return "DeepJet_CvsB";
-
+    if(t == particleNet_TvsQCD) return "particleNet_TvsQCD";
+    if(t == particleNet_WvsQCD) return "particleNet_WvsQCD";
+    if(t == particleNet_ZvsQCD) return "particleNet_ZvsQCD";
+    if(t == particleNet_HbbvsQCD) return "particleNet_HbbvsQCD";
+    if(t == particleNet_HccvsQCD) return "particleNet_HccvsQCD";
+    if(t == particleNet_H4qvsQCD) return "particleNet_H4qvsQCD";
+    if(t == particleNet_QCD) return "particleNet_QCD";
+    if(t == particleNetMD_Xbb) return "particleNetMD_Xbb";
+    if(t == particleNetMD_Xcc) return "particleNetMD_Xcc";
+    if(t == particleNetMD_Xqq) return "particleNetMD_Xqq";
+    if(t == particleNetMD_QCD) return "particleNetMD_QCD";
+    
     cerr << "[JetTaggingParameters::TaggerToString] Wrong tagger enum : " << t << endl;
     exit(ENODATA);
 
@@ -31,6 +45,17 @@ namespace JetTagging{
     if(s == "DeepJet") return DeepJet;
     if(s == "DeepJet_CvsL") return DeepJet_CvsL;
     if(s == "DeepJet_CvsB") return DeepJet_CvsB;
+    if(s == "particleNet_TvsQCD") return particleNet_TvsQCD;
+    if(s == "particleNet_WvsQCD") return particleNet_WvsQCD;
+    if(s == "particleNet_ZvsQCD") return particleNet_ZvsQCD;
+    if(s == "particleNet_HbbvsQCD") return particleNet_HbbvsQCD;
+    if(s == "particleNet_HccvsQCD") return particleNet_HccvsQCD;
+    if(s == "particleNet_H4qvsQCD") return particleNet_H4qvsQCD;
+    if(s == "particleNet_QCD") return particleNet_QCD;
+    if(s == "particleNetMD_Xbb") return particleNetMD_Xbb;
+    if(s == "particleNetMD_Xcc") return particleNetMD_Xcc;
+    if(s == "particleNetMD_Xqq") return particleNetMD_Xqq;
+    if(s == "particleNetMD_QCD") return particleNetMD_QCD;
 
     cerr << "[JetTaggingParameters:: StringToTagger] Wrong tagger string : " << s << endl;
     exit(ENODATA);

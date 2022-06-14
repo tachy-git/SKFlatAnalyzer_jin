@@ -9,6 +9,17 @@ FatJet::FatJet() : Particle() {
   j_DeepCSV=-999.;
   j_DeepCSV_CvsL=-999.;
   j_DeepCSV_CvsB=-999.;
+  j_particleNet_TvsQCD=-999.;
+  j_particleNet_WvsQCD=-999.;
+  j_particleNet_ZvsQCD=-999.;
+  j_particleNet_HbbvsQCD=-999.;
+  j_particleNet_HccvsQCD=-999.;
+  j_particleNet_H4qvsQCD=-999.;
+  j_particleNet_QCD=-999.;
+  j_particleNetMD_Xbb=-999.;
+  j_particleNetMD_Xcc=-999.;
+  j_particleNetMD_Xqq=-999.;
+  j_particleNetMD_QCD=-999.;
   j_chargedHadronEnergyFraction=-999.;
   j_neutralHadronEnergyFraction=-999.;
   j_neutralEmEnergyFraction=-999.;
@@ -46,6 +57,17 @@ void FatJet::SetTaggerResults(std::vector<double> ds){
   j_DeepCSV           = ds.at(0);
   j_DeepCSV_CvsL      = ds.at(1);
   j_DeepCSV_CvsB      = ds.at(2);
+  j_particleNet_TvsQCD   = ds.at(3);
+  j_particleNet_WvsQCD   = ds.at(4);
+  j_particleNet_ZvsQCD   = ds.at(5);
+  j_particleNet_HbbvsQCD = ds.at(6);
+  j_particleNet_HccvsQCD = ds.at(7);
+  j_particleNet_H4qvsQCD = ds.at(8);
+  j_particleNet_QCD      = ds.at(9);
+  j_particleNetMD_Xbb    = ds.at(10);
+  j_particleNetMD_Xcc    = ds.at(11);
+  j_particleNetMD_Xqq    = ds.at(12);
+  j_particleNetMD_QCD    = ds.at(13);
 }
 void FatJet::SetEnergyFractions(double cH, double nH, double nEM, double cEM, double muE){
   j_chargedHadronEnergyFraction = cH;
@@ -103,6 +125,17 @@ double FatJet::GetTaggerResult(JetTagging::Tagger tg) const{
   if(tg==JetTagging::DeepCSV) return j_DeepCSV;
   else if(tg==JetTagging::DeepCSV_CvsL) return j_DeepCSV_CvsL;
   else if(tg==JetTagging::DeepCSV_CvsB) return j_DeepCSV_CvsB;
+  else if(tg==JetTagging::particleNet_TvsQCD) return j_particleNet_TvsQCD;
+  else if(tg==JetTagging::particleNet_WvsQCD) return j_particleNet_WvsQCD;
+  else if(tg==JetTagging::particleNet_ZvsQCD) return j_particleNet_ZvsQCD;
+  else if(tg==JetTagging::particleNet_HbbvsQCD) return j_particleNet_HbbvsQCD;
+  else if(tg==JetTagging::particleNet_HccvsQCD) return j_particleNet_HccvsQCD;
+  else if(tg==JetTagging::particleNet_H4qvsQCD) return j_particleNet_H4qvsQCD;
+  else if(tg==JetTagging::particleNet_QCD) return j_particleNet_QCD;
+  else if(tg==JetTagging::particleNetMD_Xbb) return j_particleNetMD_Xbb;
+  else if(tg==JetTagging::particleNetMD_Xcc) return j_particleNetMD_Xcc;
+  else if(tg==JetTagging::particleNetMD_Xqq) return j_particleNetMD_Xqq;
+  else if(tg==JetTagging::particleNetMD_QCD) return j_particleNetMD_QCD;
   else{
     cout << "[FatJet::GetTaggerResult] ERROR; Wrong tagger" << endl;
     return -999;

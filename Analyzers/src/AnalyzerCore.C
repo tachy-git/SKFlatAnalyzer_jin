@@ -453,6 +453,17 @@ std::vector<FatJet> AnalyzerCore::GetAllFatJets(){
       fatjet_DeepCSV->at(i),
       fatjet_DeepCSV_CvsL->at(i),
       fatjet_DeepCSV_CvsB->at(i),
+      fatjet_particleNet_TvsQCD->at(i),
+      fatjet_particleNet_WvsQCD->at(i),
+      fatjet_particleNet_ZvsQCD->at(i),
+      fatjet_particleNet_HbbvsQCD->at(i),
+      fatjet_particleNet_HccvsQCD->at(i),
+      fatjet_particleNet_H4qvsQCD->at(i),
+      fatjet_particleNet_QCD->at(i),
+      fatjet_particleNetMD_Xbb->at(i),
+      fatjet_particleNetMD_Xcc->at(i),
+      fatjet_particleNetMD_Xqq->at(i),
+      fatjet_particleNetMD_QCD->at(i),
     };
     jet.SetTaggerResults(tvs);
     jet.SetEnergyFractions(fatjet_chargedHadronEnergyFraction->at(i), fatjet_neutralHadronEnergyFraction->at(i), fatjet_neutralEmEnergyFraction->at(i), fatjet_chargedEmEnergyFraction->at(i), fatjet_muonEnergyFraction->at(i));
