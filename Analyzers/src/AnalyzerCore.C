@@ -195,6 +195,7 @@ std::vector<Electron> AnalyzerCore::GetAllElectrons(){
     el.SetRho(Rho);
     el.SetIsGsfCtfScPixChargeConsistent(electron_isGsfCtfScPixChargeConsistent->at(i));
     el.SetR9(electron_r9->at(i));
+    el.SetL1Et(electron_l1et->at(i));
 
     el.SetCutBasedIDVariables(
       electron_Full5x5_SigmaIEtaIEta->at(i),

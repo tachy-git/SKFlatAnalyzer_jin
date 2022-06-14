@@ -247,6 +247,7 @@ public :
    vector<int>     *electron_mHits;
    vector<int>     *electron_ecalDriven;
    vector<float>   *electron_r9;
+   vector<float>   *electron_l1et;
    vector<float>   *electron_scEnergy;
    vector<float>   *electron_scPreEnergy;
    vector<float>   *electron_scRawEnergy;
@@ -628,6 +629,7 @@ public :
    TBranch        *b_electron_mHits;   //!
    TBranch        *b_electron_ecalDriven;   //!
    TBranch        *b_electron_r9;   //!
+   TBranch        *b_electron_l1et;   //!
    TBranch        *b_electron_scEnergy;   //!
    TBranch        *b_electron_scPreEnergy;   //!
    TBranch        *b_electron_scRawEnergy;   //!

@@ -250,6 +250,7 @@ void SKFlatNtuple::Init()
   electron_mHits = 0;
   electron_ecalDriven = 0;
   electron_r9 = 0;
+  electron_l1et = 0;
   electron_scEnergy = 0;
   electron_scPreEnergy = 0;
   electron_scRawEnergy = 0;
@@ -600,6 +601,7 @@ void SKFlatNtuple::Init()
   fChain->SetBranchAddress("electron_mHits", &electron_mHits, &b_electron_mHits);
   fChain->SetBranchAddress("electron_ecalDriven", &electron_ecalDriven, &b_electron_ecalDriven);
   fChain->SetBranchAddress("electron_r9", &electron_r9, &b_electron_r9);
+  fChain->SetBranchAddress("electron_l1et", &electron_l1et, &b_electron_l1et);
   fChain->SetBranchAddress("electron_scEnergy", &electron_scEnergy, &b_electron_scEnergy);
   fChain->SetBranchAddress("electron_scPreEnergy", &electron_scPreEnergy, &b_electron_scPreEnergy);
   fChain->SetBranchAddress("electron_scRawEnergy", &electron_scRawEnergy, &b_electron_scRawEnergy);
