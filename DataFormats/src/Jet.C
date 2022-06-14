@@ -6,6 +6,8 @@ Jet::Jet() : Particle() {
   j_area=-999.;
   j_partonFlavour=-999;
   j_hadronFlavour=-999;
+  j_GenHFHadronMatcher_flavour=-999;
+  j_GenHFHadronMatcher_origin=-999;
   j_DeepCSV=-999.;
   j_DeepCSV_CvsL=-999.;
   j_DeepCSV_CvsB=-999.;
@@ -24,6 +26,11 @@ Jet::Jet() : Particle() {
   j_En_down=1.;;
   j_Res_up = 1.;
   j_Res_down = 1.;
+  j_bJetNN_corr=1.;
+  j_bJetNN_res=-999.;
+  j_cJetNN_corr=1.;
+  j_cJetNN_res=-999.;
+  
   j_tightJetID=false;
   j_tightLepVetoJetID=false;
 }
@@ -35,9 +42,13 @@ Jet::~Jet(){
 void Jet::SetArea(double area){
   j_area = area;
 }
-void Jet::SetGenFlavours(double pf, double hf){
+void Jet::SetGenFlavours(int pf, int hf){
   j_partonFlavour = pf;
   j_hadronFlavour = hf;
+}
+void Jet::SetGenHFHadronMatcher(int flavour, int origin){
+  j_GenHFHadronMatcher_flavour = flavour;
+  j_GenHFHadronMatcher_origin = origin; 
 }
 void Jet::SetTaggerResults(std::vector<double> ds){
   j_DeepCSV           = ds.at(0);
@@ -71,7 +82,14 @@ void Jet::SetResShift(double res_up, double res_down){
   j_Res_up = res_up;
   j_Res_down = res_down;
 }
-
+void Jet::SetBJetNNCorrection(double bJetNN_corr, double bJetNN_res){
+  j_bJetNN_corr = bJetNN_corr;
+  j_bJetNN_res = bJetNN_res;
+}
+void Jet::SetCJetNNCorrection(double cJetNN_corr, double cJetNN_res){
+  j_cJetNN_corr = cJetNN_corr;
+  j_cJetNN_res = cJetNN_res;
+}
 void Jet::SetTightJetID(double b){
   j_tightJetID = b;
 }

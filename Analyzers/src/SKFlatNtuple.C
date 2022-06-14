@@ -117,6 +117,8 @@ void SKFlatNtuple::Init()
   jet_area = 0;
   jet_partonFlavour = 0;
   jet_hadronFlavour = 0;
+  jet_GenHFHadronMatcher_flavour = 0;
+  jet_GenHFHadronMatcher_origin = 0;
   jet_DeepCSV = 0;
   jet_DeepCSV_CvsL = 0;
   jet_DeepCSV_CvsB = 0;
@@ -142,6 +144,10 @@ void SKFlatNtuple::Init()
   jet_smearedRes = 0;
   jet_smearedResUp = 0;
   jet_smearedResDown = 0;
+  jet_bJetNN_corr = 0;
+  jet_bJetNN_res = 0;
+  jet_cJetNN_corr = 0;
+  jet_cJetNN_res = 0;
   jet_JECL1FastJet = 0;
   jet_JECFull = 0;
   fatjet_pt = 0;
@@ -461,6 +467,8 @@ void SKFlatNtuple::Init()
   fChain->SetBranchAddress("jet_area", &jet_area, &b_jet_area);
   fChain->SetBranchAddress("jet_partonFlavour", &jet_partonFlavour, &b_jet_partonFlavour);
   fChain->SetBranchAddress("jet_hadronFlavour", &jet_hadronFlavour, &b_jet_hadronFlavour);
+  fChain->SetBranchAddress("jet_GenHFHadronMatcher_flavour", &jet_GenHFHadronMatcher_flavour, &b_jet_GenHFHadronMatcher_flavour);
+  fChain->SetBranchAddress("jet_GenHFHadronMatcher_origin", &jet_GenHFHadronMatcher_origin, &b_jet_GenHFHadronMatcher_origin);
   fChain->SetBranchAddress("jet_DeepCSV", &jet_DeepCSV, &b_jet_DeepCSV);
   fChain->SetBranchAddress("jet_DeepCSV_CvsL", &jet_DeepCSV_CvsL, &b_jet_DeepCSV_CvsL);
   fChain->SetBranchAddress("jet_DeepCSV_CvsB", &jet_DeepCSV_CvsB, &b_jet_DeepCSV_CvsB);
@@ -486,6 +494,10 @@ void SKFlatNtuple::Init()
   fChain->SetBranchAddress("jet_smearedRes", &jet_smearedRes, &b_jet_smearedRes);
   fChain->SetBranchAddress("jet_smearedResUp", &jet_smearedResUp, &b_jet_smearedResUp);
   fChain->SetBranchAddress("jet_smearedResDown", &jet_smearedResDown, &b_jet_smearedResDown);
+  fChain->SetBranchAddress("jet_bJetNN_corr", &jet_bJetNN_corr, &b_jet_bJetNN_corr);
+  fChain->SetBranchAddress("jet_bJetNN_res", &jet_bJetNN_res, &b_jet_bJetNN_res);
+  fChain->SetBranchAddress("jet_cJetNN_corr", &jet_cJetNN_corr, &b_jet_cJetNN_corr);
+  fChain->SetBranchAddress("jet_cJetNN_res", &jet_cJetNN_res, &b_jet_cJetNN_res);
   fChain->SetBranchAddress("jet_JECL1FastJet", &jet_JECL1FastJet, &b_jet_JECL1FastJet);
   fChain->SetBranchAddress("jet_JECFull", &jet_JECFull, &b_jet_JECFull);
   fChain->SetBranchAddress("fatjet_pt", &fatjet_pt, &b_fatjet_pt);

@@ -114,6 +114,8 @@ public :
    vector<float>   *jet_area;
    vector<int>     *jet_partonFlavour;
    vector<int>     *jet_hadronFlavour;
+   vector<int>     *jet_GenHFHadronMatcher_flavour;
+   vector<int>     *jet_GenHFHadronMatcher_origin;
    vector<float>   *jet_DeepCSV;
    vector<float>   *jet_DeepCSV_CvsL;
    vector<float>   *jet_DeepCSV_CvsB;
@@ -139,6 +141,10 @@ public :
    vector<float>   *jet_smearedRes;
    vector<float>   *jet_smearedResUp;
    vector<float>   *jet_smearedResDown;
+   vector<float>   *jet_bJetNN_corr;
+   vector<float>   *jet_bJetNN_res;
+   vector<float>   *jet_cJetNN_corr;
+   vector<float>   *jet_cJetNN_res;
    vector<float>   *jet_JECL1FastJet;
    vector<float>   *jet_JECFull;
    vector<float>   *fatjet_pt;
@@ -480,6 +486,8 @@ public :
    TBranch        *b_jet_area;   //!
    TBranch        *b_jet_partonFlavour;   //!
    TBranch        *b_jet_hadronFlavour;   //!
+   TBranch        *b_jet_GenHFHadronMatcher_flavour;   //!
+   TBranch        *b_jet_GenHFHadronMatcher_origin;   //!
    TBranch        *b_jet_DeepCSV;   //!
    TBranch        *b_jet_DeepCSV_CvsL;   //!
    TBranch        *b_jet_DeepCSV_CvsB;   //!
@@ -505,6 +513,10 @@ public :
    TBranch        *b_jet_smearedRes;   //!
    TBranch        *b_jet_smearedResUp;   //!
    TBranch        *b_jet_smearedResDown;   //!
+   TBranch        *b_jet_bJetNN_corr;   //!
+   TBranch        *b_jet_bJetNN_res;   //!
+   TBranch        *b_jet_cJetNN_corr;   //!
+   TBranch        *b_jet_cJetNN_res;   //!
    TBranch        *b_jet_JECL1FastJet;   //!
    TBranch        *b_jet_JECFull;   //!
    TBranch        *b_fatjet_pt;   //!
