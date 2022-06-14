@@ -425,15 +425,15 @@ void SKFlatNtuple::Init()
   photon_passLooseID = 0;
   photon_passMediumID = 0;
   photon_passTightID = 0;
-  pfMET_pt_shifts = 0;
-  pfMET_phi_shifts = 0;
-  pfMET_SumEt_shifts = 0;
   pfMET_Type1_pt_shifts = 0;
   pfMET_Type1_phi_shifts = 0;
   pfMET_Type1_SumEt_shifts = 0;
   pfMET_Type1_PhiCor_pt_shifts = 0;
   pfMET_Type1_PhiCor_phi_shifts = 0;
   pfMET_Type1_PhiCor_SumEt_shifts = 0;
+  PuppiMET_Type1_pt_shifts = 0;
+  PuppiMET_Type1_phi_shifts = 0;
+  PuppiMET_Type1_SumEt_shifts = 0;
 
   fChain->SetBranchAddress("IsData", &IsData, &b_IsData);
   fChain->SetBranchAddress("nTotal", &nTotal, &b_nTotal);
@@ -798,15 +798,24 @@ void SKFlatNtuple::Init()
   fChain->SetBranchAddress("pfMET_Type1_PhiCor_pt", &pfMET_Type1_PhiCor_pt, &b_pfMET_Type1_PhiCor_pt);
   fChain->SetBranchAddress("pfMET_Type1_PhiCor_phi", &pfMET_Type1_PhiCor_phi, &b_pfMET_Type1_PhiCor_phi);
   fChain->SetBranchAddress("pfMET_Type1_PhiCor_SumEt", &pfMET_Type1_PhiCor_SumEt, &b_pfMET_Type1_PhiCor_SumEt);
-  fChain->SetBranchAddress("pfMET_pt_shifts", &pfMET_pt_shifts, &b_pfMET_pt_shifts);
-  fChain->SetBranchAddress("pfMET_phi_shifts", &pfMET_phi_shifts, &b_pfMET_phi_shifts);
-  fChain->SetBranchAddress("pfMET_SumEt_shifts", &pfMET_SumEt_shifts, &b_pfMET_SumEt_shifts);
   fChain->SetBranchAddress("pfMET_Type1_pt_shifts", &pfMET_Type1_pt_shifts, &b_pfMET_Type1_pt_shifts);
   fChain->SetBranchAddress("pfMET_Type1_phi_shifts", &pfMET_Type1_phi_shifts, &b_pfMET_Type1_phi_shifts);
   fChain->SetBranchAddress("pfMET_Type1_SumEt_shifts", &pfMET_Type1_SumEt_shifts, &b_pfMET_Type1_SumEt_shifts);
   fChain->SetBranchAddress("pfMET_Type1_PhiCor_pt_shifts", &pfMET_Type1_PhiCor_pt_shifts, &b_pfMET_Type1_PhiCor_pt_shifts);
   fChain->SetBranchAddress("pfMET_Type1_PhiCor_phi_shifts", &pfMET_Type1_PhiCor_phi_shifts, &b_pfMET_Type1_PhiCor_phi_shifts);
   fChain->SetBranchAddress("pfMET_Type1_PhiCor_SumEt_shifts", &pfMET_Type1_PhiCor_SumEt_shifts, &b_pfMET_Type1_PhiCor_SumEt_shifts);
+  fChain->SetBranchAddress("PuppiMET_pt", &PuppiMET_pt, &b_PuppiMET_pt);
+  fChain->SetBranchAddress("PuppiMET_phi", &PuppiMET_phi, &b_PuppiMET_phi);
+  fChain->SetBranchAddress("PuppiMET_SumEt", &PuppiMET_SumEt, &b_PuppiMET_SumEt);
+  fChain->SetBranchAddress("PuppiMET_Type1_pt", &PuppiMET_Type1_pt, &b_PuppiMET_Type1_pt);
+  fChain->SetBranchAddress("PuppiMET_Type1_phi", &PuppiMET_Type1_phi, &b_PuppiMET_Type1_phi);
+  fChain->SetBranchAddress("PuppiMET_Type1_SumEt", &PuppiMET_Type1_SumEt, &b_PuppiMET_Type1_SumEt);
+  fChain->SetBranchAddress("PuppiMET_Type1_PhiCor_pt", &PuppiMET_Type1_PhiCor_pt, &b_PuppiMET_Type1_PhiCor_pt);
+  fChain->SetBranchAddress("PuppiMET_Type1_PhiCor_phi", &PuppiMET_Type1_PhiCor_phi, &b_PuppiMET_Type1_PhiCor_phi);
+  fChain->SetBranchAddress("PuppiMET_Type1_PhiCor_SumEt", &PuppiMET_Type1_PhiCor_SumEt, &b_PuppiMET_Type1_PhiCor_SumEt);
+  fChain->SetBranchAddress("PuppiMET_Type1_pt_shifts", &PuppiMET_Type1_pt_shifts, &b_PuppiMET_Type1_pt_shifts);
+  fChain->SetBranchAddress("PuppiMET_Type1_phi_shifts", &PuppiMET_Type1_phi_shifts, &b_PuppiMET_Type1_phi_shifts);
+  fChain->SetBranchAddress("PuppiMET_Type1_SumEt_shifts", &PuppiMET_Type1_SumEt_shifts, &b_PuppiMET_Type1_SumEt_shifts);
 
 }
 

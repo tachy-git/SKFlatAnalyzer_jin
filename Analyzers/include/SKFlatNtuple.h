@@ -440,15 +440,24 @@ public :
    Float_t         pfMET_Type1_PhiCor_pt;
    Float_t         pfMET_Type1_PhiCor_phi;
    Float_t         pfMET_Type1_PhiCor_SumEt;
-   vector<float>   *pfMET_pt_shifts;
-   vector<float>   *pfMET_phi_shifts;
-   vector<float>   *pfMET_SumEt_shifts;
    vector<float>   *pfMET_Type1_pt_shifts;
    vector<float>   *pfMET_Type1_phi_shifts;
    vector<float>   *pfMET_Type1_SumEt_shifts;
    vector<float>   *pfMET_Type1_PhiCor_pt_shifts;
    vector<float>   *pfMET_Type1_PhiCor_phi_shifts;
    vector<float>   *pfMET_Type1_PhiCor_SumEt_shifts;
+   Float_t         PuppiMET_pt;
+   Float_t         PuppiMET_phi;
+   Float_t         PuppiMET_SumEt;
+   Float_t         PuppiMET_Type1_pt;
+   Float_t         PuppiMET_Type1_phi;
+   Float_t         PuppiMET_Type1_SumEt;
+   Float_t         PuppiMET_Type1_PhiCor_pt;
+   Float_t         PuppiMET_Type1_PhiCor_phi;
+   Float_t         PuppiMET_Type1_PhiCor_SumEt;
+   vector<float>   *PuppiMET_Type1_pt_shifts;
+   vector<float>   *PuppiMET_Type1_phi_shifts;
+   vector<float>   *PuppiMET_Type1_SumEt_shifts;
 
    // List of branches
    TBranch        *b_IsData;   //!
@@ -812,15 +821,24 @@ public :
    TBranch        *b_pfMET_Type1_PhiCor_pt;   //!
    TBranch        *b_pfMET_Type1_PhiCor_phi;   //!
    TBranch        *b_pfMET_Type1_PhiCor_SumEt;   //!
-   TBranch        *b_pfMET_pt_shifts;   //!
-   TBranch        *b_pfMET_phi_shifts;   //!
-   TBranch        *b_pfMET_SumEt_shifts;   //!
    TBranch        *b_pfMET_Type1_pt_shifts;   //!
    TBranch        *b_pfMET_Type1_phi_shifts;   //!
    TBranch        *b_pfMET_Type1_SumEt_shifts;   //!
    TBranch        *b_pfMET_Type1_PhiCor_pt_shifts;   //!
    TBranch        *b_pfMET_Type1_PhiCor_phi_shifts;   //!
    TBranch        *b_pfMET_Type1_PhiCor_SumEt_shifts;   //!
+   TBranch        *b_PuppiMET_pt;   //!
+   TBranch        *b_PuppiMET_phi;   //!
+   TBranch        *b_PuppiMET_SumEt;   //!
+   TBranch        *b_PuppiMET_Type1_pt;   //!
+   TBranch        *b_PuppiMET_Type1_phi;   //!
+   TBranch        *b_PuppiMET_Type1_SumEt;   //!
+   TBranch        *b_PuppiMET_Type1_PhiCor_pt;   //!
+   TBranch        *b_PuppiMET_Type1_PhiCor_phi;   //!
+   TBranch        *b_PuppiMET_Type1_PhiCor_SumEt;   //!
+   TBranch        *b_PuppiMET_Type1_pt_shifts;   //!
+   TBranch        *b_PuppiMET_Type1_phi_shifts;   //!
+   TBranch        *b_PuppiMET_Type1_SumEt_shifts;   //!
 
 };
 
