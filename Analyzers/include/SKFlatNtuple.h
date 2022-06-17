@@ -284,6 +284,8 @@ public :
    vector<unsigned int> *muon_TypeBit;
    vector<unsigned int> *muon_IDBit;
    vector<bool>    *muon_ishighpt;
+   vector<bool>    *muon_ismedium_hip;
+   vector<bool>    *muon_ismedium_nohip;
    vector<float>   *muon_dB;
    vector<float>   *muon_phi;
    vector<float>   *muon_eta;
@@ -666,6 +668,8 @@ public :
    TBranch        *b_muon_TypeBit;   //!
    TBranch        *b_muon_IDBit;   //!
    TBranch        *b_muon_ishighpt;   //!
+   TBranch        *b_muon_ismedium_hip;   //!
+   TBranch        *b_muon_ismedium_nohip;   //!
    TBranch        *b_muon_dB;   //!
    TBranch        *b_muon_phi;   //!
    TBranch        *b_muon_eta;   //!

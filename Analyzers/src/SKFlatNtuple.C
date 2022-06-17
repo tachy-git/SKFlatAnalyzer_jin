@@ -287,6 +287,8 @@ void SKFlatNtuple::Init()
   muon_TypeBit = 0;
   muon_IDBit = 0;
   muon_ishighpt = 0;
+  muon_ismedium_hip =0;
+  muon_ismedium_nohip =0;
   muon_dB = 0;
   muon_phi = 0;
   muon_eta = 0;
@@ -638,6 +640,8 @@ void SKFlatNtuple::Init()
   fChain->SetBranchAddress("muon_TypeBit", &muon_TypeBit, &b_muon_TypeBit);
   fChain->SetBranchAddress("muon_IDBit", &muon_IDBit, &b_muon_IDBit);
   fChain->SetBranchAddress("muon_ishighpt", &muon_ishighpt, &b_muon_ishighpt);
+  fChain->SetBranchAddress("muon_ismedium_hip", &muon_ismedium_hip, &b_muon_ismedium_hip);
+  fChain->SetBranchAddress("muon_ismedium_nohip", &muon_ismedium_nohip, &b_muon_ismedium_nohip);
   fChain->SetBranchAddress("muon_dB", &muon_dB, &b_muon_dB);
   fChain->SetBranchAddress("muon_phi", &muon_phi, &b_muon_phi);
   fChain->SetBranchAddress("muon_eta", &muon_eta, &b_muon_eta);
