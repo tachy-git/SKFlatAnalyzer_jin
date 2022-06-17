@@ -25,7 +25,7 @@ void SKFlatNtuple::Loop(){
   cout << "[SKFlatNtuple::Loop] Era = " << GetEra() << endl;
   cout << "[SKFlatNtuple::Loop] xsec = " << xsec << endl;
   cout << "[SKFlatNtuple::Loop] sumW = " << sumW << endl;
-  cout << "[SKFlatNtuple::Loop] weight_norm_1invpb = " << weight_norm_1invpb << endl;
+  cout << "[SKFlatNtuple::Loop] sumSign = " << sumSign << endl;
   cout << "[SKFlatNtuple::Loop] Userflags = {" << endl;
   for(unsigned int i=0; i<Userflags.size(); i++){
     cout << "[SKFlatNtuple::Loop]   \"" << Userflags.at(i) << "\"," << endl;
@@ -74,7 +74,7 @@ SKFlatNtuple::SKFlatNtuple(){
   SetEra("2017");
   xsec = 1.;
   sumW = 1.;
-  weight_norm_1invpb = 1.;
+  sumSign = 1.;
   Userflags.clear();
 }
 
@@ -103,10 +103,6 @@ void SKFlatNtuple::Init()
 {
 
   //std::cout << "[SKFlatNtuple::Init] called" << std::endl; 
-
-  if(!IsDATA){
-    weight_norm_1invpb = xsec/sumW;
-  }
 
   // Set object pointer
   HLT_TriggerName = 0;

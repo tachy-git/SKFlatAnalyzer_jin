@@ -40,7 +40,7 @@ public :
    bool IsFastSim;
    int DataYear;
    TString DataEra;
-   double xsec, sumW, weight_norm_1invpb;
+   double xsec, sumW, sumSign;
    vector<TString> Userflags;
 
    virtual void Init();

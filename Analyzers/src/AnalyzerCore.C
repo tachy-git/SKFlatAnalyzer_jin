@@ -80,7 +80,6 @@ void AnalyzerCore::SetOutfilePath(TString outname){
 Event AnalyzerCore::GetEvent(){
 
   Event ev;
-  if(!IsDATA) ev.SetMCweight(gen_weight);
   ev.SetTrigger(*HLT_TriggerName);
   ev.SetMET(pfMET_Type1_pt,pfMET_Type1_phi);
   ev.SetnPV(nPV);
@@ -934,6 +933,29 @@ void AnalyzerCore::initializeAnalyzerTools(){
   cfEst->SetEra(GetEra());
   cfEst->ReadHistograms();
 
+}
+
+double AnalyzerCore::MCweight(bool usesign, bool norm_1invpb) const {
+  if(IsDATA) return 1.;
+  double weight=gen_weight;
+  //MiNNLO sample has some events with unphysically large weight
+  if(MCSample.Contains("DYJets")&&MCSample.Contains("MiNNLO")){
+    double maxweight=2358.0700*5.;
+    if(abs(weight)>maxweight){
+      weight=weight>0. ? maxweight : -1.0*maxweight;
+    }
+  }
+  
+  if(usesign){
+    if(weight>0) weight=1.0;
+    else if(weight<0) weight=-1.0;
+    else weight=0.0;
+  }
+  if(norm_1invpb){
+    if(usesign) weight*=xsec/sumSign;
+    else weight*=xsec/sumW;
+  }
+  return weight;
 }
 
 double AnalyzerCore::GetPrefireWeight(int sys){

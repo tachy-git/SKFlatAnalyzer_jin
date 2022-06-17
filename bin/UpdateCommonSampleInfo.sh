@@ -6,7 +6,7 @@ do
     if [ "${array[7]}" = "DATA" ];then
 	NAME=$(echo ${array[8]/.root/}|sed 's/GetEffLumi_//'|grep -o "^[^_]*")
 	PERIOD=$(echo ${array[8]/.root/}|sed "s/GetEffLumi_${NAME}_//")
-	NUMS=($(echo 'cout<<Form("%d\t%f\t",(int)sumW->GetEntries(),sumW->GetSum())<<endl;'|root -b -l ${line}|tail -n1))
+	NUMS=($(echo 'cout<<Form("%d\t",(int)sumW->GetEntries())<<endl;'|root -b -l ${line}|tail -n1))
 	SUMMARYFILE=$SKFlat_WD/data/$SKFlatV/$YEAR/Sample/SampleSummary_DATA.txt
 	if cat $SUMMARYFILE|grep -q "$NAME.*$PERIOD"; then
 	    OLDLINE=$(cat $SUMMARYFILE|grep "$NAME.*$PERIOD")
@@ -35,20 +35,20 @@ do
 	    read -p "select cross section: " CROSSSECTION
 	    [ -z "$CROSSSECTION" ] && CROSSSECTION=FIXMECROSSSECTION
 	fi
-	NUMS=($(echo 'cout<<Form("%d\t%.1f\t",(int)sumW->GetEntries(),sumW->GetSum())<<endl;'|root -b -l ${line}|tail -n1))
+	NUMS=($(echo 'cout<<Form("%d\t%.1f\t%.12e",(int)sumW->GetEntries(),sumSign->GetSum(),sumW->GetSum())<<endl;'|root -b -l ${line}|tail -n1))
 
 	## for CommonSampleInfo file
 	OUT=$SKFlat_WD/data/$SKFlatV/$YEAR/Sample/CommonSampleInfo/${NAME}.txt
-	NEWLINE="$NAME\t$DASNAME\t$CROSSSECTION\t${NUMS[0]}\t${NUMS[1]}"
+	NEWLINE="$NAME\t$DASNAME\t$CROSSSECTION\t${NUMS[0]}\t${NUMS[1]}\t${NUMS[2]}"
 	if [ -f "$OUT" ];then
-	    DIFF=$(diff "$OUT" <(echo -e "# alias PD xsec nmc sumw\n$NEWLINE"))
+	    DIFF=$(diff "$OUT" <(echo -e "# alias PD xsec nmc sumsign sumw\n$NEWLINE"))
 	    if [ -n "$DIFF" ];then
 		echo "$DIFF"
 		echo " > Update $OUT with $line"
 		echo -e "$NEWLINE"
 		read -p "(y/n): " YES
 		if [ "$YES" = "y" ];then
-		    echo -e "# alias PD xsec nmc sumw\n$NEWLINE" > $OUT
+		    echo -e "# alias PD xsec nmc sumsign sumw\n$NEWLINE" > $OUT
 		fi
 	    fi
 	else
@@ -56,7 +56,7 @@ do
 	    echo -e "$NEWLINE"
 	    read -p "(y/n): " YES
 	    if [ "$YES" = "y" ];then
-		echo -e "# alias PD xsec nmc sumw\n$NEWLINE" > $OUT
+		echo -e "# alias PD xsec nmc sumsign sumw\n$NEWLINE" > $OUT
 	    fi
 	fi
 

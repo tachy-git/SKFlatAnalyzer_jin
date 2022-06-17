@@ -47,7 +47,7 @@ while read line <&3; do
 	    ALIAS=$(cat $SKFlat_WD/data/$SKFlatV/*/Sample/SampleSummary_MC.txt|grep $SAMPLE|awk '{print $1}'|head -n1)
 	fi  
 	if [ "$ALIAS" = "" ]; then
-	    ALIAS=$(cat $SKFlat_WD/data/$SKFlatV/*/*/SampleSummary_MC.txt|grep $SAMPLE|awk '{print $1}'|head -n1)
+	    ALIAS=$(cat $SKFlat_WD/data/*/*/Sample/SampleSummary_MC.txt|grep $SAMPLE|awk '{print $1}'|head -n1)
 	fi  
 	if [ "$ALIAS" = "" ]; then
 	    read -p "cannot find alias for $SAMPLE. exit or insert alias: " ALIAS
