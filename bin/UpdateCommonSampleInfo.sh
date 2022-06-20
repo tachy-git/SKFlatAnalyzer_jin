@@ -10,7 +10,7 @@ do
 	SUMMARYFILE=$SKFlat_WD/data/$SKFlatV/$YEAR/Sample/SampleSummary_DATA.txt
 	if cat $SUMMARYFILE|grep -q "$NAME.*$PERIOD"; then
 	    OLDLINE=$(cat $SUMMARYFILE|grep "$NAME.*$PERIOD")
-	    if [ "$(echo $OLDLINE|awk '{print $3}')" -ne "${NUMS[0]}" ];then
+	    if [ "$(echo $OLDLINE|awk '{print $3}')" != "${NUMS[0]}" ];then
 		echo -e "$SUMMARYFILE: $OLDLINE\t-->\t$NAME\t$PERIOD\t${NUMS[0]}"
 		read -p "(y/n): " YES
 		[ "$YES" = "y" ] && sed -i "s/.*$NAME.*$PERIOD.*/$NAME\t$PERIOD\t${NUMS[0]}/" $SUMMARYFILE
@@ -24,17 +24,36 @@ do
 	## collect info
 	NAME=$(echo ${array[7]/.root/}|sed 's/GetEffLumi_//')
 	DASNAME=$(head -n1 $SKFlat_WD/data/$SKFlatV/$YEAR/Sample/ForSNU/${NAME}.txt|sed 's@/@ @g'|awk '{print $7}')
-	CROSSSECTIONS=($(find $SKFlat_WD -name SampleSummary*.txt|xargs -i cat {}|grep "$NAME[^a-zA-Z0-9_]"|awk '{print $3}'|grep -v FIXMECROSSSECTION|uniq))
-	CROSSSECTIONS=($(echo "${CROSSSECTIONS[@]}"|tr ' ' '\n'|sort -nu))
-	echo YEAR=$YEAR NAME=$NAME DASNAME=$DASNAME CROSSSECTIONS=${CROSSSECTIONS[@]}
-	if [ ${#CROSSSECTIONS[@]} -eq 1 ];
-	then 
+	CROSSSECTIONS=($(cat $SKFlat_WD/data/$SKFlatV/$YEAR/Sample/SampleSummary_MC.txt|grep "^$NAME[^a-zA-Z0-9_]"|awk '{print $3}'|grep -v FIXMECROSSSECTION|uniq))
+	if [ ${#CROSSSECTIONS[@]} -eq 1 ]; then 
 	    CROSSSECTION=${CROSSSECTIONS[0]}
+	elif [ ${#CROSSSECTIONS[@]} -eq 0 ]; then
+	    CROSSSECTION=""
 	else
 	    echo "candidate cross sections= ${CROSSSECTIONS[@]}"
 	    read -p "select cross section: " CROSSSECTION
 	    [ -z "$CROSSSECTION" ] && CROSSSECTION=FIXMECROSSSECTION
 	fi
+	if [ "$CROSSSECTION" = "" ]; then
+	    CROSSSECTIONS=($(cat $SKFlat_WD/data/$SKFlatV/*/Sample/SampleSummary_MC.txt|grep "^$NAME[^a-zA-Z0-9_]"|awk '{print $3}'|grep -v FIXMECROSSSECTION|uniq))
+	    if [ ${#CROSSSECTIONS[@]} -eq 1 ];
+	    then 
+		CROSSSECTION=${CROSSSECTIONS[0]}
+	    fi
+	fi
+	if [ "$CROSSSECTION" = "" ]; then
+	    CROSSSECTIONS=($(cat $SKFlat_WD/data/*/*/Sample/SampleSummary_MC.txt|grep "^$NAME[^a-zA-Z0-9_]"|awk '{print $3}'|grep -v FIXMECROSSSECTION|uniq))
+	    CROSSSECTIONS=($(echo "${CROSSSECTIONS[@]}"|tr ' ' '\n'|sort -nu))
+	    if [ ${#CROSSSECTIONS[@]} -eq 1 ];
+	    then 
+		CROSSSECTION=${CROSSSECTIONS[0]}
+	    else
+		echo "candidate cross sections= ${CROSSSECTIONS[@]}"
+		read -p "select cross section: " CROSSSECTION
+		[ -z "$CROSSSECTION" ] && CROSSSECTION=FIXMECROSSSECTION
+	    fi
+	fi
+
 	NUMS=($(echo 'cout<<Form("%d\t%.1f\t%.12e",(int)sumW->GetEntries(),sumSign->GetSum(),sumW->GetSum())<<endl;'|root -b -l ${line}|tail -n1))
 
 	## for CommonSampleInfo file
@@ -75,7 +94,7 @@ do
 	    fi
 	fi
     fi
-done 3< <(find $SKFlatOutputDir$SKFlatV/GetEffLumi -type f|sort)
+done 3< <(find $SKFlatOutputDir$SKFlatV/GetEffLumi -type f|sort -V)
 
 
 
