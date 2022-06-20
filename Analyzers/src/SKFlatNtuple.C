@@ -434,6 +434,16 @@ void SKFlatNtuple::Init()
   PuppiMET_Type1_pt_shifts = 0;
   PuppiMET_Type1_phi_shifts = 0;
   PuppiMET_Type1_SumEt_shifts = 0;
+  tau_phi = 0;
+  tau_eta = 0;
+  tau_pt = 0;
+  tau_mass = 0;
+  tau_dz = 0;
+  tau_dxy = 0;
+  tau_decaymode = 0;
+  tau_charge = 0;
+  tau_IDBit = 0;
+  tau_idDecayModeNewDMs = 0;
 
   fChain->SetBranchAddress("IsData", &IsData, &b_IsData);
   fChain->SetBranchAddress("nTotal", &nTotal, &b_nTotal);
@@ -821,6 +831,16 @@ void SKFlatNtuple::Init()
   fChain->SetBranchAddress("PuppiMET_Type1_pt_shifts", &PuppiMET_Type1_pt_shifts, &b_PuppiMET_Type1_pt_shifts);
   fChain->SetBranchAddress("PuppiMET_Type1_phi_shifts", &PuppiMET_Type1_phi_shifts, &b_PuppiMET_Type1_phi_shifts);
   fChain->SetBranchAddress("PuppiMET_Type1_SumEt_shifts", &PuppiMET_Type1_SumEt_shifts, &b_PuppiMET_Type1_SumEt_shifts);
+  fChain->SetBranchAddress("tau_phi", &tau_phi, &b_tau_phi);
+  fChain->SetBranchAddress("tau_eta", &tau_eta, &b_tau_eta);
+  fChain->SetBranchAddress("tau_pt", &tau_pt, &b_tau_pt);
+  fChain->SetBranchAddress("tau_mass", &tau_mass, &b_tau_mass);
+  fChain->SetBranchAddress("tau_dz", &tau_dz, &b_tau_dz);
+  fChain->SetBranchAddress("tau_dxy", &tau_dxy, &b_tau_dxy);
+  fChain->SetBranchAddress("tau_decaymode", &tau_decaymode, &b_tau_decaymode);
+  fChain->SetBranchAddress("tau_charge", &tau_charge, &b_tau_charge);
+  fChain->SetBranchAddress("tau_IDBit", &tau_IDBit, &b_tau_IDBit);
+  fChain->SetBranchAddress("tau_idDecayModeNewDMs", &tau_idDecayModeNewDMs, &b_tau_idDecayModeNewDMs);
 
 }
 

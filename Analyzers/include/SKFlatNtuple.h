@@ -463,6 +463,16 @@ public :
    vector<float>   *PuppiMET_Type1_pt_shifts;
    vector<float>   *PuppiMET_Type1_phi_shifts;
    vector<float>   *PuppiMET_Type1_SumEt_shifts;
+   vector<float>   *tau_phi;
+   vector<float>   *tau_eta;
+   vector<float>   *tau_pt;
+   vector<float>   *tau_mass;
+   vector<float>   *tau_dz;
+   vector<float>   *tau_dxy;
+   vector<int>     *tau_decaymode;
+   vector<int>     *tau_charge;
+   vector<unsigned int> *tau_IDBit;
+   vector<bool>    *tau_idDecayModeNewDMs;
 
    // List of branches
    TBranch        *b_IsData;   //!
@@ -849,6 +859,16 @@ public :
    TBranch        *b_PuppiMET_Type1_pt_shifts;   //!
    TBranch        *b_PuppiMET_Type1_phi_shifts;   //!
    TBranch        *b_PuppiMET_Type1_SumEt_shifts;   //!
+   TBranch        *b_tau_phi;   //!
+   TBranch        *b_tau_eta;   //!
+   TBranch        *b_tau_pt;   //!
+   TBranch        *b_tau_mass;   //!
+   TBranch        *b_tau_dz;   //!
+   TBranch        *b_tau_dxy;   //!
+   TBranch        *b_tau_decaymode;   //!
+   TBranch        *b_tau_charge;   //!
+   TBranch        *b_tau_IDBit;   //!
+   TBranch        *b_tau_idDecayModeNewDMs;   //!
 
 };
 
