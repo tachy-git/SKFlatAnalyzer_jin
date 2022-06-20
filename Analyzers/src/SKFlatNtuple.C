@@ -440,6 +440,7 @@ void SKFlatNtuple::Init()
   fChain->SetBranchAddress("event", &event, &b_evtNum);
   fChain->SetBranchAddress("lumi", &lumi, &b_lumiBlock);
   fChain->SetBranchAddress("Rho", &Rho, &b_Rho);
+  fChain->SetBranchAddress("RhoNC", &RhoNC, &b_RhoNC);
   fChain->SetBranchAddress("nPV", &nPV, &b_nPV);
   fChain->SetBranchAddress("Flag_goodVertices", &Flag_goodVertices, &b_Flag_goodVertices);
   fChain->SetBranchAddress("Flag_globalSuperTightHalo2016Filter", &Flag_globalSuperTightHalo2016Filter, &b_Flag_globalSuperTightHalo2016Filter);

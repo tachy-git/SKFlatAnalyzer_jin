@@ -85,6 +85,7 @@ public :
    ULong64_t       event;
    Int_t           lumi;
    Float_t         Rho;
+   Float_t         RhoNC;
    Int_t           nPV;
    Float_t         L1PrefireReweight_Central;
    Float_t         L1PrefireReweight_Up;
@@ -469,6 +470,7 @@ public :
    TBranch        *b_evtNum;   //!
    TBranch        *b_lumiBlock;   //!
    TBranch        *b_Rho;   //!
+   TBranch        *b_RhoNC;   //!
    TBranch        *b_nPV;   //!
    TBranch        *b_L1PrefireReweight_Central;   //!
    TBranch        *b_L1PrefireReweight_Up;   //!
