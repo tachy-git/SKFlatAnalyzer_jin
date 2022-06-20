@@ -379,6 +379,7 @@ public :
    vector<float>   *weight_AlphaS;
    vector<float>   *weight_PDF;
    vector<float>   *weight_Scale;
+   vector<float>   *weight_PSSyst;
    vector<float>   *weight_alpsfact;
    vector<float>   *weight_largeptscales;
    vector<float>   *weight_q0;
@@ -764,6 +765,7 @@ public :
    TBranch        *b_weight_AlphaS;   //!
    TBranch        *b_weight_PDF;   //!
    TBranch        *b_weight_Scale;   //!
+   TBranch        *b_weight_PSSyst;   //!
    TBranch        *b_weight_alpsfact;   //!
    TBranch        *b_weight_largeptscales;   //!
    TBranch        *b_weight_q0;   //!
