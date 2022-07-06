@@ -117,6 +117,8 @@ if IsKNU:
 
 IsSkimTree = "SkimTree" in args.Analyzer
 if IsSkimTree:
+  if args.NMax==0: args.NMax=100 ## Preventing from too heavy IO
+  if args.NJobs==1: args.NJobs=0 ## NJobs=0 means NJobs->NFiles
   if not IsTAMSA:
     print "Skimming only possible in SNU"
     exit()
