@@ -24,6 +24,7 @@
 /gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/DATA/SingleMuon/periodB/220611_060653/0000/SKFlatNtuple_2017_DATA_24.root
 /gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/DATA/SingleMuon/periodB/220611_060653/0000/SKFlatNtuple_2017_DATA_25.root
 /gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/DATA/SingleMuon/periodB/220611_060653/0000/SKFlatNtuple_2017_DATA_26.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/DATA/SingleMuon/periodB/220611_060653/0000/SKFlatNtuple_2017_DATA_27.root
 /gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/DATA/SingleMuon/periodB/220611_060653/0000/SKFlatNtuple_2017_DATA_28.root
 /gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/DATA/SingleMuon/periodB/220611_060653/0000/SKFlatNtuple_2017_DATA_29.root
 /gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/DATA/SingleMuon/periodB/220611_060653/0000/SKFlatNtuple_2017_DATA_30.root
