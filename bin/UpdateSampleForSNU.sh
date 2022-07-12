@@ -95,4 +95,4 @@ while read line <&3; do
 	fi
     fi
 done 3< <(find $SEARCHDIR -type d|grep $SKFlatV|sort -V)
-#done 3< <(find $SEARCHDIR -type d|grep $SKFlatV|sort -V|egrep -v "TypeI|private")
+#done 3< <(find $SEARCHDIR -type d|grep $SKFlatV|sort -V|egrep -v "TypeI|private|sherpa")
