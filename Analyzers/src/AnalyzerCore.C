@@ -266,6 +266,54 @@ std::vector<Electron> AnalyzerCore::GetElectrons(TString id, double ptmin, doubl
 
 }
 
+
+std::vector<Tau> AnalyzerCore::GetAllTaus(){
+
+  std::vector<Tau> out;
+  if(!tau_pt) return out;
+  for(unsigned int i=0; i<tau_pt->size(); i++){
+
+    Tau tau;
+    tau.SetCharge(tau_charge->at(i));
+    tau.SetPtEtaPhiM(tau_pt->at(i), tau_eta->at(i), tau_phi->at(i), tau_mass->at(i));
+    tau.SetDecayMode(tau_decaymode->at(i));
+    tau.SetdXY(tau_dxy->at(i),0.);
+    tau.SetdZ(tau_dz->at(i),0.);
+    tau.SetDecayModeNewDM(tau_idDecayModeNewDMs->at(i));
+    tau.SetIDBit(tau_IDBit->at(i));
+
+    out.push_back(tau);
+
+  }
+  return out;
+
+}
+
+
+
+std::vector<Tau> AnalyzerCore::GetTaus(TString id, double ptmin, double fetamax){
+
+  std::vector<Tau> taus = GetAllTaus();
+  std::vector<Tau> out;
+
+  for(unsigned int i=0; i<taus.size(); i++){
+    if(!( taus.at(i).Pt()>ptmin )){
+      continue;
+    }
+    if(!( fabs(taus.at(i).Eta())<fetamax )){
+      continue;
+    }
+    if(!( taus.at(i).PassID(id) )){
+      continue;
+    }
+    out.push_back( taus.at(i) );
+  }
+  return out;
+
+}
+
+
+
 std::vector<Lepton *> AnalyzerCore::MakeLeptonPointerVector(const std::vector<Muon>& muons, double TightIso, bool UseMini){
 
   std::vector<Lepton *> out;
@@ -692,6 +740,28 @@ std::vector<Electron> AnalyzerCore::SelectElectrons(const std::vector<Electron>&
       continue;
     }
     out.push_back(electrons.at(i));
+  }
+  return out;
+
+}
+
+
+std::vector<Tau> AnalyzerCore::SelectTaus(const std::vector<Tau>& taus, TString id, double ptmin, double fetamax){
+
+  std::vector<Tau> out;
+  for(unsigned int i=0; i<taus.size(); i++){
+    if(!( taus.at(i).Pt()>ptmin )){
+
+      continue;
+    }
+    if(!( fabs(taus.at(i).Eta())<fetamax )){
+
+      continue;
+    }
+    if(!( taus.at(i).PassID(id) )){
+      continue;
+    }
+    out.push_back( taus.at(i) );
   }
   return out;
 
