@@ -25,7 +25,13 @@ public:
   void ReadHistograms();
 
   int DataYear;
-  void SetDataYear(int i);
+  TString DataEra;
+  void SetEra(TString era){
+    DataEra=era;
+    DataYear=TString(era(0,4)).Atoi();
+  }
+  TString GetEra() const { return DataEra; }
+  int GetYear() const { return DataYear; }
 
   TF1 *func_gen;
   TF1 *func_reco_0eta1v3;

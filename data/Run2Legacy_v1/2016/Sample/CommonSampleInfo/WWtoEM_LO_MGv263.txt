@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-WWtoEM_LO_MGv263_private	WWtoEM_LO_MGv263_TuneCUETP8M1_13TeV-pythia8	1.85590692956	988000	988000

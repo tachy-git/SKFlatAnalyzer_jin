@@ -12,7 +12,7 @@ void PuppiSoftdropMassCorr::ReadHistograms(){
 
   TDirectory* origDir = gDirectory;
 
-  TString rootfilepath = datapath+"/"+TString::Itoa(DataYear,10)+"/PuppiSoftdropMassCorr/puppiCorr.root";
+  TString rootfilepath = datapath+"/"+GetEra()+"/PuppiSoftdropMassCorr/puppiCorr.root";
 
   TFile *rootfile = new TFile(rootfilepath);
 
@@ -28,10 +28,6 @@ void PuppiSoftdropMassCorr::ReadHistograms(){
 
 PuppiSoftdropMassCorr::~PuppiSoftdropMassCorr(){
 
-}
-
-void PuppiSoftdropMassCorr::SetDataYear(int i){
-  DataYear = i;
 }
 
 std::vector<FatJet> PuppiSoftdropMassCorr::Correct(std::vector<FatJet> jets){

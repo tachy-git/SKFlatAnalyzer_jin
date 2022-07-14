@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+WZTo2L2Q_amcatnlo	WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8	5.606	27582164	16664610

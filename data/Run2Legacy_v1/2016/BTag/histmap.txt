@@ -1,2 +1,0 @@
-### taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X on Feb 6 2019
-2016 CSV All        272007 284044 NA

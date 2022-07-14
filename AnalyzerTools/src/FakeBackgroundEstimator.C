@@ -12,7 +12,7 @@ HasLooseLepton(false)
 void FakeBackgroundEstimator::ReadHistograms(){
 
   TString datapath = getenv("DATA_DIR");
-  datapath = datapath+"/"+TString::Itoa(DataYear,10)+"/FakeRate/";
+  datapath = datapath+"/"+GetEra()+"/FakeRate/";
 
   TDirectory* origDir = gDirectory;
 
@@ -62,10 +62,6 @@ FakeBackgroundEstimator::~FakeBackgroundEstimator(){
 
 }
 
-void FakeBackgroundEstimator::SetDataYear(int i){
-  DataYear = i;
-}
-
 double FakeBackgroundEstimator::GetElectronFakeRate(TString ID, TString key, double eta, double pt, int sys){
 
   //cout << "[FakeBackgroundEstimator::GetElectronFakeRate] ID = " << ID << ", key = " << key << endl;
@@ -88,7 +84,7 @@ double FakeBackgroundEstimator::GetElectronFakeRate(TString ID, TString key, dou
     if(IgnoreNoHist) return 1.;
     else{
       cout << "[FakeBackgroundEstimator::GetElectronFakeRate] No"<< ID+"_"+key <<endl;
-      exit(EXIT_FAILURE);
+      exit(ENODATA);
     }
   }
 
@@ -124,7 +120,7 @@ double FakeBackgroundEstimator::GetMuonFakeRate(TString ID, TString key, double 
     if(IgnoreNoHist) return 1.;
     else{
       cout << "[FakeBackgroundEstimator::GetMuonFakeRate] No"<< ID+"_"+key <<endl;
-      exit(EXIT_FAILURE);
+      exit(ENODATA);
     }
   }
 

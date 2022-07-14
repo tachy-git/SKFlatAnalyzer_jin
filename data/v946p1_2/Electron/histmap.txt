@@ -1,4 +1,0 @@
-ID	SF	passMVAID_iso_WP80	gammaEffi.txt_EGM2D_runBCDEF_passingMVA94Xwp80iso.root	EGamma_SF2D
-ID	SF	passTightID	egammaEffi.txt_EGM2D_runBCDEF_passingTight94X.root	EGamma_SF2D
-RECO	SF	ptgt20	egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root	EGamma_SF2D
-RECO	SF	ptlt20	egammaEffi.txt_EGM2D_runBCDEF_passingRECO_lowEt.root	EGamma_SF2D

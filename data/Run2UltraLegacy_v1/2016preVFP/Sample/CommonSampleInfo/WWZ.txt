@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+WWZ	WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8	0.1651	250000	221468

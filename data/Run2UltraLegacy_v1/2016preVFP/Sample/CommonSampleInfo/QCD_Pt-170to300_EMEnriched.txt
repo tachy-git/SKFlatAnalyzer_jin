@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+QCD_Pt-170to300_EMEnriched	QCD_Pt-170to300_EMEnriched_TuneCUETP8M1_13TeV_pythia8	18810.	11540163	11540163

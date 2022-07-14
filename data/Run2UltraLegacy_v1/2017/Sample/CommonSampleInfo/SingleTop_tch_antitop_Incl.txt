@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+SingleTop_tch_antitop_Incl	ST_t-channel_antitop_5f_TuneCP5_PSweights_13TeV-powheg-pythia8	80.95	7765400	7723396

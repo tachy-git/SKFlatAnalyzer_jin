@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-ZToEE_M_6000_Inf	ZToEE_NNPDF31_13TeV-powheg_M_6000_Inf	2.06E-8	99699	97935

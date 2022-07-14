@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+WpWp_EWK	WpWpJJ_EWK_TuneCP5_13TeV-madgraph-pythia8	0.02695	145800	144938

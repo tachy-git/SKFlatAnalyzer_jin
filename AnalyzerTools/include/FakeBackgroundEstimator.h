@@ -31,7 +31,13 @@ public:
   bool IgnoreNoHist;
 
   int DataYear;
-  void SetDataYear(int i);
+  TString DataEra;
+  void SetEra(TString era){
+    DataEra=era;
+    DataYear=TString(era(0,4)).Atoi();
+  }
+  TString GetEra() const { return DataEra; }
+  int GetYear() const { return DataYear; }
 
   std::map< TString, TH2D* > map_hist_Electron;
   std::map< TString, TH2D* > map_hist_Muon;

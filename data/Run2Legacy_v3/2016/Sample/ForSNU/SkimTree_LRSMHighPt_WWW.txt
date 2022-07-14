@@ -1,2 +1,0 @@
-/gv0/DATA/SKFlat/Run2Legacy_v3/2016/MC_SkimTree_LRSMHighPt/WWW_4F_TuneCUETP8M1_13TeV-amcatnlo-pythia8/2019_05_16_185501/SKFlatNtuple_2016_MC_0.root
-/gv0/DATA/SKFlat/Run2Legacy_v3/2016/MC_SkimTree_LRSMHighPt/WWW_4F_TuneCUETP8M1_13TeV-amcatnlo-pythia8/2019_05_16_185501/SKFlatNtuple_2016_MC_1.root

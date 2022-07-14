@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-SingleTop_tch_top_Incl	ST_t-channel_top_5f_TuneCP5_13TeV-powheg-pythia8	119.7	5903100	5869000

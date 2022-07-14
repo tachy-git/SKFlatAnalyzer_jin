@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+WW_DoubleScattering	WWTo2L2Nu_DoubleScattering_13TeV-pythia8	1.	10000	10000

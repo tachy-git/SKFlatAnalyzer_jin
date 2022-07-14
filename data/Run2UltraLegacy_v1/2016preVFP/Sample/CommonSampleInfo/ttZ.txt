@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+ttZ	ttZJets_13TeV_madgraphMLM-pythia8	0.5407	9883364	9883364

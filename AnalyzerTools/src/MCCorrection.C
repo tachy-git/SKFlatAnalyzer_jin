@@ -1,5 +1,4 @@
 #include "MCCorrection.h"
-#include "BTagEfficiencies/JetTagEfficiencies.C"
 
 MCCorrection::MCCorrection() : 
 IgnoreNoHist(false)
@@ -10,7 +9,13 @@ IgnoreNoHist(false)
   genFinderDY = new GenFinderForDY();
 
 }
-
+vector<TString> MCCorrection::Split(TString s,TString del){
+  TObjArray* array=s.Tokenize(del);
+  vector<TString> out;
+  for(const auto& obj:*array) out.push_back(((TObjString*)obj)->String());
+  array->Delete();
+  return out;
+}
 void MCCorrection::ReadHistograms(){
 
   TString datapath = getenv("DATA_DIR");
@@ -18,39 +23,42 @@ void MCCorrection::ReadHistograms(){
   TDirectory* origDir = gDirectory;
 
   //==== ID/Trigger
-  TString IDpath = datapath+"/"+TString::Itoa(DataYear,10)+"/ID/";
+  TString IDpath = datapath+"/"+GetEra()+"/ID/";
 
-  string elline;
-  ifstream in(IDpath+"/Electron/histmap.txt");
-  while(getline(in,elline)){
-    std::istringstream is( elline );
+  vector<TString> elhistmaps=Split(gSystem->GetFromPipe("find "+IDpath+"/Electron/ -name 'histmap*.txt' -type f"),"\n");
+  for(const auto& elhistmap:elhistmaps){
+    string elline;
+    ifstream in(elhistmap);
+    while(getline(in,elline)){
+      std::istringstream is( elline );
 
-    TString tstring_elline = elline;
-    if(tstring_elline.Contains("#")) continue;
+      TString tstring_elline = elline;
+      if(tstring_elline.Contains("#")) continue;
 
-    TString a,b,c,d,e,f;
-    is >> a; // ID,RECO
-    is >> b; // Eff,SF
-    is >> c; // <WPnames>
-    is >> d; // <rootfilename>
-    is >> e; // <histname>
-    is >> f; // Class
-    TFile *file = new TFile(IDpath+"/Electron/"+d);
-
-    if(f=="TH2F"){
-      histDir->cd();
-      map_hist_Electron[a+"_"+b+"_"+c] = (TH2F *)file->Get(e)->Clone();
+      TString a,b,c,d,e,f;
+      is >> a; // ID,RECO
+      is >> b; // Eff,SF
+      is >> c; // <WPnames>
+      is >> d; // <rootfilename>
+      is >> e; // <histname>
+      is >> f; // Class
+      TFile *file = new TFile(IDpath+"/Electron/"+d);
+      
+      if(f=="TH2F"){
+	histDir->cd();
+	map_hist_Electron[a+"_"+b+"_"+c] = (TH2F *)file->Get(e)->Clone();
+      }
+      else if(f=="TGraphAsymmErrors"){
+	histDir->cd();
+	map_graph_Electron[a+"_"+b+"_"+c] = (TGraphAsymmErrors *)file->Get(e)->Clone();
+      }
+      else{
+	cout << "[MCCorrection::MCCorrection] Wrong class type : " << elline << endl;
+      }
+      file->Close();
+      delete file;
+      origDir->cd();
     }
-    else if(f=="TGraphAsymmErrors"){
-      histDir->cd();
-      map_graph_Electron[a+"_"+b+"_"+c] = (TGraphAsymmErrors *)file->Get(e)->Clone();
-    }
-    else{
-      cout << "[MCCorrection::MCCorrection] Wrong class type : " << elline << endl;
-    }
-    file->Close();
-    delete file;
-    origDir->cd();
   }
 
   cout << "[MCCorrection::MCCorrection] map_hist_Electron :" << endl;
@@ -63,26 +71,29 @@ void MCCorrection::ReadHistograms(){
   }
 
 
-  string elline2;
-  ifstream in2(IDpath+"/Muon/histmap.txt");
-  while(getline(in2,elline2)){
-    std::istringstream is( elline2 );
+  vector<TString> muhistmaps=Split(gSystem->GetFromPipe("find "+IDpath+"/Muon/ -name 'histmap*.txt' -type f"),"\n");
+  for(const auto& muhistmap:muhistmaps){
+    string elline2;
+    ifstream in2(muhistmap);
+    while(getline(in2,elline2)){
+      std::istringstream is( elline2 );
 
-    TString tstring_elline = elline2;
-    if(tstring_elline.Contains("#")) continue;
-
-    TString a,b,c,d,e;
-    is >> a; // ID,RERCO
-    is >> b; // Eff,SF
-    is >> c; // <WPnames>
-    is >> d; // <rootfilename>
-    is >> e; // <histname>
-    TFile *file = new TFile(IDpath+"/Muon/"+d);
-    histDir->cd();
-    map_hist_Muon[a+"_"+b+"_"+c] = (TH2F *)file->Get(e)->Clone();
-    file->Close();
-    delete file;
-    origDir->cd();
+      TString tstring_elline = elline2;
+      if(tstring_elline.Contains("#")) continue;
+      
+      TString a,b,c,d,e;
+      is >> a; // ID,RERCO
+      is >> b; // Eff,SF
+      is >> c; // <WPnames>
+      is >> d; // <rootfilename>
+      is >> e; // <histname>
+      TFile *file = new TFile(IDpath+"/Muon/"+d);
+      histDir->cd();
+      map_hist_Muon[a+"_"+b+"_"+c] = (TH2F *)file->Get(e)->Clone();
+      file->Close();
+      delete file;
+      origDir->cd();
+    }
   }
 
   cout << "[MCCorrection::MCCorrection] map_hist_Muon :" << endl;
@@ -92,7 +103,7 @@ void MCCorrection::ReadHistograms(){
 
 
   // == Get Prefiring maps
-  TString PrefirePath  = datapath+"/"+TString::Itoa(DataYear,10)+"/Prefire/";
+  TString PrefirePath  = datapath+"/"+GetEra()+"/Prefire/";
 
   string elline3;
   ifstream in3(PrefirePath+"/histmap.txt");
@@ -117,7 +128,7 @@ void MCCorrection::ReadHistograms(){
 
 
   // == Get Pileup Reweight maps
-  TString PUReweightPath = datapath+"/"+TString::Itoa(DataYear,10)+"/PileUp/";
+  TString PUReweightPath = datapath+"/"+GetEra()+"/PileUp/";
 
   string elline4;
   ifstream  in4(PUReweightPath+"/histmap.txt");
@@ -132,7 +143,7 @@ void MCCorrection::ReadHistograms(){
     is >> b; // syst
     is >> c; // rootfile name
 
-    if(DataYear == 2017 && a!=MCSample) continue;
+    //if(DataYear == 2017 && a!=MCSample) continue;
     
     TFile *file = new TFile(PUReweightPath+c);
     if( (TH1D *)file->Get(a+"_"+b) ){
@@ -154,7 +165,7 @@ void MCCorrection::ReadHistograms(){
 */
   
   // == Get Official DY Pt reweight maps
-  TString DYPtReweightPath = datapath+"/"+TString::Itoa(DataYear,10)+"/DYPtReweight/Zpt_weights_"+TString::Itoa(DataYear,10)+".root";
+  TString DYPtReweightPath = datapath+"/"+GetEra()+"/DYPtReweight/Zpt_weights_"+TString::Itoa(DataYear,10)+".root";
   TFile *file_DYPtReweightPath = new TFile(DYPtReweightPath);
   histDir->cd();
   hist_DYPtReweight_2D = (TH2D *)file_DYPtReweightPath->Get("zptmass_weights")->Clone();
@@ -171,9 +182,6 @@ MCCorrection::~MCCorrection(){
 
 void MCCorrection::SetMCSample(TString s){
   MCSample = s;
-}
-void MCCorrection::SetDataYear(int i){
-  DataYear = i;
 }
 void MCCorrection::SetIsDATA(bool b){
   IsDATA = b;
@@ -218,7 +226,7 @@ double MCCorrection::MuonReco_SF(TString key, double eta, double p, int sys){
     if(IgnoreNoHist) return 1.;
     else{
       cerr << "[MCCorrection::MuonReco_SF] No "<<"RECO_SF_"+key<<endl;
-      exit(EXIT_FAILURE);
+      exit(ENODATA);
     }
   }
 
@@ -259,7 +267,7 @@ double MCCorrection::MuonID_SF(TString ID, double eta, double pt, int sys){
     if(IgnoreNoHist) return 1.;
     else{
       cerr << "[MCCorrection::MuonID_SF] No "<<"ID_SF_"+ID<<endl;
-      exit(EXIT_FAILURE);
+      exit(ENODATA);
     }
   }
 
@@ -307,7 +315,7 @@ double MCCorrection::MuonISO_SF(TString ID, double eta, double pt, int sys){
     if(IgnoreNoHist) return 1.;
     else{
       cerr << "[MCCorrection::MuonISO_SF] No "<<"ISO_SF_"+ID<<endl;
-      exit(EXIT_FAILURE);
+      exit(ENODATA);
     }
   }
 
@@ -404,7 +412,7 @@ double MCCorrection::MuonTrigger_Eff(TString ID, TString trig, int DataOrMC, dou
   }
   else{
     cerr << "[MCCorrection::MuonTrigger_Eff] Wrong year : " << DataYear << endl;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
   }
 
   TString histkey = "Trigger_Eff_DATA_"+trig+"_"+ID;
@@ -415,7 +423,7 @@ double MCCorrection::MuonTrigger_Eff(TString ID, TString trig, int DataOrMC, dou
     if(IgnoreNoHist) return 1.;
     else{
       cerr << "[MCCorrection::MuonTrigger_Eff] No "<<histkey<<endl;
-      exit(EXIT_FAILURE);
+      exit(ENODATA);
     }
   }
 
@@ -539,7 +547,7 @@ double MCCorrection::ElectronID_SF(TString ID, double sceta, double pt, int sys)
     }
     else{
       cerr << "[MCCorrection::ElectronID_SF] (Hist) Wrong year "<< DataYear << endl;
-      exit(EXIT_FAILURE);
+      exit(ENODATA);
     }
 
     return this_SF+double(sys)*this_SF_err;
@@ -552,7 +560,7 @@ double MCCorrection::ElectronID_SF(TString ID, double sceta, double pt, int sys)
       if(IgnoreNoHist) return 1.;
       else{
         cerr << "[MCCorrection::ElectronID_SF] (Hist) No "<<"ID_SF_"+ID<<endl;
-        exit(EXIT_FAILURE);
+        exit(ENODATA);
       }
     }
 
@@ -584,7 +592,7 @@ double MCCorrection::ElectronReco_SF(double sceta, double pt, int sys){
     if(IgnoreNoHist) return 1.;
     else{
       cerr << "[MCCorrection::ElectronReco_SF] No "<<"RECO_SF_"+ptrange<<endl;
-      exit(EXIT_FAILURE);
+      exit(ENODATA);
     }
   }
 
@@ -629,7 +637,7 @@ double MCCorrection::ElectronTrigger_Eff(TString ID, TString trig, int DataOrMC,
       if(IgnoreNoHist) return 1.;
       else{
         cerr << "[MCCorrection::ElectronTrigger_Eff] No "<<histkey<<endl;
-        exit(EXIT_FAILURE);
+        exit(ENODATA);
       }
     }
 
@@ -756,13 +764,13 @@ double MCCorrection::GetPileUpWeightBySampleName(int N_pileup, int syst){
   }
   else{
     cerr << "[MCCorrection::GetPileUpWeightBySampleName] syst should be 0, -1, or +1" << endl;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
   }
 
   TH1D *this_hist = map_hist_pileup[this_histname];
   if(!this_hist){
     cerr << "[MCCorrection::GetPileUpWeightBySampleName] No " << this_histname << endl;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
   }
 
   return this_hist->GetBinContent(this_bin);
@@ -771,10 +779,7 @@ double MCCorrection::GetPileUpWeightBySampleName(int N_pileup, int syst){
 
 double MCCorrection::GetPileUpWeight(int N_pileup, int syst){
 
-  int this_bin = N_pileup+1;
-  if(N_pileup >= 100) this_bin=100;
-
-  TString this_histname = "MC_" + TString::Itoa(DataYear,10);
+  TString this_histname = "MC_" + GetEra();
   if(syst == 0){
     this_histname += "_central_pileup";
   }
@@ -785,17 +790,21 @@ double MCCorrection::GetPileUpWeight(int N_pileup, int syst){
     this_histname += "_sig_up_pileup";
   }
   else{
-    cerr << "[MCCorrection::GetPileUpWeightBySampleName] syst should be 0, -1, or +1" << endl;
-    exit(EXIT_FAILURE);
+    cerr << "[MCCorrection::GetPileUpWeight] syst should be 0, -1, or +1" << endl;
+    exit(ENODATA);
   }
 
   TH1D *this_hist = map_hist_pileup[this_histname];
   if(!this_hist){
-    cerr << "[MCCorrection::GetPileUpWeightBySampleName] No " << this_histname << endl;
-    exit(EXIT_FAILURE);
+    cerr << "[MCCorrection::GetPileUpWeight] No " << this_histname << endl;
+    exit(ENODATA);
   }
+  
+  int this_bin = N_pileup+1;
+  if(this_bin>this_hist->GetNbinsX()) this_bin=this_hist->GetNbinsX();
 
-  return this_hist->GetBinContent(this_bin);
+  double pu_weight=this_hist->GetBinContent(this_bin);
+  return pu_weight;
 
 }
 
@@ -863,7 +872,7 @@ void MCCorrection::SetupJetTagging(){
   if(IsDATA) return;
 
   TString datapath = getenv("DATA_DIR");
-  TString btagpath = datapath+"/"+TString::Itoa(DataYear,10)+"/BTag/";
+  TString btagpath = datapath+"/"+GetEra()+"/BTag/";
 
   std::map< string, BTagCalibration > tmp_map_BTagCalibration; //==== key = tagger+"_"+method
 
@@ -886,7 +895,7 @@ void MCCorrection::SetupJetTagging(){
     }
     else{
       cerr << "[MCCorrection::ReadJetTaggingCVSs()] Wrong WP : " << this_wp << endl;
-      exit(EXIT_FAILURE);
+      exit(ENODATA);
     }
     //==== When using iterativefit method, use BTagEntry::OP_RESHAPING
     if(jetTaggingPars.at(i).j_MeasurmentType_Light==JetTagging::iterativefit ||
@@ -933,9 +942,9 @@ void MCCorrection::SetupJetTagging(){
 
       //==== Now, contructing BTagCalibrationReader obect
 
-      std::vector<std::string> systvec_L = {"up", "down"};
-      std::vector<std::string> systvec_C = {"up", "down"};
-      std::vector<std::string> systvec_B = {"up", "down"};
+      std::vector<std::string> systvec_L = {"up", "up_correlated", "up_uncorrelated", "down", "down_correlated", "down_uncorrelated"};
+      std::vector<std::string> systvec_C = {"up", "up_correlated", "up_uncorrelated", "down", "down_correlated", "down_uncorrelated"};
+      std::vector<std::string> systvec_B = {"up", "up_correlated", "up_uncorrelated", "down", "down_correlated", "down_uncorrelated"};
       if(this_mt_L=="iterativefit"){
         systvec_L = {"up_hf","down_hf","up_jes","down_jes","up_lfstats1","down_lfstats1","up_lfstats2","down_lfstats2"};
         systvec_C = {"up_cferr1","down_cferr1","up_cferr2","down_cferr2"};
@@ -961,7 +970,7 @@ void MCCorrection::SetupJetTagging(){
   for(std::map< std::string, BTagCalibrationReader* >::iterator it=map_BTagCalibrationReader.begin(); it!=map_BTagCalibrationReader.end(); it++){
     cout << "[MCCorrection::SetJetTaggingParameters] key = " << it->first << endl;
   }
-
+  SetupMCJetTagEff();
 
 }
 
@@ -993,7 +1002,7 @@ double MCCorrection::GetJetTaggingSF(JetTagging::Parameters jtp, int JetFlavor, 
   if(it== map_BTagCalibrationReader.end()){
     cerr << "[MCCorrection::GetJetTaggingSF] b tag SF map not found for key = " << key << endl;
     return 1.;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
   }
 
   double this_SF = it->second->eval_auto_bounds(Syst, jf, fabs(JetEta), JetPt, Jetdiscr);
@@ -1007,71 +1016,254 @@ double MCCorrection::GetJetTaggingSF(JetTagging::Parameters jtp, int JetFlavor, 
 
 double MCCorrection::GetJetTaggingCutValue(JetTagging::Tagger tagger, JetTagging::WP wp){
 
-  if(DataYear==2016){
+  if(DataEra=="2016preVFP"){
     if(tagger==JetTagging::DeepCSV){
-      if(wp==JetTagging::Loose)  return 0.2217;
-      if(wp==JetTagging::Medium) return 0.6321;
-      if(wp==JetTagging::Tight)  return 0.8953;
+      if(wp==JetTagging::Loose)  return 0.2027;
+      if(wp==JetTagging::Medium) return 0.6001;
+      if(wp==JetTagging::Tight)  return 0.8819;
+    }
+    if(tagger==JetTagging::DeepCSV_CvsL){
+      if(wp==JetTagging::Loose) return 0.088;
+      if(wp==JetTagging::Medium) return 0.181;
+      if(wp==JetTagging::Tight) return 0.417;
+    }
+    if(tagger==JetTagging::DeepCSV_CvsB){
+      if(wp==JetTagging::Loose) return 0.214;
+      if(wp==JetTagging::Medium) return 0.228;
+      if(wp==JetTagging::Tight) return 0.138;
     }
     if(tagger==JetTagging::DeepJet){
-      if(wp==JetTagging::Loose)  return 0.0614;
-      if(wp==JetTagging::Medium) return 0.3093;
-      if(wp==JetTagging::Tight)  return 0.7221;
+      if(wp==JetTagging::Loose)  return 0.0508;
+      if(wp==JetTagging::Medium) return 0.2598;
+      if(wp==JetTagging::Tight)  return 0.6502;
+    }
+    if(tagger==JetTagging::DeepJet_CvsL){
+      if(wp==JetTagging::Loose) return 0.039;
+      if(wp==JetTagging::Medium) return 0.098;
+      if(wp==JetTagging::Tight) return 0.270;
+    }
+    if(tagger==JetTagging::DeepJet_CvsB){
+      if(wp==JetTagging::Loose) return 0.327;
+      if(wp==JetTagging::Medium) return 0.370;
+      if(wp==JetTagging::Tight) return 0.256;
     }
   }
-  if(DataYear==2017){
-    if(tagger==JetTagging::CSVv2){
-      if(wp==JetTagging::Loose)  return 0.5803;
-      if(wp==JetTagging::Medium) return 0.8838;
-      if(wp==JetTagging::Tight)  return 0.9693;
-    }
+  if(DataEra=="2016postVFP"){
     if(tagger==JetTagging::DeepCSV){
-      if(wp==JetTagging::Loose)  return 0.1522;
-      if(wp==JetTagging::Medium) return 0.4941;
-      if(wp==JetTagging::Tight)  return 0.8001;
+      if(wp==JetTagging::Loose)  return 0.1918;
+      if(wp==JetTagging::Medium) return 0.5847;
+      if(wp==JetTagging::Tight)  return 0.8767;
+    }
+    if(tagger==JetTagging::DeepCSV_CvsL){
+      if(wp==JetTagging::Loose) return 0.088;
+      if(wp==JetTagging::Medium) return 0.180;
+      if(wp==JetTagging::Tight) return 0.407;
+    }
+    if(tagger==JetTagging::DeepCSV_CvsB){
+      if(wp==JetTagging::Loose) return 0.204;
+      if(wp==JetTagging::Medium) return 0.221;
+      if(wp==JetTagging::Tight) return 0.136;
     }
     if(tagger==JetTagging::DeepJet){
-      if(wp==JetTagging::Loose)  return 0.0521;
-      if(wp==JetTagging::Medium) return 0.3033;
-      if(wp==JetTagging::Tight)  return 0.7489;
+      if(wp==JetTagging::Loose)  return 0.0480;
+      if(wp==JetTagging::Medium) return 0.2489;
+      if(wp==JetTagging::Tight)  return 0.6377;
+    }
+    if(tagger==JetTagging::DeepJet_CvsL){
+      if(wp==JetTagging::Loose) return 0.039;
+      if(wp==JetTagging::Medium) return 0.099;
+      if(wp==JetTagging::Tight) return 0.269;
+    }
+    if(tagger==JetTagging::DeepJet_CvsB){
+      if(wp==JetTagging::Loose) return 0.305;
+      if(wp==JetTagging::Medium) return 0.353;
+      if(wp==JetTagging::Tight) return 0.247;
     }
   }
-  if(DataYear==2018){
+  if(DataEra=="2017"){
     if(tagger==JetTagging::DeepCSV){
-      if(wp==JetTagging::Loose)  return 0.1241;
-      if(wp==JetTagging::Medium) return 0.4184;
-      if(wp==JetTagging::Tight)  return 0.7527;
+      if(wp==JetTagging::Loose)  return 0.1355;
+      if(wp==JetTagging::Medium) return 0.4506;
+      if(wp==JetTagging::Tight)  return 0.7738;
+    }
+    if(tagger==JetTagging::DeepCSV_CvsL){
+      if(wp==JetTagging::Loose) return 0.04;
+      if(wp==JetTagging::Medium) return 0.144;
+      if(wp==JetTagging::Tight) return 0.73;
+    }
+    if(tagger==JetTagging::DeepCSV_CvsB){
+      if(wp==JetTagging::Loose) return 0.345;
+      if(wp==JetTagging::Medium) return 0.29;
+      if(wp==JetTagging::Tight) return 0.10;
     }
     if(tagger==JetTagging::DeepJet){
-      if(wp==JetTagging::Loose)  return 0.0494;
-      if(wp==JetTagging::Medium) return 0.2770;
-      if(wp==JetTagging::Tight)  return 0.7264;
+      if(wp==JetTagging::Loose)  return 0.0532;
+      if(wp==JetTagging::Medium) return 0.3040;
+      if(wp==JetTagging::Tight)  return 0.7476;
+    }
+    if(tagger==JetTagging::DeepJet_CvsL){
+      if(wp==JetTagging::Loose) return 0.03;
+      if(wp==JetTagging::Medium) return 0.085;
+      if(wp==JetTagging::Tight) return 0.52;
+    }
+    if(tagger==JetTagging::DeepJet_CvsB){
+      if(wp==JetTagging::Loose) return 0.4;
+      if(wp==JetTagging::Medium) return 0.34;
+      if(wp==JetTagging::Tight) return 0.05;
+    }
+  }
+  if(DataEra=="2018"){
+    if(tagger==JetTagging::DeepCSV){
+      if(wp==JetTagging::Loose)  return 0.1208;
+      if(wp==JetTagging::Medium) return 0.4168;
+      if(wp==JetTagging::Tight)  return 0.7665;
+    }
+    if(tagger==JetTagging::DeepCSV_CvsL){
+      if(wp==JetTagging::Loose) return 0.064;
+      if(wp==JetTagging::Medium) return 0.153;
+      if(wp==JetTagging::Tight) return 0.405;
+    }
+    if(tagger==JetTagging::DeepCSV_CvsB){
+      if(wp==JetTagging::Loose) return 0.313;
+      if(wp==JetTagging::Medium) return 0.363;
+      if(wp==JetTagging::Tight) return 0.288;
+    }
+    if(tagger==JetTagging::DeepJet){
+      if(wp==JetTagging::Loose)  return 0.0490;
+      if(wp==JetTagging::Medium) return 0.2783;
+      if(wp==JetTagging::Tight)  return 0.7100;
+    }
+    if(tagger==JetTagging::DeepJet_CvsL){
+      if(wp==JetTagging::Loose) return 0.038;
+      if(wp==JetTagging::Medium) return 0.099;
+      if(wp==JetTagging::Tight) return 0.282;
+    }
+    if(tagger==JetTagging::DeepJet_CvsB){
+      if(wp==JetTagging::Loose) return 0.246;
+      if(wp==JetTagging::Medium) return 0.325;
+      if(wp==JetTagging::Tight) return 0.267;
     }
   }
 
   cout << "[MCCorrection::GetJetTaggingCutValue] Wrong " << endl;
-  cout << "[MCCorrection::GetJetTaggingCutValue] DataYear = " << DataYear << endl;
+  cout << "[MCCorrection::GetJetTaggingCutValue] DataEra = " << DataEra << endl;
   cout << "[MCCorrection::GetJetTaggingCutValue] tagger = " << tagger << endl;
   cout << "[MCCorrection::GetJetTaggingCutValue] wp = " << wp << endl;
-  exit(EXIT_FAILURE);
+  exit(ENODATA);
 
   return 1;
 
 }
 
-double MCCorrection::GetBTaggingReweight_1a(const vector<Jet>& jets, JetTagging::Parameters jtp, string Syst){
+void MCCorrection::SetupMCJetTagEff(){
+  cout<<"[MCCorrection::SetupMCJetTagEff] setting MCJetTagEff"<<endl;
+
+  TString datapath=getenv("DATA_DIR");
+  TString mcjetpath=datapath+"/"+DataEra+"/BTag/MeasureJetTaggingEfficiency_TTLL_TTLJ_hadded.root";
+  ifstream fcheck(mcjetpath);
+  if(!fcheck.good()){
+    cout<<"[MCCorrection::SetupMCJetTagEff] no "+mcjetpath<<endl;
+    return;
+  }
+  TFile fmcjet(mcjetpath);
+  // Denominator histogram setup first
+  vector<TString> jfs = {"B", "C", "Light"};
+  for(unsigned int i=0; i<jfs.size(); i++){
+    TString hden="Jet_"+DataEra+"_eff_"+jfs.at(i)+"_denom";
+    TH2F* this_hist=(TH2F*)fmcjet.Get(hden);
+    map_hist_mcjet[hden]=this_hist;
+    this_hist->SetDirectory(0);
+    cout<<"[MCCorrection::SetupMCJetTagEff] setting "<<hden<<endl;
+  }
+  // Numerator histogram setup and divided using "binomial option"
+  for(const auto& obj:*(fmcjet.GetListOfKeys())){
+    TH2F* this_hist=(TH2F*)((TKey*)obj)->ReadObj();
+    TString hnum=this_hist->GetName();
+    if(!hnum.Contains("num")) continue;
+    TString hden="";
+    if(hnum.Contains("_B_")) hden="Jet_"+DataEra+"_eff_B_denom";
+    else if(hnum.Contains("_C_")) hden="Jet_"+DataEra+"_eff_C_denom";
+    else hden="Jet_"+DataEra+"_eff_Light_denom";
+
+    this_hist->Divide(this_hist,map_hist_mcjet[hden],1.,1.,"b");
+    map_hist_mcjet[hnum]=this_hist;
+    this_hist->SetDirectory(0);
+    cout<<"[MCCorrection::SetupMCJetTagEff] setting "<<hnum<<endl;
+  }
+}
+
+double MCCorrection::GetMCJetTagEff(JetTagging::Tagger tagger, JetTagging::WP wp, int JetFlavor, double JetPt, double JetEta, int sys){
 
   if(IsDATA) return 1.;
 
-  double Prob_MC(1.), Prob_DATA(1.);
+  if(JetPt<20) JetPt = 20.;
+  if(JetPt>=1000.) JetPt = 999.;
+  if(JetEta>=2.5) JetEta = 2.49;
+  if(JetEta<-2.5) JetEta = -2.5;
+
+  TString jf = "";
+  if(JetFlavor == 5) jf = "B";
+  else if(JetFlavor == 4) jf = "C";
+  else if(JetFlavor == 0) jf = "Light";
+  else{
+    cout<<"[MCCorrection::GetMCJetTagEff] no JetFlavor"<<endl;
+    exit(EXIT_FAILURE);
+  }
+
+  double value = 1., error = 0., out = 1.;
+  TString hnum="Jet_"+DataEra+"_"+JetTagging::TaggerToString(tagger)+"_"+JetTagging::WPToString(wp)+"_eff_"+jf+"_num";
+  TH2F *this_hist = map_hist_mcjet[hnum];
+  int this_bin = this_hist->FindBin(fabs(JetEta),JetPt);
+  value = this_hist->GetBinContent(this_bin);
+  error = this_hist->GetBinError(this_bin);
+
+  out = value+double(sys)*error;
+  if(out<=0.) out = 1E-10;
+  if(out>=1.) out = 1.-1E-10;
+  return out;
+}
+
+double MCCorrection::GetBTaggingReweight_1a(const vector<Jet>& jets, JetTagging::Parameters jtp, string Syst){
+//Syst. usage ex.: "SystUpHTag"(all component variation for heavy flav(b,c).), 
+//                 "SystUpHTagCorr"(variation of heavy flav(b,c) sf only for yearly correlated components)
+//change H->L for light flav., Up->Down for downward variation, Corr->UnCorr for yearly independent components
+ 
+  if(IsDATA) return 1.;
+
+  TString SystStr(Syst);
+  double Prob_MC(1.), Prob_DATA(1.), SF(1.);
+  bool Syst_HTag=false, Syst_LTag=false; int SystDir=0, CorrType=0;
+  string SystKey;
+  if(SystStr.Contains("Syst")){
+    if     (SystStr.Contains("HTag")) Syst_HTag=true;    
+    else if(SystStr.Contains("LTag")) Syst_LTag=true;
+    if     (SystStr.Contains("Up")  ) SystDir= 1;
+    else if(SystStr.Contains("Down")) SystDir=-1;
+    if     (SystStr.Contains("UnCorr")) CorrType=-1;
+    else if(SystStr.Contains("Corr"))   CorrType= 1;
+    if(SystDir==0){ cout<<"SystStr in not correct form"<<endl; exit(ENODATA); }
+    if(!(Syst_HTag or Syst_LTag)){ cout<<"SystMode but no H/L mode assigned"<<endl; exit(ENODATA); }
+  }
+
   for(unsigned int i=0; i<jets.size(); i++){
+    int JetHadFlav = jets.at(i).hadronFlavour();
+    bool ApplySyst=false;
+    if     (Syst_HTag && (JetHadFlav==4 or JetHadFlav==5)){ ApplySyst=true; }
+    else if(Syst_LTag && (JetHadFlav==0                 )){ ApplySyst=true; }
+
+    if     (ApplySyst && CorrType==0) SystKey=SystDir>0? "up":"down";
+    else if(ApplySyst && CorrType >0) SystKey=SystDir>0? "up_correlated":"down_correlated";
+    else if(ApplySyst && CorrType <0) SystKey=SystDir>0? "up_uncorrelated":"down_uncorrelated";
+    else                              SystKey="central";
+
+
     double this_MC_Eff = GetMCJetTagEff(jtp.j_Tagger, jtp.j_WP, jets.at(i).hadronFlavour(), jets.at(i).Pt(), jets.at(i).Eta());
     double this_SF = GetJetTaggingSF(jtp,
                                      jets.at(i).hadronFlavour(),
                                      jets.at(i).Pt(),
                                      jets.at(i).Eta(),
                                      jets.at(i).GetTaggerResult(jtp.j_Tagger),
-                                     Syst );
+                                     SystKey );
     double this_DATA_Eff = this_MC_Eff*this_SF;
 
     bool isTagged = jets.at(i).GetTaggerResult(jtp.j_Tagger) > GetJetTaggingCutValue(jtp.j_Tagger, jtp.j_WP);
@@ -1085,8 +1277,10 @@ double MCCorrection::GetBTaggingReweight_1a(const vector<Jet>& jets, JetTagging:
     }
   }
 
-  return Prob_DATA/Prob_MC;
+  if(Prob_MC>0. && Prob_DATA>0.) SF=Prob_DATA/Prob_MC;
+  else SF=0.;
 
+  return SF;
 }
 
 double MCCorrection::GetBTaggingReweight_1d(const vector<Jet>& jets, JetTagging::Parameters jtp, string Syst){
@@ -1098,7 +1292,7 @@ double MCCorrection::GetBTaggingReweight_1d(const vector<Jet>& jets, JetTagging:
     cout << "[MCCorrection::GetBTaggingReweight_1d] This method only works for iterativefit method" << endl;
     cout << "[MCCorrection::GetBTaggingReweight_1d] jtp.j_MeasurmentType_Light = " << jtp.j_MeasurmentType_Light << endl;
     cout << "[MCCorrection::GetBTaggingReweight_1d] jtp.j_MeasurmentType_Heavy = " << jtp.j_MeasurmentType_Heavy << endl;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
     return 1.;
   }
 

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "TKey.h"
 #include "TFile.h"
 #include "TString.h"
 #include "TRegexp.h"
@@ -13,6 +14,8 @@
 #include "TH2D.h"
 #include "TGraph.h"
 #include "TGraphAsymmErrors.h"
+#include "TObjString.h"
+#include "TSystem.h"
 
 #include "Lepton.h"
 #include "Muon.h"
@@ -34,13 +37,20 @@ public:
   ~MCCorrection();
 
   TDirectory *histDir;
+  static vector<TString> Split(TString s,TString del);
   void ReadHistograms();
 
   TString MCSample;
   void SetMCSample(TString s);
 
   int DataYear;
-  void SetDataYear(int i);
+  TString DataEra;
+  void SetEra(TString era){
+    DataEra=era;
+    DataYear=TString(era(0,4)).Atoi();
+  }
+  TString GetEra() const { return DataEra; }
+  int GetYear() const { return DataYear; }
 
   bool IsDATA;
   void SetIsDATA(bool b);
@@ -97,7 +107,9 @@ public:
   TH2D *hist_JetTagEff_C;
   TH2D *hist_JetTagEff_Light;
 
-  double GetMCJetTagEff(JetTagging::Tagger tagger, JetTagging::WP wp, int JetFlavor, double JetPt, double JetEta);
+  std::map< TString, TH2F* > map_hist_mcjet;
+  void SetupMCJetTagEff();
+  double GetMCJetTagEff(JetTagging::Tagger tagger, JetTagging::WP wp, int JetFlavor, double JetPt, double JetEta, int sys=0);
   double GetJetTaggingSF(JetTagging::Parameters jtp, int JetFlavor, double JetPt, double JetEta, double Jetdiscr, string Syst="central");
 
   //==== https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagSFMethods

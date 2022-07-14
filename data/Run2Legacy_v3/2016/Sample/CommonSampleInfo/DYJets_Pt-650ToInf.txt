@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-DYJets_Pt-650ToInf	DYJetsToLL_Pt-650ToInf_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8	0.03636	1028217	422153

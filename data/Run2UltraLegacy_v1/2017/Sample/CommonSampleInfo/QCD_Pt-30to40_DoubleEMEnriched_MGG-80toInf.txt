@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+QCD_Pt-30to40_DoubleEMEnriched_MGG-80toInf	QCD_Pt-30to40_DoubleEMEnriched_MGG-80toInf_TuneCP5_13TeV_Pythia8	216000.	14669541	14669541

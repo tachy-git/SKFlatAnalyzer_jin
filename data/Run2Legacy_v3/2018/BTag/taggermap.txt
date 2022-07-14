@@ -1,8 +1,0 @@
-### taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X on 6 Feb 2019
-2018 DeepCSV         Loose     0.1241
-2018 DeepCSV         Medium    0.4184
-2018 DeepCSV         Tight     0.7527
-2018 DeepJet         Loose     0.0494
-2018 DeepJet         Medium    0.2770
-2018 DeepJet         Tight     0.7264
-  

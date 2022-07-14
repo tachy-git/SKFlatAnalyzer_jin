@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+DYJets_MG	DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8	6077.22	98433266	98433266.0

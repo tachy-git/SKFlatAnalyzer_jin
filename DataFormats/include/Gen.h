@@ -51,7 +51,7 @@ public:
   inline bool fromHardProcessFinalState() const { return j_fromHardProcessFinalState; }
   inline bool isMostlyLikePythia6Status3() const { return j_isMostlyLikePythia6Status3; }
 
-  virtual void Print();
+  virtual void Print() const;
 
 private:
 

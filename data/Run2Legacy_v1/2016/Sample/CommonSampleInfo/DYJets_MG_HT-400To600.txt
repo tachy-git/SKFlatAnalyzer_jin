@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-DYJets_MG_HT-400To600	DYJetsToLL_M-50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8	6.98394	9725661	9725661

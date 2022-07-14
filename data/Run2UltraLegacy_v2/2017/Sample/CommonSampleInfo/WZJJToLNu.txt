@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+WZJJToLNu WZJJ-private 0.01780708628 188000 188000.0 

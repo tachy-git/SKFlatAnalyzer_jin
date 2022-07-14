@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+WWToLNuQQ_powheg	WWToLNuQQ_NNPDF31_TuneCP5_13TeV-powheg-pythia8	49.997	19199100	19127022

@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-QCD_Pt-120to170_MuEnrichedPt5	QCD_Pt-120to170_MuEnrichedPt5_TuneCP5_13TeV_pythia8	1	20774848	20774848

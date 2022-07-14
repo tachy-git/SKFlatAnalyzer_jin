@@ -23,8 +23,8 @@ void ExampleRun::initializeAnalyzer(){
   };
   //==== corresponding Muon ID SF Keys for mcCorr->MuonID_SF()
   MuonIDSFKeys = {
-    "NUM_MediumID_DEN_genTracks",
-    "NUM_TightID_DEN_genTracks",
+    "NUM_MediumID_DEN_TrackerMuons",
+    "NUM_TightID_DEN_TrackerMuons",
   };
 
   //==== At this point, sample informations (e.g., IsDATA, DataStream, MCSample, or DataYear) are all set
@@ -205,25 +205,25 @@ void ExampleRun::executeEvent(){
 
     //==== 1) PDF Error
     //==== Obtain RMS of the distribution later
-    for(unsigned int i=0; i<PDFWeights_Error->size(); i++){
-      FillHist("XSecError/MET_PDFError_"+TString::Itoa(i,10), MET, PDFWeights_Error->at(i), 200, 0., 200.);
+    for(unsigned int i=0; i<weight_PDF->size(); i++){
+      FillHist("XSecError/MET_PDFError_"+TString::Itoa(i,10), MET, weight_PDF->at(i), 200, 0., 200.);
     }
 
     //==== 2) PDF AlphaS
     //==== Look for PDF4LHC paper..
     //==== https://arxiv.org/abs/1510.03865
-    if(PDFWeights_AlphaS->size()==2){
-      FillHist("XSecError/MET_PDFAlphaS_Down", MET, PDFWeights_AlphaS->at(0), 200, 0., 200.);
-      FillHist("XSecError/MET_PDFAlphaS_Up", MET, PDFWeights_AlphaS->at(1), 200, 0., 200.);
+    if(weight_AlphaS->size()==2){
+      FillHist("XSecError/MET_PDFAlphaS_Down", MET, weight_AlphaS->at(0), 200, 0., 200.);
+      FillHist("XSecError/MET_PDFAlphaS_Up", MET, weight_AlphaS->at(1), 200, 0., 200.);
     }
 
     //==== 3) Scale
     //==== Obtain the envelop of the distribution later
-    for(unsigned int i=0; i<PDFWeights_Scale->size(); i++){
+    for(unsigned int i=0; i<weight_Scale->size(); i++){
       //==== i=5 and 7 are unphysical
       if(i==5) continue;
       if(i==7) continue;
-      FillHist("XSecError/MET_Scale_"+TString::Itoa(i,10), MET, PDFWeights_Scale->at(i), 200, 0., 200.);
+      FillHist("XSecError/MET_Scale_"+TString::Itoa(i,10), MET, weight_Scale->at(i), 200, 0., 200.);
     }
 
   }
@@ -370,14 +370,11 @@ void ExampleRun::executeEventFromParameter(AnalyzerParameter param){
   //==== If MC
   if(!IsDATA){
 
-    //==== weight_norm_1invpb is set to be event weight normalized to 1 pb-1
-    //==== So, you have to multiply trigger luminosity
+    //==== MCweight is normalized to 1 pb-1.
+    weight *= MCweight();
+
     //==== you can pass trigger names to ev.GetTriggerLumi(), but if you are using unprescaled trigger, simply pass "Full"
-
-    weight *= weight_norm_1invpb*ev.GetTriggerLumi("Full");
-
-    //==== MCweight is +1 or -1. Should be multiplied if you are using e.g., aMC@NLO NLO samples
-    weight *= ev.MCweight();
+    weight *= ev.GetTriggerLumi("Full");
 
     //==== L1Prefire reweight
     weight *= weight_Prefire;
@@ -385,7 +382,8 @@ void ExampleRun::executeEventFromParameter(AnalyzerParameter param){
     //==== Example of applying Muon scale factors
     for(unsigned int i=0; i<muons.size(); i++){
 
-      double this_idsf  = mcCorr->MuonID_SF (param.Muon_ID_SF_Key,  muons.at(i).Eta(), muons.at(i).MiniAODPt());
+      double this_idsf = 1.;
+      //double this_idsf  = mcCorr->MuonID_SF (param.Muon_ID_SF_Key,  muons.at(i).Eta(), muons.at(i).MiniAODPt());
 
       //==== If you have iso SF, do below. Here we don't.
       //double this_isosf = mcCorr->MuonISO_SF(param.Muon_ISO_SF_Key, muons.at(i).Eta(), muons.at(i).MiniAODPt());

@@ -1,0 +1,13 @@
+DYJets_MG		DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8		6077.22	104156500		104156500.0
+DYJets	DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8	6077.22	95186515		64045437.0
+DYJetsToEE_MiNNLO		DYJetsToEE_M-50_massWgtFix_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos		1976.17	99796990		83789404.0
+DYJetsToMuMu_MiNNLO	DYJetsToMuMu_M-50_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos	1976.17	89918896		75474850.0
+DYJetsToTauTau_MiNNLO		DYJetsToTauTau_M-50_AtLeastOneEorMuDecay_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos	1147.39	49389971		41466119.0
+SingleTop_tW_antitop_NoFullyHad	ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8	19.20		3800996	3800814.0
+SingleTop_tW_top_NoFullyHad	ST_tW_top_5f_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8	19.20		3361253	3361115.0
+TTLJ_powheg	TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8		365.34	158834000		157552870.0
+TTLL_powheg	TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8	88.29		48254000		47863886.0
+WJets_MG		WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8		61526.7	88463979		88463979.0
+WW_pythia		WW_TuneCP5_13TeV-pythia8		118.7		15991000		15991000.0
+WZ_pythia		WZ_TuneCP5_13TeV-pythia8		47.13		7768000	7768000.0
+ZZ_pythia		ZZ_TuneCP5_13TeV-pythia8		16.523	1200000	1200000.0

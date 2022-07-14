@@ -1,2 +1,0 @@
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2017/ZToMuMu_NNPDF31_13TeV-powheg_M_1400_2300/SKFlat_Run2Legacy_v1/190125_125213/0000/SKFlatNtuple_2017_MC_1.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jskim/SKFlat/2017/ZToMuMu_NNPDF31_13TeV-powheg_M_1400_2300/SKFlat_Run2Legacy_v1/190125_125213/0000/SKFlatNtuple_2017_MC_2.root

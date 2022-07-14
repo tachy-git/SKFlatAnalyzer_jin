@@ -136,9 +136,18 @@ public:
   bool Pass_CutBasedVeto() const;
   void SetRho(double r);
   inline double Rho() const { return j_Rho; }
-
   void SetIsGsfCtfScPixChargeConsistent(bool b);
   inline bool IsGsfCtfScPixChargeConsistent() const { return j_isGsfCtfScPixChargeConsistent; }
+  inline void SetR9(double r9) { j_r9=r9; }
+  inline double R9() const { return j_r9; }
+  inline void SetL1Et(double l1et) { j_L1Et=l1et; }
+  inline double L1Et() const { return j_L1Et; }
+
+  void SetFilterBits(ULong64_t filterbits){ j_filterbits=filterbits; }
+  void SetPathBits(ULong64_t pathbits){ j_pathbits=pathbits; }
+  bool PassFilter(TString filter) const;
+  bool PassPath(TString path) const;
+
     
 private:
 
@@ -154,12 +163,17 @@ private:
   double j_Full5x5_sigmaIetaIeta, j_dEtaSeed, j_dPhiIn, j_HoverE, j_InvEminusInvP, j_e2x5OverE5x5, j_e1x5OverE5x5, j_trkiso, j_dr03EcalRecHitSumEt, j_dr03HcalDepth1TowerSumEt;
   double j_dr03HcalTowerSumEt, j_dr03TkSumPt, j_ecalPFClusterIso, j_hcalPFClusterIso;
   bool j_isEcalDriven;
+  double j_L1Et;
   unsigned int j_IDBit;
   vector<int> j_IDCutBit;
   double j_RelPFIso_Rho;
 
   double j_Rho;
   int j_isGsfCtfScPixChargeConsistent;
+  double j_r9;
+
+  ULong64_t j_filterbits;
+  ULong64_t j_pathbits;
 
   ClassDef(Electron,1)
 

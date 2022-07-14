@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-WW_pythia	WW_TuneCP5_13TeV-pythia8	118.7	7791498	7791498

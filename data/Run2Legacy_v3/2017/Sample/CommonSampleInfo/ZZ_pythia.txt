@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-ZZ_pythia	ZZ_TuneCP5_13TeV-pythia8	16.523	1925931	1925931

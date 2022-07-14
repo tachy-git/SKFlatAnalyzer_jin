@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+DYJets_M-100to200 DYJetsToLL_M-100to200_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 226.6 16141342.000000 10466372.000000

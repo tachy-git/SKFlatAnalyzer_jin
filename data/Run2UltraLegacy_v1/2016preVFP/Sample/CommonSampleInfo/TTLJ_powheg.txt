@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+TTLJ_powheg	TTToSemilepton_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8	365.34	152669800	152669800

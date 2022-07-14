@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+WGToLNuG_01J	WGToLNuG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8	1.	27933663	16780663

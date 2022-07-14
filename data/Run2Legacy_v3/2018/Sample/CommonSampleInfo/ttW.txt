@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw # XSDB
-ttW	ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8	0.4611	12816567	12771749	## From XSDB

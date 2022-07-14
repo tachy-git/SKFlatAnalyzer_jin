@@ -40,12 +40,18 @@ BTagEntry::BTagEntry(const std::string &csvLine)
   std::stringstream buff(csvLine);
   std::vector<std::string> vec;
   std::string token;
+  std::string word="";
   while (std::getline(buff, token, ","[0])) {
-    token = BTagEntry::trimStr(token);
-    if (token.empty()) {
+    word += BTagEntry::trimStr(token);
+    if (word.empty()) {
       continue;
     }
-    vec.push_back(token);
+    if(std::count(word.begin(),word.end(),'(')-std::count(word.begin(),word.end(),')')!=0){
+      word+=",";
+      continue;
+    }
+    vec.push_back(word);
+    word="";
   }
   if (vec.size() != 11) {
 std::cerr << "ERROR in BTagCalibration: "
@@ -73,14 +79,21 @@ throw std::exception();
   }
 
   // make parameters
-  unsigned op = stoi(vec[0]);
+  unsigned op=10;
+  if     (vec[0]=="L"    ) op = BTagEntry::OP_LOOSE;
+  else if(vec[0]=="M"    ) op = BTagEntry::OP_MEDIUM;
+  else if(vec[0]=="T"    ) op = BTagEntry::OP_TIGHT;
+  else if(vec[0]=="shape") op = BTagEntry::OP_RESHAPING;
   if (op > 3) {
 std::cerr << "ERROR in BTagCalibration: "
           << "Invalid csv line; OperatingPoint > 3: "
           << csvLine;
 throw std::exception();
   }
-  unsigned jf = stoi(vec[3]);
+  unsigned jf = 10; 
+  if     (vec[3]=="5") jf = BTagEntry::FLAV_B;
+  else if(vec[3]=="4") jf = BTagEntry::FLAV_C;
+  else if(vec[3]=="0") jf = BTagEntry::FLAV_UDSG;
   if (jf > 2) {
 std::cerr << "ERROR in BTagCalibration: "
           << "Invalid csv line; JetFlavor > 2: "

@@ -1,8 +1,0 @@
-/data7/DATA/SKFlat/Run2Legacy_v3/2016/MC/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/190502_141546/0000/SKFlatNtuple_2016_MC_1.root
-/data7/DATA/SKFlat/Run2Legacy_v3/2016/MC/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/190502_141546/0000/SKFlatNtuple_2016_MC_2.root
-/data7/DATA/SKFlat/Run2Legacy_v3/2016/MC/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/190502_141546/0000/SKFlatNtuple_2016_MC_3.root
-/data7/DATA/SKFlat/Run2Legacy_v3/2016/MC/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/190502_141546/0000/SKFlatNtuple_2016_MC_4.root
-/data7/DATA/SKFlat/Run2Legacy_v3/2016/MC/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/190502_141546/0000/SKFlatNtuple_2016_MC_5.root
-/data7/DATA/SKFlat/Run2Legacy_v3/2016/MC/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/190502_141546/0000/SKFlatNtuple_2016_MC_6.root
-/data7/DATA/SKFlat/Run2Legacy_v3/2016/MC/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/190502_141546/0000/SKFlatNtuple_2016_MC_7.root
-/data7/DATA/SKFlat/Run2Legacy_v3/2016/MC/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/190502_141546/0000/SKFlatNtuple_2016_MC_8.root

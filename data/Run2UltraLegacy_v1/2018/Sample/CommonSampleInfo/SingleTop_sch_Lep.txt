@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+SingleTop_sch_Lep	ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-madgraph-pythia8	3.36	39917000	24906122

@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw
-DYJets10to50_MG	DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8	18610	40364234	29374008

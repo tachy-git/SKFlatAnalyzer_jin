@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+ttZToQQ	TTZToQQ_TuneCUETP8M1_13TeV-amcatnlo-pythia8	0.5297	749400	351164

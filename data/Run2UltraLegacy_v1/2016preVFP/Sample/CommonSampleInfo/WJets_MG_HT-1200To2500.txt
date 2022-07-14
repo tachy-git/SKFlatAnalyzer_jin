@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+WJets_MG_HT-1200To2500	WJetsToLNu_HT-1200To2500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8	1.60809	6872441	6872441

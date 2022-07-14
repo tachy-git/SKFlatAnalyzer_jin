@@ -11,9 +11,6 @@ public:
   Event();
   ~Event();
 
-  void SetMCweight(double genw);
-  inline double MCweight() const { return j_MCweight; }
-
   void SetnPV(double n);
   inline int nPV() const { return j_nPV; }
 
@@ -26,15 +23,20 @@ public:
   void SetMET(double pt, double phi);
   inline Particle GetMETVector() const {return j_METVector;}
 
-  void SetDataYear(int y);
-  inline int DataYear() const {return j_DataYear;}
+  void SetEra(TString era){
+    j_DataEra=era;
+    j_DataYear=TString(era(0,4)).Atoi();
+  }
+  TString GetEra() const { return j_DataEra; }
+  int GetYear() const { return j_DataYear; }
+
 
 private:
-  double j_MCweight;
   int j_nPV;
   vector<string> j_HLT_TriggerName;
   Particle j_METVector;
   int j_DataYear;
+  TString j_DataEra;
 
   ClassDef(Event,1)
 };

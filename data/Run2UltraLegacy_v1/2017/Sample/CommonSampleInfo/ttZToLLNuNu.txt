@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+ttZToLLNuNu	TTZToLLNuNu_M-10_TuneCP5_PSweights_13TeV-amcatnlo-pythia8	0.2529	11092000	5239484

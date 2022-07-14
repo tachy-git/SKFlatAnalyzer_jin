@@ -1,6 +1,0 @@
-/data7/DATA/SKFlat/Run2Legacy_v1/2017/MC/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/190103_171342/0000/SKFlatNtuple_2017_MC_1.root
-/data7/DATA/SKFlat/Run2Legacy_v1/2017/MC/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/190103_171342/0000/SKFlatNtuple_2017_MC_2.root
-/data7/DATA/SKFlat/Run2Legacy_v1/2017/MC/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/190103_171342/0000/SKFlatNtuple_2017_MC_3.root
-/data7/DATA/SKFlat/Run2Legacy_v1/2017/MC/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/190103_171342/0000/SKFlatNtuple_2017_MC_4.root
-/data7/DATA/SKFlat/Run2Legacy_v1/2017/MC/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/190103_171342/0000/SKFlatNtuple_2017_MC_5.root
-/data7/DATA/SKFlat/Run2Legacy_v1/2017/MC/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/190103_171342/0000/SKFlatNtuple_2017_MC_6.root

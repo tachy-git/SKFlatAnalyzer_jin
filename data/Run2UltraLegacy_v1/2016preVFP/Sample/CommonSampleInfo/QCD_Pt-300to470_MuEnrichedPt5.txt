@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+QCD_Pt-300to470_MuEnrichedPt5	QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8	797.35269	49005976	49005976

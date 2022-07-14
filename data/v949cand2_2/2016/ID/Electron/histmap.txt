@@ -1,5 +1,0 @@
-RECO	SF	ptgt20	EGM2D_BtoH_GT20GeV_RecoSF_Legacy2016.root	EGamma_SF2D	TH2F
-RECO	SF	ptlt20	EGM2D_BtoH_low_RecoSF_Legacy2016.root	EGamma_SF2D	TH2F
-ID	SF	passHEEPID_Barrel	HEEP_SF.root	SF_Et_Barrel	TGraphAsymmErrors
-ID	SF	passHEEPID_Endcap	HEEP_SF.root	SF_Et_Endcap	TGraphAsymmErrors
-ID	SF	passMediumID	2016LegacyReReco_ElectronMedium.root	EGamma_SF2D	TH2F

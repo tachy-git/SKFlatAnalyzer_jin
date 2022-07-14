@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+ttWToLNu	TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8	0.2043	5280565	2716249

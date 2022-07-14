@@ -1,2 +1,0 @@
-# alias PD xsec nmc sumw #FIXME wrong alphaS scale, 190523_163649: 0.75->1.5, 190531_000316: OK
-DY1Jets DYToLL_1J_13TeV-amcatnloFXFX-pythia8 859.589402 92293209.000000 41933535.000000

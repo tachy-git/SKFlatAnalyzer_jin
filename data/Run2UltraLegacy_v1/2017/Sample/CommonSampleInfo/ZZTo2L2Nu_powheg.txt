@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumw
+ZZTo2L2Nu_powheg	ZZTo2L2Nu_13TeV_powheg_pythia8	0.5644	8744768	8733658

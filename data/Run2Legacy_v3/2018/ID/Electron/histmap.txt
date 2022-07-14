@@ -1,6 +1,0 @@
-ID	SF	passMVAID_iso_WP80	2018_ElectronMVA80.root	EGamma_SF2D	TH2F
-ID	SF	passMVAID_noIso_WP80	2018_ElectronMVA80noiso.root	EGamma_SF2D	TH2F
-ID	SF	passTightID	2018_ElectronTight.root	EGamma_SF2D	TH2F
-ID	SF	passMediumID	2018_ElectronMedium.root	EGamma_SF2D	TH2F
-RECO	SF	ptgt20	egammaEffi.txt_EGM2D_updatedAll.root	EGamma_SF2D	TH2F
-RECO	SF	ptlt20	egammaEffi.txt_EGM2D_updatedAll.root	EGamma_SF2D	TH2F

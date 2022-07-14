@@ -111,7 +111,7 @@ TString AnalyzerParameter::GetSystType(){
   }
   else{
     cout << "[AnalyzerParameter::GetSystType] Wrong Syst" << endl;
-    exit(EXIT_FAILURE);
+    exit(ENODATA);
     return "ERROR";
   }
 
