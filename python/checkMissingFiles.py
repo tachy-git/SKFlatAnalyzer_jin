@@ -7,6 +7,7 @@ if __name__=="__main__":
         samplename=os.path.basename(sample).replace(".txt","")
         era=re.search(r"/{tag}/([^/]*)/".format(tag=os.environ["SKFlatV"]),sample).group(1)
         last=int(os.popen("cat {} | sort -V |tail -n1|xargs -i basename {{}}|sed 's/^.*_\([0-9]*\)\.root$/\\1/'".format(sample)).read())
+        if "SkimTree" in samplename: last+=1
         num=int(os.popen("cat {} | wc -l".format(sample)).read())
         if last!=num:
             print era,samplename,":",num,"/",last
