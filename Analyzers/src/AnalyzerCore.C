@@ -433,14 +433,14 @@ std::vector<Jet> AnalyzerCore::GetAllJets(){
     if(!IsDATA){
       jet *= jet_smearedRes->at(i);
       jet.SetResShift( jet_smearedResUp->at(i)/jet_smearedRes->at(i), jet_smearedResDown->at(i)/jet_smearedRes->at(i) );
+      jet.SetGenFlavours(jet_partonFlavour->at(i), jet_hadronFlavour->at(i));
+      jet.SetGenHFHadronMatcher(jet_GenHFHadronMatcher_flavour->at(i),jet_GenHFHadronMatcher_origin->at(i));
     }
     jet.SetBJetNNCorrection(jet_bJetNN_corr->at(i),jet_bJetNN_res->at(i));
     jet.SetCJetNNCorrection(jet_cJetNN_corr->at(i),jet_cJetNN_res->at(i));
     jet.SetCharge(jet_charge->at(i));
 
     jet.SetArea(jet_area->at(i));
-    jet.SetGenFlavours(jet_partonFlavour->at(i), jet_hadronFlavour->at(i));
-    jet.SetGenHFHadronMatcher(jet_GenHFHadronMatcher_flavour->at(i),jet_GenHFHadronMatcher_origin->at(i));
     std::vector<double> tvs = {
       jet_DeepCSV->at(i),
       jet_DeepCSV_CvsL->at(i),
