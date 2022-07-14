@@ -30,6 +30,7 @@ do
 	elif [ ${#CROSSSECTIONS[@]} -eq 0 ]; then
 	    CROSSSECTION=""
 	else
+            echo "NAME = ${NAME}"
 	    echo "candidate cross sections= ${CROSSSECTIONS[@]}"
 	    read -p "select cross section: " CROSSSECTION
 	    [ -z "$CROSSSECTION" ] && CROSSSECTION=FIXMECROSSSECTION
@@ -48,6 +49,7 @@ do
 	    then 
 		CROSSSECTION=${CROSSSECTIONS[0]}
 	    else
+                echo "NAME = ${NAME}"
 		echo "candidate cross sections= ${CROSSSECTIONS[@]}"
 		read -p "select cross section: " CROSSSECTION
 		[ -z "$CROSSSECTION" ] && CROSSSECTION=FIXMECROSSSECTION
