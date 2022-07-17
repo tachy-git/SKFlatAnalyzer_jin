@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumsign sumw
+WtoLNtoLNuZtoLNuQQ_VBF_TypeIHeavyN-El_MN400_TuneCP5_13TeV-amcatnlo-pythia8	WtoLNtoLNuZtoLNuQQ_VBF_TypeIHeavyN-El_MN400_TuneCP5_13TeV-amcatnlo-pythia8	1	40000	18314.0	1.383143143471e-02

@@ -1,0 +1,6 @@
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2018/MC/WtoLNtoLNuZtoLNuBB_VBF_TypeIHeavyN-Mu_MN1000_TuneCP5_13TeV-amcatnlo-pythia8/220716_005006/0000/SKFlatNtuple_2018_MC_1.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2018/MC/WtoLNtoLNuZtoLNuBB_VBF_TypeIHeavyN-Mu_MN1000_TuneCP5_13TeV-amcatnlo-pythia8/220716_005006/0000/SKFlatNtuple_2018_MC_2.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2018/MC/WtoLNtoLNuZtoLNuBB_VBF_TypeIHeavyN-Mu_MN1000_TuneCP5_13TeV-amcatnlo-pythia8/220716_005006/0000/SKFlatNtuple_2018_MC_3.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2018/MC/WtoLNtoLNuZtoLNuBB_VBF_TypeIHeavyN-Mu_MN1000_TuneCP5_13TeV-amcatnlo-pythia8/220716_005006/0000/SKFlatNtuple_2018_MC_4.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2018/MC/WtoLNtoLNuZtoLNuBB_VBF_TypeIHeavyN-Mu_MN1000_TuneCP5_13TeV-amcatnlo-pythia8/220716_005006/0000/SKFlatNtuple_2018_MC_5.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2018/MC/WtoLNtoLNuZtoLNuBB_VBF_TypeIHeavyN-Mu_MN1000_TuneCP5_13TeV-amcatnlo-pythia8/220716_005006/0000/SKFlatNtuple_2018_MC_6.root

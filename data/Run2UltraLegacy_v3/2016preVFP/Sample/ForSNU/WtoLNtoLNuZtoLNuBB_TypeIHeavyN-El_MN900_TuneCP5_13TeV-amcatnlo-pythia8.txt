@@ -1,0 +1,4 @@
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2016preVFP/MC/WtoLNtoLNuZtoLNuBB_TypeIHeavyN-El_MN900_TuneCP5_13TeV-amcatnlo-pythia8/220716_014107/0000/SKFlatNtuple_2016preVFP_MC_1.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2016preVFP/MC/WtoLNtoLNuZtoLNuBB_TypeIHeavyN-El_MN900_TuneCP5_13TeV-amcatnlo-pythia8/220716_014107/0000/SKFlatNtuple_2016preVFP_MC_2.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2016preVFP/MC/WtoLNtoLNuZtoLNuBB_TypeIHeavyN-El_MN900_TuneCP5_13TeV-amcatnlo-pythia8/220716_014107/0000/SKFlatNtuple_2016preVFP_MC_3.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2016preVFP/MC/WtoLNtoLNuZtoLNuBB_TypeIHeavyN-El_MN900_TuneCP5_13TeV-amcatnlo-pythia8/220716_014107/0000/SKFlatNtuple_2016preVFP_MC_4.root

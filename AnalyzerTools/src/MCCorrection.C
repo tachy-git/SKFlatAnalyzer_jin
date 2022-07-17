@@ -875,7 +875,6 @@ void MCCorrection::SetupJetTagging(){
   TString btagpath = datapath+"/"+GetEra()+"/BTag/";
 
   std::map< string, BTagCalibration > tmp_map_BTagCalibration; //==== key = tagger+"_"+method
-
   for(unsigned int i=0; i<jetTaggingPars.size(); i++){
     //==== (DeepCSV,Medium,incl,comb
 
