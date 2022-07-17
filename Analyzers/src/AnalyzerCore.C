@@ -1006,23 +1006,16 @@ void AnalyzerCore::initializeAnalyzerTools(){
 }
 
 double AnalyzerCore::MCweight(bool usesign, bool norm_1invpb) const {
-
   if(IsDATA) return 1.;
-
   double weight=gen_weight;
-
   //MiNNLO sample has some events with unphysically large weight
-  if(MCSample.Contains("DYJets") && MCSample.Contains("MiNNLO")){
+  if(MCSample.Contains("DYJets")&&MCSample.Contains("MiNNLO")){
     double maxweight=2358.0700*5.;
     if(abs(weight)>maxweight){
       weight=weight>0. ? maxweight : -1.0*maxweight;
     }
   }
-
-  if(MCSample.Contains("WJets") && MCSample.Contains("Sherpa")){
-    usesign = false;
-  }
-
+  
   if(usesign){
     if(weight>0) weight=1.0;
     else if(weight<0) weight=-1.0;
