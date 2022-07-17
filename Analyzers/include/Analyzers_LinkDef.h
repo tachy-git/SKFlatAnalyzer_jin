@@ -18,4 +18,6 @@
 #pragma link C++ class MeasureJetTaggingEfficiency+;
 #pragma link C++ class SkimTree_Dilepton+;
 
+#pragma link C++ class singlelepton_analysis+;
+
 #endif

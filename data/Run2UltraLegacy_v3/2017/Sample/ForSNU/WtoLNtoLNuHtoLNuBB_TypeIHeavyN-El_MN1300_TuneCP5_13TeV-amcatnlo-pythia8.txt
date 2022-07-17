@@ -1,0 +1,1 @@
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/MC/WtoLNtoLNuHtoLNuBB_TypeIHeavyN-El_MN1300_TuneCP5_13TeV-amcatnlo-pythia8/220702_171457/0000/SKFlatNtuple_2017_MC_1.root

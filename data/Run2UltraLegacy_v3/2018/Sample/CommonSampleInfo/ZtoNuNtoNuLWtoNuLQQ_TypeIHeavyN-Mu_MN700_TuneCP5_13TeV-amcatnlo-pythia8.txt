@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumsign sumw
+ZtoNuNtoNuLWtoNuLQQ_TypeIHeavyN-Mu_MN700_TuneCP5_13TeV-amcatnlo-pythia8	ZtoNuNtoNuLWtoNuLQQ_TypeIHeavyN-Mu_MN700_TuneCP5_13TeV-amcatnlo-pythia8	1	80000	74438.0	2.060796901770e-02
