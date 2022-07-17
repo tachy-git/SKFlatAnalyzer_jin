@@ -65,7 +65,7 @@ public:
 
 
   std::vector<Electron> GetAllElectrons();
-  std::vector<Electron> GetElectrons(TString id, double ptmin, double fetamax, bool vetoHEM = false);
+  std::vector<Electron> GetElectrons(TString id, double ptmin, double fetamax);
 
   std::vector<Muon> GetAllMuons();
   std::vector<Muon> GetMuons(TString id, double ptmin, double fetamax);
@@ -201,7 +201,6 @@ public:
   static bool IsFinalPhotonSt23_Public(const std::vector<Gen>& TruthColl);
   int  GetPrElType_InSameSCRange_Public(int TruthIdx, const std::vector<Gen>& TruthColl);
   bool IsSignalPID(int pid);
-  bool FindHEMElectron(Electron electron);
 
   //==== Plotting
 
