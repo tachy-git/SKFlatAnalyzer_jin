@@ -64,6 +64,25 @@ else:
 
 
 
+GIT_BRANCH="Run2UltraLegacy-jalmond"
+GIT_BRANCH_SIGNAL="HNL_Run2UltraLegacy"
+
+os.system("git br -vv | grep '*' > tempGIT.txt")
+git_branch_infoline = open("tempGIT.txt").readlines()[0]
+os.system('rm tempGIT.txt')
+print git_branch_infoline.split()[1] 
+if args.Signal:
+    if not  git_branch_infoline.split()[1] == GIT_BRANCH_SIGNAL:
+        print ("ERROR: Running SIGNAL option in wrong branch... exit ")
+        print ("git co " + GIT_BRANCH_SIGNAL)
+        exit()
+else:
+    if not  git_branch_infoline.split()[1] == GIT_BRANCH:
+        print ("ERROR: Running in wrong branch... exit ")
+        print ("git co " + GIT_BRANCH)
+
+        exit()
+
 if args.UserInput:
     update_script=os.getenv("SKFlat_WD")+'/bin/UpdateSampleForSNU.sh'
 
@@ -235,6 +254,7 @@ for era in arr_eras:
             
             if CheckDuplicates(array_from_googledoc):
                 print '-----------------------'*3
+            update_summarymc_file(_era)
 
             continue
             
@@ -317,4 +337,7 @@ for era in arr_eras:
 
 
     vtimes.append(["finished_ime",time.time()])
-    Exit(vtimes,True)
+
+    update_summarymc_file(era)
+            
+Exit(vtimes,True)

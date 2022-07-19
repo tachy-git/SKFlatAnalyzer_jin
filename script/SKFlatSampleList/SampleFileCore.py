@@ -570,8 +570,9 @@ def make_common_sampleinfo(array_from_googledoc,_era, _dirlist, _outfiledir,data
             os.system('rm ' + data_skoutput+"/"+ var_alias +".txt")
 
 
-def update_summarymc_file(list_update, _era, _summary_file_path):
+def update_summarymc_file(_era):
     
+    print_message(1,"update_summarymc_file ")
     currentdir = os.getenv("PWD")
     var_skflat_wd=os.getenv("SKFlat_WD")
     FLAT_Version= ReadConfig("SKFlatVersion")
@@ -581,65 +582,6 @@ def update_summarymc_file(list_update, _era, _summary_file_path):
     os.chdir(currentdir)
     return 
 
-    print_message(1,"update_summarymc_file ")
-
-
-    arr_copy_file=[]
-    r_mc_outfile=open(_summary_file_path,'r')
-    for line in r_mc_outfile:
-        arr_copy_file.append(line)
-    r_mc_outfile.close()
-
-
-    _tmp_path_mc_outfile="tmp_summary_"+_era+".txt"
-    w_mc_outfile = open(_tmp_path_mc_outfile, "w")
-
-
-    for mc_info_lin in arr_copy_file:
-        if len(mc_info_lin.split())==0:
-            continue
-
-        _var_alias=""
-        _var_xsec=0
-
-        _nevents_no_w=0.
-        _nevents_sign=0.
-        _nevents_w=0.
-
-        update_alias=False
-        for up_line in list_update:
-            if len(up_line) ==0 :
-                continue
-
-            if  mc_info_lin.split()[0] == up_line[0]:
-               update_alias=True
-               _var_alias=up_line[0]
-               _var_xsec=up_line[1]
-               _nevents_no_w=up_line[2]
-               _nevents_sign=up_line[3]
-               _nevents_w=up_line[4]
-               break
-
-
-        if update_alias:
-
-            line_to_file = mc_info_lin.split()[0] + "\t" + mc_info_lin.split()[1] + "\t"+ str(_var_xsec) + "\t" +  str(_nevents_no_w)  + "\t"+str(_nevents_sign) + "\t"+str(_nevents_w) +" \n"
-
-            if not mc_info_lin == line_to_file:
-                print "Updating : " +mc_info_lin
-                print "----->     " + line_to_file
-            w_mc_outfile.write(line_to_file)
-        else:
-            w_mc_outfile.write(mc_info_lin)
-
-    w_mc_outfile.close()
-
-
-
-    os.system('mv ' + _tmp_path_mc_outfile + ' '  + _summary_file_path )
-
-
-    
 
 
 
@@ -711,7 +653,6 @@ def update_mc_samplelist_from_googledoc(array_from_googledoc,_era, _dirlist, _pa
         var_xsec  = find_googledoc_var_from_dsn(array_gd,_era,"xsec" , dsn)
 
         if var_alias == "NULL" :
-            print "Skipping " + var_alias
             continue
 
         if n_directories(_path_sklat_dir+_era+"/MC/"+dsn) == 0:
@@ -1201,7 +1142,7 @@ def get_effective_lumi(array_from_googledoc,_era,_skoutput ,data_skoutput, _skda
 
 
     if len(update_array) > 0:
-        update_summarymc_file(update_array,_era,_summary_path)
+        update_summarymc_file(_era)
 
     return return_list
 
