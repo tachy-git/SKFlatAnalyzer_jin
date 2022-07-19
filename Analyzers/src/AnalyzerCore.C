@@ -243,7 +243,7 @@ std::vector<Electron> AnalyzerCore::GetAllElectrons(){
 
 }
 
-std::vector<Electron> AnalyzerCore::GetElectrons(TString id, double ptmin, double fetamax){
+std::vector<Electron> AnalyzerCore::GetElectrons(TString id, double ptmin, double fetamax, bool vetoHEM){
 
   std::vector<Electron> electrons = GetAllElectrons();
   std::vector<Electron> out;
@@ -260,6 +260,12 @@ std::vector<Electron> AnalyzerCore::GetElectrons(TString id, double ptmin, doubl
       //cout << "Fail ID" << endl;
       continue;
     }
+    if(vetoHEM){
+      if ( FindHEMElectron (electrons.at(i)) ){
+        continue;
+      }
+    }
+
     out.push_back( electrons.at(i) );
   }
   return out;
@@ -723,7 +729,7 @@ std::vector<Muon> AnalyzerCore::SelectMuons(const std::vector<Muon>& muons, TStr
 
 }
 
-std::vector<Electron> AnalyzerCore::SelectElectrons(const std::vector<Electron>& electrons, TString id, double ptmin, double fetamax){
+std::vector<Electron> AnalyzerCore::SelectElectrons(const std::vector<Electron>& electrons, TString id, double ptmin, double fetamax, bool vetoHEM){
 
   std::vector<Electron> out;
   for(unsigned int i=0; i<electrons.size(); i++){
@@ -739,6 +745,12 @@ std::vector<Electron> AnalyzerCore::SelectElectrons(const std::vector<Electron>&
       //cout << "Fail ID" << endl;
       continue;
     }
+    if(vetoHEM){
+      if ( FindHEMElectron (electrons.at(i)) ){
+        continue;
+      }
+    }
+
     out.push_back(electrons.at(i));
   }
   return out;
@@ -841,6 +853,18 @@ std::vector<Electron> AnalyzerCore::SmearElectrons(const std::vector<Electron>& 
   }
 
   return out;
+
+}
+
+bool AnalyzerCore::FindHEMElectron(Electron electron){
+
+    if (DataYear != 2018) return false;
+
+    if (electron.Eta() < -1.25){
+        if((electron.Phi() < -0.82) && (electron.Phi() > -1.62)) return true;
+    }
+
+    return false;
 
 }
 
@@ -1006,8 +1030,10 @@ void AnalyzerCore::initializeAnalyzerTools(){
 }
 
 double AnalyzerCore::MCweight(bool usesign, bool norm_1invpb) const {
+
   if(IsDATA) return 1.;
   double weight=gen_weight;
+
   //MiNNLO sample has some events with unphysically large weight
   if(MCSample.Contains("DYJets")&&MCSample.Contains("MiNNLO")){
     double maxweight=2358.0700*5.;
@@ -1015,7 +1041,11 @@ double AnalyzerCore::MCweight(bool usesign, bool norm_1invpb) const {
       weight=weight>0. ? maxweight : -1.0*maxweight;
     }
   }
-  
+  //Sherpa sample needs weighted events
+  if(MCSample.Contains("WJets") && MCSample.Contains("Sherpa")){
+    usesign = false;
+  }
+
   if(usesign){
     if(weight>0) weight=1.0;
     else if(weight<0) weight=-1.0;

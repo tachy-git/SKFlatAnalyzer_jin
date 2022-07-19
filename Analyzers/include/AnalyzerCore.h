@@ -65,7 +65,7 @@ public:
 
 
   std::vector<Electron> GetAllElectrons();
-  std::vector<Electron> GetElectrons(TString id, double ptmin, double fetamax);
+  std::vector<Electron> GetElectrons(TString id, double ptmin, double fetamax, bool vetoHEM = false);
 
   std::vector<Muon> GetAllMuons();
   std::vector<Muon> GetMuons(TString id, double ptmin, double fetamax);
@@ -95,7 +95,7 @@ public:
   //==== Get AllObject in the begining, and apply cut
   //==================================================+
 
-  std::vector<Electron> SelectElectrons(const std::vector<Electron>& electrons, TString id, double ptmin, double fetamax);
+  std::vector<Electron> SelectElectrons(const std::vector<Electron>& electrons, TString id, double ptmin, double fetamax, bool vetoHEM = false);
 
   std::vector<Muon> UseTunePMuon(const std::vector<Muon>& muons);
   std::vector<Muon> SelectMuons(const std::vector<Muon>& muons, TString id, double ptmin, double fetamax);
@@ -201,6 +201,7 @@ public:
   static bool IsFinalPhotonSt23_Public(const std::vector<Gen>& TruthColl);
   int  GetPrElType_InSameSCRange_Public(int TruthIdx, const std::vector<Gen>& TruthColl);
   bool IsSignalPID(int pid);
+  bool FindHEMElectron(Electron electron);
 
   //==== Plotting
 

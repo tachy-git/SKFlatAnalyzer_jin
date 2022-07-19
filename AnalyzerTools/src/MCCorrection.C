@@ -250,16 +250,13 @@ double MCCorrection::MuonID_SF(TString ID, double eta, double pt, int sys){
   double value = 1.;
   double error = 0.;
 
-  if(DataYear!=2016){
-    eta = fabs(eta);
-  }
+  eta = fabs(eta);
 
-  if(ID=="NUM_TightID_DEN_genTracks" || ID=="NUM_HighPtID_DEN_genTracks"){
+  if(ID=="NUM_TightID_DEN_TrackerMuons" || ID=="NUM_MediumID_DEN_TrackerMuons" || ID=="NUM_HighPtID_DEN_TrackerMuons"){
     //==== boundaries
-    if(pt<20.) pt = 20.;
-    if(pt>=120.) pt = 119.;
+    if(pt<15.) pt = 15.1;
+    if(pt>=120.) pt = 119.9;
     if(eta>=2.4) eta = 2.39;
-    if(eta<-2.4) eta = -2.4;
   }
 
   TH2F *this_hist = map_hist_Muon["ID_SF_"+ID];
@@ -273,12 +270,7 @@ double MCCorrection::MuonID_SF(TString ID, double eta, double pt, int sys){
 
   int this_bin(-999);
 
-  if(DataYear==2016){
-    this_bin = this_hist->FindBin(eta,pt);
-  }
-  else{
-    this_bin = this_hist->FindBin(pt,eta);
-  }
+  this_bin = this_hist->FindBin(eta,pt);
 
   value = this_hist->GetBinContent(this_bin);
   error = this_hist->GetBinError(this_bin);
@@ -298,16 +290,13 @@ double MCCorrection::MuonISO_SF(TString ID, double eta, double pt, int sys){
   double value = 1.;
   double error = 0.;
 
-  if(DataYear!=2016){
-    eta = fabs(eta);
-  }
+  eta = fabs(eta);
 
-  if(ID=="NUM_TightRelIso_DEN_TightIDandIPCut" || ID=="NUM_LooseRelTkIso_DEN_HighPtIDandIPCut"){
+  if(ID=="NUM_TightRelIso_DEN_TightIDandIPCut" || ID=="NUM_TightRelIso_DEN_MediumID" || ID=="NUM_LooseRelTkIso_DEN_HighPtIDandIPCut"){
     //==== boundaries
-    if(pt<20.) pt = 20.;
-    if(pt>=120.) pt = 119.;
+    if(pt<15.) pt = 15.1;
+    if(pt>=120.) pt = 119.9;
     if(eta>=2.4) eta = 2.39;
-    if(eta<-2.4) eta = -2.4;
   }
 
   TH2F *this_hist = map_hist_Muon["ISO_SF_"+ID];
@@ -321,12 +310,7 @@ double MCCorrection::MuonISO_SF(TString ID, double eta, double pt, int sys){
 
   int this_bin(-999);
 
-  if(DataYear==2016){
-    this_bin = this_hist->FindBin(eta,pt);
-  }
-  else{
-    this_bin = this_hist->FindBin(pt,eta);
-  }
+  this_bin = this_hist->FindBin(eta,pt);
 
   value = this_hist->GetBinContent(this_bin);
   error = this_hist->GetBinError(this_bin);
@@ -495,10 +479,10 @@ double MCCorrection::ElectronID_SF(TString ID, double sceta, double pt, int sys)
   double value = 1.;
   double error = 0.;
 
-  if(pt<10.) pt = 10.;
-  if(pt>=500.) pt = 499.;
+  if(pt<10.) pt = 10.1;
+  if(pt>=500.) pt = 499.9;
   if(sceta>=2.5) sceta = 2.49;
-  if(sceta<-2.5) sceta = -2.5;
+  if(sceta<-2.5) sceta = -2.49;
 
   if( ID.Contains("HEEP") ){
 
@@ -875,7 +859,6 @@ void MCCorrection::SetupJetTagging(){
   TString btagpath = datapath+"/"+GetEra()+"/BTag/";
 
   std::map< string, BTagCalibration > tmp_map_BTagCalibration; //==== key = tagger+"_"+method
-
   for(unsigned int i=0; i<jetTaggingPars.size(); i++){
     //==== (DeepCSV,Medium,incl,comb
 
