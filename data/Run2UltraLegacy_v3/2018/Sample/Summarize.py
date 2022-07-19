@@ -8,7 +8,7 @@ out_MC = open('SampleSummary_MC.txt','w')
 out_Sig_PairN = open('SampleSummary_Signal_PairN.txt','w')
 out_Sig_HNWR = open('SampleSummary_Signal_HNWR.txt','w')
 
-FirstLine = '# alias PD xsec nmc sumw\n'
+FirstLine = '# alias PD xsec nmc sumsign sumw\n'
 out_MC.write(FirstLine)
 out_Sig_PairN.write(FirstLine)
 out_Sig_HNWR.write(FirstLine)
