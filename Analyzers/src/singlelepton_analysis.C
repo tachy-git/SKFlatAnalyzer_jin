@@ -8,16 +8,16 @@ void singlelepton_analysis::initializeAnalyzer(){
 
     muonTightIDs.clear();
     muonLooseIDs.clear();
+    Key_for_Muon_Trigger_SF.clear();
     electronTightIDs.clear();
     electronLooseIDs.clear();
     jetIDs.clear();
     fatjetIDs.clear();
 
-    muonTightIDs.push_back("POGLoose");
-    muonLooseIDs.push_back("POGMedium");
+    muonTightIDs.push_back("POGTight");
+    Key_for_Muon_Trigger_SF.push_back("POGTight");
 
-//    muonTightIDs.push_back("POGTight");
-//    muonLooseIDs.push_back("POGMedium");
+    muonLooseIDs.push_back("POGMedium");
 
 //    electronTightIDs.push_back("passMVAID_WP80");
 //    electronLooseIDs.push_back("passMVAID_WP90");
@@ -39,6 +39,7 @@ void singlelepton_analysis::initializeAnalyzer(){
         muonPtCut = 40.;
         electronPtCut = 40.;
         leptonPtCut = 20.;
+        Key_for_Muon_Trigger_SF.push_back("HLT_IsoMu24");
     }
     else if (DataYear == 2017){
         muonTriggers.push_back("HLT_IsoMu27_v");
@@ -48,6 +49,7 @@ void singlelepton_analysis::initializeAnalyzer(){
         muonPtCut = 40.;
         electronPtCut = 40.;
         leptonPtCut = 20.;
+        Key_for_Muon_Trigger_SF.push_back("HLT_IsoMu27");
     }
     else if(DataYear==2018){
         muonTriggers.push_back("HLT_IsoMu24_v");
@@ -57,6 +59,7 @@ void singlelepton_analysis::initializeAnalyzer(){
         muonPtCut = 40.;
         electronPtCut = 40.;
         leptonPtCut = 20.;
+        Key_for_Muon_Trigger_SF.push_back("HLT_IsoMu24");
     }
 
     jetPtCut = 30.; fatjetPtCut = 200.;
@@ -124,20 +127,8 @@ void singlelepton_analysis::executeEventFromParameter(AnalyzerParameter param){
         }
     }
     std::sort(muons.begin(), muons.end(), PtComparing);
-cout<<"!"<<endl;
-    std::vector<Electron> electronsLoose = SelectElectrons(allElectrons, param.Electron_Loose_ID, leptonPtCut, 2.1);
-    if (DataYear == 2018){
-        std::vector<Electron> electronsTemp;
-        for (unsigned int i=0 ; i < electronsLoose.size(); i++){
-            if (!((electronsLoose.at(i).Eta() < -1.25) && (electronsLoose.at(i).Phi() > -1.62 && electronsLoose.at(i).Phi() < -0.82))){
-                electronsTemp.push_back(electronsLoose.at(i));
-            }
-        }
-        electronsLoose.clear();
-        electronsLoose = electronsTemp;
-    }
-cout<<"!!"<<endl;
 
+    std::vector<Electron> electronsLoose = SelectElectrons(allElectrons, param.Electron_Loose_ID, leptonPtCut, 2.1, true);
     std::vector<Electron> electrons = SelectElectrons(electronsLoose, param.Electron_Tight_ID, leptonPtCut, 2.1);
     std::sort(electrons.begin(), electrons.end(), PtComparing);
 
@@ -146,7 +137,6 @@ cout<<"!!"<<endl;
     fatjetsNoSDMass = FatJetsVetoLeptonInside(fatjetsNoSDMass, electronsLoose, muonsLoose, 0.4);
     std::sort(fatjetsNoSDMass.begin(), fatjetsNoSDMass.end(), PtComparing);
     std::vector<FatJet> fatjets;
-cout<<"!!!"<<endl;
 
     std::vector<FatJet> xtobbfatjets, xtoqqfatjets;
     for (unsigned int i=0; i < fatjetsNoSDMass.size(); i++){
@@ -199,13 +189,12 @@ cout<<"!!!"<<endl;
             weight = weight * mcCorr->ElectronID_SF(param.Electron_ID_SF_Key, electrons.at(i).scEta(), electrons.at(i).Pt(), 0.);
             // FIXME no trigger SF
         }
-        /*
         for (unsigned int i=0; i < muons.size(); i++){
             double muon_pt_weight = muons.at(i).MiniAODPt() > 120. ? 119.9 :muons.at(i).MiniAODPt();
             weight = weight * mcCorr->MuonID_SF(param.Muon_ID_SF_Key, muons.at(i).Eta(), muon_pt_weight, 0.);
             weight = weight * mcCorr->MuonISO_SF(param.Muon_ISO_SF_Key, muons.at(i).Eta(), muon_pt_weight, 0.);
         }
-        */
+        weight = weight * mcCorr->MuonTrigger_SF(Key_for_Muon_Trigger_SF.at(0), Key_for_Muon_Trigger_SF.at(1), muons);
         /*
         if(MCSample.Contains("TT") && MCSample.Contains("powheg")){
             std::vector<Gen> gens = GetGens();

@@ -17,6 +17,7 @@ public:
   bool RunXSecSyst;
 
   std::vector<TString> muonTightIDs, muonLooseIDs;
+  std::vector<TString> Key_for_Muon_Trigger_SF;
   std::vector<TString> electronTightIDs, electronLooseIDs;
   std::vector<TString> jetIDs, fatjetIDs;
 
