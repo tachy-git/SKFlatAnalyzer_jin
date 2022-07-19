@@ -1,3 +1,4 @@
+*~
 *.pyc
 *.pcm
 *.d
@@ -5,3 +6,5 @@
 *_Dict.cxx
 lib/*.tar.gz
 */obj
+data/Run2UltraLegacy_*/*/Sample/*/*Type*
+data/Run2UltraLegacy_*/*/Sample/*/*private*
