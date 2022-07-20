@@ -5,6 +5,7 @@
 *.so
 *_Dict.cxx
 lib/*.tar.gz
+lib/*.rootmap
 */obj
 data/Run2UltraLegacy_*/*/Sample/*/*Type*
 data/Run2UltraLegacy_*/*/Sample/*/*private*

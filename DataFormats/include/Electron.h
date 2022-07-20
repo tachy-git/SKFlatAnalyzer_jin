@@ -134,6 +134,9 @@ public:
   bool Pass_CutBasedVetoNoIso() const;
   bool Pass_CutBasedLoose() const;
   bool Pass_CutBasedVeto() const;
+
+  bool Pass_HNLoosest() const;
+
   void SetRho(double r);
   inline double Rho() const { return j_Rho; }
   void SetIsGsfCtfScPixChargeConsistent(bool b);

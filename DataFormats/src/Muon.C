@@ -115,6 +115,11 @@ bool Muon::PassID(TString ID) const {
   //==== No cut
   if(ID=="NOCUT") return true;
 
+
+  if(ID=="HNLoosest") return Pass_HNVeto();
+
+
+
   cout << "[Electron::PassID] No id : " << ID << endl;
   exit(ENODATA);
 
@@ -129,6 +134,14 @@ bool Muon::Pass_POGTightWithTightIso() const {
 bool Muon::Pass_POGHighPtWithLooseTrkIso() const {
   if(!( isPOGHighPt() )) return false;
   if(!( TrkIso()/TuneP4().Pt()<0.1 )) return false;
+  return true;
+}
+
+bool Muon::Pass_HNVeto() const {
+  if(!( isPOGLoose() )) return false;
+  if(!( fabs(dXY())<0.2 && fabs(dZ())<0.5) ) return false;
+  if(!( RelIso()<0.6 ))  return false;
+  if(!( Chi2()<50. )) return false;
   return true;
 }
 

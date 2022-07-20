@@ -62,6 +62,10 @@ public:
   inline bool isPOGMedium() const {return PassSelector(CutBasedIdMedium);}
   inline bool isPOGLoose() const {return PassSelector(CutBasedIdLoose);}
 
+  //==== HN ID
+  bool Pass_HNVeto() const;
+
+
   void SetPOGMediumHIP(bool ismedium_hip, bool ismedium_nohip);
   inline bool isPOGMedium_hip() const {return j_ismedium_hip;} //hip mitigated ID. Default for 2016preVFP data
   inline bool isPOGMedium_nohip() const {return j_ismedium_nohip;} //ordinary medium ID. Default for 2016 MC
