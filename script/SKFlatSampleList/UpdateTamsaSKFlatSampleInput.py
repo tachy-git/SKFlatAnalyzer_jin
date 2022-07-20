@@ -65,7 +65,7 @@ else:
 
 
 GIT_BRANCH="Run2UltraLegacy-jalmond"
-GIT_BRANCH_SIGNAL="HNL_Run2UltraLegacy"
+GIT_BRANCH_SIGNAL="HNL_Run2UltraLegacy-shared"
 
 os.system("git br -vv | grep '*' > tempGIT.txt")
 git_branch_infoline = open("tempGIT.txt").readlines()[0]
