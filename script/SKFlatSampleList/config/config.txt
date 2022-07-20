@@ -1,0 +1,3 @@
+arr_eras         = 2016postVFP, 2016preVFP, 2017, 2018
+miniaod_versions = MiniAODv2
+SKFlatVersion    = Run2UltraLegacy_v3

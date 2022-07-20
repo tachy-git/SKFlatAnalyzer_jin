@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumsign sumw
+WpWp_QCD	WpWpJJ_QCDnotop_TuneCP5_13TeV-madgraph-pythia8	0.02221	486000	486000.0	486000.0 
