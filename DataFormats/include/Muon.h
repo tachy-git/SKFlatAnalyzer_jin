@@ -62,6 +62,10 @@ public:
   inline bool isPOGMedium() const {return PassSelector(CutBasedIdMedium);}
   inline bool isPOGLoose() const {return PassSelector(CutBasedIdLoose);}
 
+  //==== HN ID
+  bool Pass_HNVeto() const;
+
+
   void SetPOGMediumHIP(bool ismedium_hip, bool ismedium_nohip);
   inline bool isPOGMedium_hip() const {return j_ismedium_hip;} //hip mitigated ID. Default for 2016preVFP data
   inline bool isPOGMedium_nohip() const {return j_ismedium_nohip;} //ordinary medium ID. Default for 2016 MC
@@ -73,7 +77,7 @@ public:
   inline bool isPOGHighPt() const {return j_isPOGHighPt;}
 
   void SetIso(double ch04, double nh04, double ph04, double pu04, double trkiso);
-  void CalcPFRelIso();
+  void CalcPFRelIso(bool use_corrected_pt=true);
   inline double TrkIso() const {return j_trkiso;}
   double EA();
 

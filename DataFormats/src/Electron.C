@@ -164,6 +164,10 @@ bool Electron::PassID(TString ID) const{
   if(ID=="NOCUT") return true;
   if(ID=="TEST") return Pass_TESTID();
 
+  if(ID=="HNLoosest") return Pass_HNLoosest(); // OR of VETO IDs
+
+  
+
   cout << "[Electron::PassID] No id : " << ID << endl;
   exit(ENODATA);
 
@@ -381,6 +385,14 @@ bool Electron::Pass_CutBasedVeto() const{
 
   }
 
+}
+
+
+// Add loosest electron ID for Skim requirements 
+bool Electron::Pass_HNLoosest() const{
+  if(! (RelIso()< 0.6) ) return false;
+  if(!( Pass_CutBasedVetoNoIso() || (MVANoIso()>-0.95)  )) return false;
+  return true;
 }
 
 void Electron::SetRho(double r){

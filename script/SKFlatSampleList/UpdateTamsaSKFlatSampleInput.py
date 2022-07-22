@@ -195,7 +195,7 @@ for era in arr_eras:
 
     AssignTimeStamp(path_sklat_dir+era+'/MC/',array_from_googledoc)
 
-    MissingSamples(array_from_googledoc,array_from_googledoc_sig,path_sklat_dir+era+'/MC/',era)
+    MissingSamples(get_array_from_googledoc(era,miniaod_versions,False),array_from_googledoc_sig,path_sklat_dir+era+'/MC/',era)
 
     up3_start_era_time = time.time()
     vtimes.append(["Missing_file_time",time.time()])
