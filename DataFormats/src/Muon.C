@@ -53,15 +53,17 @@ void Muon::SetChi2(double chi2){
   j_chi2 = chi2;
 }
 
-void Muon::CalcPFRelIso(){
+void Muon::CalcPFRelIso(bool use_corrected_pt){
   double absiso = j_PFCH04+std::max( 0., j_PFNH04 + j_PFPH04 - 0.5*j_PU04 );
   //cout << "[Muon::CalcPFRelIso] j_PFCH04 = " << j_PFCH04 << endl;
   //cout << "[Muon::CalcPFRelIso] j_PFNH04 = " << j_PFNH04 << endl;
   //cout << "[Muon::CalcPFRelIso] j_PFPH04 = " << j_PFPH04 << endl;
   //cout << "[Muon::CalcPFRelIso] j_PU04 = " << j_PU04 << endl;
   //cout << "[Muon::CalcPFRelIso] --> absiso = " << absiso << endl;
-  this->SetRelIso(absiso/this->Pt());
-  //this->SetRelIso(absiso/this->MiniAODPt()); //TODO This is same as IDBit
+
+  if(use_corrected_pt)this->SetRelIso(absiso/this->Pt());
+  else this->SetRelIso(absiso/this->MiniAODPt()); 
+
 }
 
 double Muon::EA(){

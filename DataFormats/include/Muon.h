@@ -77,7 +77,7 @@ public:
   inline bool isPOGHighPt() const {return j_isPOGHighPt;}
 
   void SetIso(double ch04, double nh04, double ph04, double pu04, double trkiso);
-  void CalcPFRelIso();
+  void CalcPFRelIso(bool use_corrected_pt=true);
   inline double TrkIso() const {return j_trkiso;}
   double EA();
 
