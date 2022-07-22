@@ -344,7 +344,7 @@ double MCCorrection::MuonTrigger_Eff(TString ID, TString trig, int DataOrMC, dou
       if(pt<26.) return 1.; //FIXME
       if(eta>=2.4) eta = 2.39;
 
-      if(pt>500.) pt = 499.;
+      if(pt>200.) pt = 199.;
     }
     else if(trig=="Mu50"){
       if(pt<52.) return 1.; //FIXME
@@ -365,7 +365,7 @@ double MCCorrection::MuonTrigger_Eff(TString ID, TString trig, int DataOrMC, dou
       if(pt<29.) return 1.; //FIXME
       if(eta>=2.4) eta = 2.39;
 
-      if(pt>1200.) pt = 1199.;
+      if(pt>200.) pt = 199.;
     }
     else if(trig=="Mu50"){
       if(pt<52.) return 1.; //FIXME
@@ -382,7 +382,7 @@ double MCCorrection::MuonTrigger_Eff(TString ID, TString trig, int DataOrMC, dou
       if(pt<26.) return 1.; //FIXME
       if(eta>=2.4) eta = 2.39;
 
-      if(pt>1200.) pt = 1199.;
+      if(pt>200.) pt = 199.;
     }
     else if(trig=="Mu50"){
       if(pt<52.) return 1.; //FIXME
@@ -411,7 +411,7 @@ double MCCorrection::MuonTrigger_Eff(TString ID, TString trig, int DataOrMC, dou
     }
   }
 
-  int this_bin = this_hist->FindBin(pt,eta);
+  int this_bin = this_hist->FindBin(eta,pt);
 
   value = this_hist->GetBinContent(this_bin);
   error = this_hist->GetBinError(this_bin);
@@ -424,6 +424,8 @@ double MCCorrection::MuonTrigger_Eff(TString ID, TString trig, int DataOrMC, dou
 }
 
 double MCCorrection::MuonTrigger_SF(TString ID, TString trig, const std::vector<Muon>& muons, int sys){
+
+  if(muons.size() == 0) return 1.;
 
   if(ID=="Default") return 1.;
   if(trig=="Default") return 1.;
@@ -461,6 +463,8 @@ double MCCorrection::MuonTrigger_SF(TString ID, TString trig, const std::vector<
 }
 
 double MCCorrection::MuonTrigger_SF(TString ID, TString trig, const std::vector<Muon *>& muons, int sys){
+
+  if(muons.size() == 0) return 1.;
 
   std::vector<Muon> muvec;
   for(unsigned int i=0; i<muons.size(); i++){
