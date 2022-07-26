@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumsign sumw
+GGToLL	GGToLL_TuneCP5_13TeV-pythia8	15.05	3557000	3557000.0	3.557000000000e+06
