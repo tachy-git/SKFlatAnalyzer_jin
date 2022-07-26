@@ -7,3 +7,5 @@
 lib/*.tar.gz
 lib/*.rootmap
 */obj
+python/UserInfo_*.py
+!python/UserInfo_template.py
