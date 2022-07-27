@@ -42,12 +42,12 @@ while read line <&3; do
 	test "${#array[@]}" -eq "$(($VI+4))" || continue
 	## get info for MC
 	SAMPLE="${array[$(($VI+3))]}"
-	ALIAS=$(grep $SAMPLE $SKFlat_WD/data/$SKFlatV/$YEAR/Sample/SampleSummary_MC.txt|awk '{print $1}'|head -n1)
+	ALIAS=$(cat $SKFlat_WD/data/$SKFlatV/$YEAR/Sample/SampleSummary_*.txt|grep $SAMPLE|awk '{print $1}'|head -n1)
 	if [ "$ALIAS" = "" ]; then
-	    ALIAS=$(cat $SKFlat_WD/data/$SKFlatV/*/Sample/SampleSummary_MC.txt|grep $SAMPLE|awk '{print $1}'|head -n1)
+	    ALIAS=$(cat $SKFlat_WD/data/$SKFlatV/*/Sample/SampleSummary_*.txt|grep $SAMPLE|awk '{print $1}'|head -n1)
 	fi  
 	if [ "$ALIAS" = "" ]; then
-	    ALIAS=$(cat $SKFlat_WD/data/*/*/Sample/SampleSummary_MC.txt|grep $SAMPLE|awk '{print $1}'|head -n1)
+	    ALIAS=$(cat $SKFlat_WD/data/*/*/Sample/SampleSummary_*.txt|grep $SAMPLE|awk '{print $1}'|head -n1)
 	fi  
 	if [ "$ALIAS" = "" ]; then
 	    read -p "cannot find alias for $SAMPLE. exit or insert alias: " ALIAS

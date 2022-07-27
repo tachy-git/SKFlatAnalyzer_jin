@@ -24,7 +24,7 @@ do
 	## collect info
 	NAME=$(echo ${array[7]/.root/}|sed 's/GetEffLumi_//')
 	DASNAME=$(head -n1 $SKFlat_WD/data/$SKFlatV/$YEAR/Sample/ForSNU/${NAME}.txt|sed 's@/@ @g'|awk '{print $7}')
-	CROSSSECTIONS=($(cat $SKFlat_WD/data/$SKFlatV/$YEAR/Sample/SampleSummary_MC.txt|grep "^$NAME[^a-zA-Z0-9_]"|awk '{print $3}'|grep -v FIXMECROSSSECTION|uniq))
+	CROSSSECTIONS=($(cat $SKFlat_WD/data/$SKFlatV/$YEAR/Sample/SampleSummary_*.txt|grep "^$NAME[^a-zA-Z0-9_]"|awk '{print $3}'|grep -v FIXMECROSSSECTION|uniq))
 	if [ ${#CROSSSECTIONS[@]} -eq 1 ]; then 
 	    CROSSSECTION=${CROSSSECTIONS[0]}
 	elif [ ${#CROSSSECTIONS[@]} -eq 0 ]; then
@@ -36,14 +36,14 @@ do
 	    [ -z "$CROSSSECTION" ] && CROSSSECTION=FIXMECROSSSECTION
 	fi
 	if [ "$CROSSSECTION" = "" ]; then
-	    CROSSSECTIONS=($(cat $SKFlat_WD/data/$SKFlatV/*/Sample/SampleSummary_MC.txt|grep "^$NAME[^a-zA-Z0-9_]"|awk '{print $3}'|grep -v FIXMECROSSSECTION|uniq))
+	    CROSSSECTIONS=($(cat $SKFlat_WD/data/$SKFlatV/*/Sample/SampleSummary_*.txt|grep "^$NAME[^a-zA-Z0-9_]"|awk '{print $3}'|grep -v FIXMECROSSSECTION|uniq))
 	    if [ ${#CROSSSECTIONS[@]} -eq 1 ];
 	    then 
 		CROSSSECTION=${CROSSSECTIONS[0]}
 	    fi
 	fi
 	if [ "$CROSSSECTION" = "" ]; then
-	    CROSSSECTIONS=($(cat $SKFlat_WD/data/*/*/Sample/SampleSummary_MC.txt|grep "^$NAME[^a-zA-Z0-9_]"|awk '{print $3}'|grep -v FIXMECROSSSECTION|uniq))
+	    CROSSSECTIONS=($(cat $SKFlat_WD/data/*/*/Sample/SampleSummary_*.txt|grep "^$NAME[^a-zA-Z0-9_]"|awk '{print $3}'|grep -v FIXMECROSSSECTION|uniq))
 	    CROSSSECTIONS=($(echo "${CROSSSECTIONS[@]}"|tr ' ' '\n'|sort -nu))
 	    if [ ${#CROSSSECTIONS[@]} -eq 1 ];
 	    then 
@@ -78,21 +78,6 @@ do
 	    read -p "(y/n): " YES
 	    if [ "$YES" = "y" ];then
 		echo -e "# alias PD xsec nmc sumsign sumw\n$NEWLINE" > $OUT
-	    fi
-	fi
-
-	## for summary file
-	SUMMARYFILE=$SKFlat_WD/data/$SKFlatV/$YEAR/Sample/SampleSummary_MC.txt
-	EXISTSUMMARY=$(grep "^$NAME[^a-zA-Z0-9_]*$DASSNAME[^a-zA-Z0-9_].*$" $SUMMARYFILE)
-	if [ -z "$EXISTSUMMARY" ]
-	then
-	    echo "SampleSummary_MC.txt: add $NEWLINE"
-	    echo -e "$NEWLINE" >> $SUMMARYFILE
-	elif [ "$EXISTSUMMARY" != "$(echo -e "$NEWLINE")" ];then
-	    echo -e "SampleSummary_MC.txt: $EXISTSUMMARY --> $NEWLINE"
-	    read -p "(y/n): " YES
-	    if [ "$YES" = "y" ];then
-		sed -i "s/^$NAME[^a-zA-Z0-9_]*$DASSNAME[^a-zA-Z0-9_].*$/$NEWLINE/" $SUMMARYFILE
 	    fi
 	fi
     fi
