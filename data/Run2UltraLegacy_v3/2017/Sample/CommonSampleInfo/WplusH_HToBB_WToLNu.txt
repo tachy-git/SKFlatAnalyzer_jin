@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumsign sumw
+WplusH_HToBB_WToLNu	WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8	0.05309705856	4850125	4572427.0	1.375660331143e+06
