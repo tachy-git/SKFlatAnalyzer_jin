@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumsign sumw
+ZJetsToQQ_HT-200to400	ZJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8	1012.0	14579386	14579386.0	1.457938600000e+07
