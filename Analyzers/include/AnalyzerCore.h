@@ -203,11 +203,20 @@ public:
   bool IsSignalPID(int pid);
   bool FindHEMElectron(Electron electron);
 
+  //============ JEC Uncertainty
+  float GetJECUncertainty(TString type, float eta, float pt, bool up);
+  void  SetupJECUncertainty(TString type);
+
+
   //==== Plotting
 
   std::map< TString, TH1D* > maphist_TH1D;
   std::map< TString, TH2D* > maphist_TH2D;
   std::map< TString, TH3D* > maphist_TH3D;
+
+  // Map for JEC
+  std::map<TString, std::vector<std::map<float, std::vector<float> > > > JECUncMap;
+
 
   TH1D* GetHist1D(TString histname);
   TH2D* GetHist2D(TString histname);
