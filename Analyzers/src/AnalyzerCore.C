@@ -146,7 +146,7 @@ float AnalyzerCore::GetJECUncertainty(TString source, TString JetType, float eta
     if(eta >= etabins.at(i) && eta < etabins.at(i+1)){  bin_boundary = float(etabins.at(i)) ; break;}
   }
   
-  if(bin_boundary == -999) return -999;
+  if(bin_boundary == -999) return 1.;
 
   std::vector<float> ptbins;
   
@@ -160,7 +160,7 @@ float AnalyzerCore::GetJECUncertainty(TString source, TString JetType, float eta
     if( pt >= ptbins.at(j)  && pt < ptbins.at(j+1)) {ptbin=j; break;}
   }
   
-  if(ptbin == -999) return ptbin;
+  if(ptbin == -999) return 1.;
 
   std::map<float, std::vector<float> > upmap = mapit->second.at(1); 
   std::map<float, std::vector<float> > downmap = mapit->second.at(2); 
