@@ -179,7 +179,8 @@ void AnalyzerCore::SetupJECUncertainty(TString source , TString JetType){
   
   string analysisdir = getenv("DATA_DIR");
   
-  string file = analysisdir + "/"+string(GetEra()) + "/JEC/Summer19UL16APV_V7_MC_UncertaintySources_"+string(JetType)+".txt";                                 if(GetEra() == "2016postVFP") file = analysisdir + "/"+ string(GetEra())+ "/JEC/Summer19UL16_V7_MC_UncertaintySources_"+string(JetType)+".txt";
+  string file = analysisdir + "/"+string(GetEra()) + "/JEC/Summer19UL16APV_V7_MC_UncertaintySources_"+string(JetType)+".txt"; 
+  if(GetEra() == "2016postVFP") file = analysisdir + "/"+ string(GetEra())+ "/JEC/Summer19UL16_V7_MC_UncertaintySources_"+string(JetType)+".txt";
   if(GetEra() == "2017") file = analysisdir + "/"+ string(GetEra())+ "/JEC/Summer19UL17_V5_MC_UncertaintySources_"+string(JetType)+".txt";
   if(GetEra() == "2018") file = analysisdir + "/"+ string(GetEra())+ "/JEC/Summer19UL18_V5_MC_UncertaintySources_"+string(JetType)+".txt";
 
