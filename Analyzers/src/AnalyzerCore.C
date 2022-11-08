@@ -18,7 +18,7 @@ AnalyzerCore::AnalyzerCore(){
   /*
     
     // In your analyser code add this line to constructor to fill map with JEC source values.
-    for(auto jec_source : JECSources)   SetupJECUncertainty(jec_source);
+    for(auto jec_source : JECSources)   SetupJECUncertainty(jec_source, "AK4PFchs");
   }
     // Then you can get vector of jets with shift calling 
     std::vector<Jet> AnalyzerCore::ScaleJetsIndividualSource(const std::vector<Jet>& jets, int sys, TString source);
@@ -64,7 +64,10 @@ AnalyzerCore::~AnalyzerCore(){
   if(muonGE) delete muonGE;
   if(muonGEScaleSyst) delete muonGEScaleSyst;
 
-  JECUncMap.clear();
+  AK4CHSJECUncMap.clear();
+  AK4PUPPIJECUncMap.clear();
+  AK8CHSJECUncMap.clear();
+  AK8PUPPIJECUncMap.clear();
   
 
 }
@@ -107,11 +110,27 @@ Event AnalyzerCore::GetEvent(){
 
 }
 
-float AnalyzerCore::GetJECUncertainty(TString type, float eta, float pt, int sys){
+float AnalyzerCore::GetJECUncertainty(TString source, TString JetType, float eta, float pt, int sys){
 
   std::map<TString, std::vector<std::map<float, std::vector<float> > > >::iterator mapit;
-  mapit = JECUncMap.find(type);
-  if(mapit == JECUncMap.end()) {cout<< "ERROR, " << type  << " not found in JEC Uncertainty MAP" << endl; return -999.;}
+  bool NotFound=false;
+  if(JetType=="AK4PFchs") {
+    mapit = AK4CHSJECUncMap.find(source); 
+    if(mapit == AK4CHSJECUncMap.end()) NotFound=true;
+  }
+  if(JetType=="AK4PFPuppi") {
+    mapit = AK4PUPPIJECUncMap.find(source);
+    if(mapit == AK4PUPPIJECUncMap.end()) NotFound=true;
+  }
+  if(JetType=="AK8PFchs"){
+    mapit = AK8CHSJECUncMap.find(source);
+    if(mapit == AK8CHSJECUncMap.end()) NotFound=true;
+  }
+  if(JetType=="AK8PFPuppi") {
+    mapit = AK8PUPPIJECUncMap.find(source);
+    if(mapit == AK8PUPPIJECUncMap.end()) NotFound=true;
+  }
+  if(NotFound) {cout<< "ERROR, " << source  << " not found in JEC Uncertainty MAP for " << JetType << endl; return -999.;}
 
   
   float bin_boundary(-999.);
@@ -122,16 +141,15 @@ float AnalyzerCore::GetJECUncertainty(TString type, float eta, float pt, int sys
   for(std::map<float, std::vector<float> >::iterator it = ptmap.begin(); it!= ptmap.end(); it++){
     etabins.push_back(it->first);
   }
-  /// Add last bin by hand
-  etabins.push_back(5.4);
   
   for(unsigned int i=0; i < etabins.size()-1 ; i++){
     if(eta >= etabins.at(i) && eta < etabins.at(i+1)){  bin_boundary = float(etabins.at(i)) ; break;}
   }
   
+  if(bin_boundary == -999) return -999;
+
   std::vector<float> ptbins;
   
-
   for(std::map<float, std::vector<float> >::iterator pit = ptmap.begin();  pit != ptmap.end(); pit++){
     if(float(pit->first) == float(bin_boundary)) {ptbins = pit->second; }
   }
@@ -142,6 +160,7 @@ float AnalyzerCore::GetJECUncertainty(TString type, float eta, float pt, int sys
     if( pt >= ptbins.at(j)  && pt < ptbins.at(j+1)) {ptbin=j; break;}
   }
   
+  if(ptbin == -999) return ptbin;
 
   std::map<float, std::vector<float> > upmap = mapit->second.at(1); 
   std::map<float, std::vector<float> > downmap = mapit->second.at(2); 
@@ -156,69 +175,99 @@ float AnalyzerCore::GetJECUncertainty(TString type, float eta, float pt, int sys
 }
 
 
-void AnalyzerCore::SetupJECUncertainty(TString type){
+void AnalyzerCore::SetupJECUncertainty(TString source , TString JetType){
   
-
   string analysisdir = getenv("DATA_DIR");
   
-  string file = analysisdir + "/"+string(GetEra()) + "/JEC/Summer19UL16APV_V7_MC_UncertaintySources_AK4PFchs.txt";                                                                                                                
-  if(GetEra() == "2016postVFP") file = analysisdir + "/"+ string(GetEra())+ "/JEC/Summer19UL16_V7_MC_UncertaintySources_AK4PFchs.txt";
-  if(GetEra() == "2017") file = analysisdir + "/"+ string(GetEra())+ "/JEC/Summer19UL17_V5_MC_UncertaintySources_AK4PFchs.txt";
-  if(GetEra() == "2018") file = analysisdir + "/"+ string(GetEra())+ "/JEC/Summer19UL18_V5_MC_UncertaintySources_AK4PFchs.txt";
+  string file = analysisdir + "/"+string(GetEra()) + "/JEC/Summer19UL16APV_V7_MC_UncertaintySources_"+string(JetType)+".txt";                                 if(GetEra() == "2016postVFP") file = analysisdir + "/"+ string(GetEra())+ "/JEC/Summer19UL16_V7_MC_UncertaintySources_"+string(JetType)+".txt";
+  if(GetEra() == "2017") file = analysisdir + "/"+ string(GetEra())+ "/JEC/Summer19UL17_V5_MC_UncertaintySources_"+string(JetType)+".txt";
+  if(GetEra() == "2018") file = analysisdir + "/"+ string(GetEra())+ "/JEC/Summer19UL18_V5_MC_UncertaintySources_"+string(JetType)+".txt";
 
-  
-  ifstream jec_file(file.c_str());
-  
-  bool found_unc(false);
-  int nline(0);
-  std::map<float, std::vector<float> > etaptmap, eta_uncupmap, eta_uncdownmap;
-
+ 
   string sline;
-  
-  cout << "Setting up JEC uncertainty vector for source ["<<type<< "]." << file << endl;
-
+  vector<string> SourceLines;
+  bool ExtractLine=false;
+  int nline(0);
+  ifstream jec_file(file.c_str());  
   while(getline(jec_file,sline) ){
-    
-    std::istringstream is( sline );
-
-    if(found_unc && nline==0){nline++; continue;}
-    if(found_unc && nline==1){
-      float eta_min, eta_max, test;
-      is >> eta_min;
-      is >> eta_max;
-      is >> test;
-      if(eta_min==5.0) found_unc=false;
-
-      std::vector<float> ptbin, unc_up, unc_down;
-      bool finalbin(false);
-
-      for(int i=0; i < 150; i++){
-	float tmp;
-	is >> tmp;
-	if((i %3) == 0) {ptbin.push_back(tmp);  if(tmp==6538.0) finalbin=true;}
-	if((i %3) == 1) {unc_up.push_back(tmp);}
-	if((i %3) == 2) {unc_down.push_back(tmp);}
-	if((i %3) == 2 && finalbin) break;
-      }
-      
-      etaptmap[eta_min] = ptbin;
-      eta_uncupmap[eta_min] =  unc_up;
-      eta_uncdownmap[eta_min] = unc_down;
-      continue;
+    if(ExtractLine){
+      if(nline==0){nline++; continue;}
+      if(sline.find("[")!=string::npos) break;
+      if(nline==1)SourceLines.push_back(sline);
     }
-        
-    if(sline.find(type)!=string::npos) {  found_unc=true;continue;}
-    if(sline=="END") break;
-    if(sline.find("CorrelationGroupUncorrelated")!=string::npos) break;
-    
+    if(sline.find(source)!=string::npos) { ExtractLine=true;}
   }
+  
+  jec_file.close();
+    
+  cout << "Setting up JEC uncertainty vector for source ["<<source<< "]." << file << endl;
+
+  std::map<float, std::vector<float> > etaptmap, eta_uncupmap, eta_uncdownmap;
+  for(unsigned int ilines =0; ilines <  SourceLines.size(); ilines++){
+    
+    string line = SourceLines[ilines];
+    std::istringstream is( line );
+    
+    std::string s_eta_min, s_eta_max, s_nBins;
+    is >> s_eta_min; 
+    is >> s_eta_max;  
+    is >> s_nBins;
+
+    double  eta_min = stod(s_eta_min);
+    double  eta_max = stod(s_eta_max);
+    double  nBins = stod(s_nBins);
+
+    bool EtaBinCheck=true;
+    if((ilines == SourceLines.size() -1)){
+      if( eta_min != 5.0) EtaBinCheck=false;
+      if( eta_max != 5.4) EtaBinCheck=false;
+    }
+    if(!EtaBinCheck){
+      cout << "[AnalyzerCore::SetupJECUncertainty] Eta bin set incorrectly ..." << endl;
+      exit(EXIT_FAILURE);      
+    }
+    std::vector<float> ptbin, unc_up, unc_down;
+    bool finalbin(false);
+    
+    for(int i=0; i < nBins; i++){
+      std::string  subString;
+      is >> subString;
+      double value_from_string =  stod(subString);
+      if((i %3) == 0) {	ptbin.push_back(value_from_string); if( i == nBins-3) finalbin=true; }
+      if((i %3) == 1) {unc_up.push_back(value_from_string);}
+      if((i %3) == 2) {unc_down.push_back(value_from_string);}
+      
+      // Check Final bin is last bin in txt file for this eta bin
+      if((i %3) == 2 && finalbin) {
+	string CheckFinalPt; 
+	is >> CheckFinalPt;
+	if(!CheckFinalPt.empty()) {
+	  cout << "[AnalyzerCore::SetupJECUncertainty] Last pt bin of  set incorrectly ..." << endl;
+	  exit(EXIT_FAILURE);
+	}
+      }
+    }
+    
+    etaptmap[eta_min] = ptbin;
+    eta_uncupmap[eta_min] =  unc_up;
+    eta_uncdownmap[eta_min] = unc_down;
+    
+    std::vector<float> NULLBin;
+    if(ilines ==  SourceLines.size() -1) etaptmap[eta_max] = NULLBin;
+  }
+        
+
+  jec_file.close();
   std::vector<std::map<float, std::vector<float> > > vec_unc;
   vec_unc.push_back(etaptmap);
   vec_unc.push_back(eta_uncupmap);
   vec_unc.push_back(eta_uncdownmap);
 
   
-  JECUncMap[type] = vec_unc;
+  if(JetType=="AK4PFchs") AK4CHSJECUncMap[source] = vec_unc;
+  if(JetType=="AK4PFPuppi") AK4PUPPIJECUncMap[source] = vec_unc;
+  if(JetType=="AK8PFchs") AK8CHSJECUncMap[source] = vec_unc;
+  if(JetType=="AK8PFPuppi") AK8PUPPIJECUncMap[source] = vec_unc;
   return;
   
 }
@@ -1050,7 +1099,7 @@ std::vector<Jet> AnalyzerCore::ScaleJetsIndividualSource(const std::vector<Jet>&
 
     Jet this_jet = jets.at(i);
 
-    double get_shift = GetJECUncertainty(source , this_jet.Eta(),this_jet.Pt(), sys);
+    double get_shift = GetJECUncertainty(source , "AK4PFchs",this_jet.Eta(),this_jet.Pt(), sys);
     this_jet *= get_shift;
 
     out.push_back( this_jet );
