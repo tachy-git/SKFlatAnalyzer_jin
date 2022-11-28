@@ -117,6 +117,7 @@ public:
   std::vector<Muon> ScaleMuons(const std::vector<Muon>& muons, int sys);
 
   std::vector<Jet> ScaleJets(const std::vector<Jet>& jets, int sys);
+  std::vector<Jet> ScaleJetsIndividualSource(const std::vector<Jet>& jets, int sys, TString source);
   std::vector<Jet> SmearJets(const std::vector<Jet>& jets, int sys);
 
   std::vector<FatJet> ScaleFatJets(const std::vector<FatJet>& jets, int sys);
@@ -203,11 +204,24 @@ public:
   bool IsSignalPID(int pid);
   bool FindHEMElectron(Electron electron);
 
+  //============ JEC Uncertainty
+  float GetJECUncertainty(TString source, TString JetType,  float eta, float pt, int sys);
+  void  SetupJECUncertainty(TString source , TString JetType="AK4PFchs");
+
+
   //==== Plotting
 
   std::map< TString, TH1D* > maphist_TH1D;
   std::map< TString, TH2D* > maphist_TH2D;
   std::map< TString, TH3D* > maphist_TH3D;
+
+  // Map for JEC
+  std::map<TString, std::vector<std::map<float, std::vector<float> > > > AK4CHSJECUncMap;
+  std::map<TString, std::vector<std::map<float, std::vector<float> > > > AK4PUPPIJECUncMap;
+  std::map<TString, std::vector<std::map<float, std::vector<float> > > > AK8CHSJECUncMap;
+  std::map<TString, std::vector<std::map<float, std::vector<float> > > > AK8PUPPIJECUncMap;
+  vector<TString> JECSources;
+
 
   TH1D* GetHist1D(TString histname);
   TH2D* GetHist2D(TString histname);
