@@ -1,0 +1,21 @@
+# VV
+WZTo3LNu_amcatnlo
+WZTo3LNu_mllmin4p0_powheg
+ZZTo4L_powheg
+ZGToLLG
+# tt+X
+ttWToLNu
+ttZToLLNuNu
+ttHToNonbb
+tZq
+tHq
+# rare
+WWW
+WWZ
+WZZ
+ZZZ
+WWG
+TTG
+TTTT
+VBF_HToZZTo4L
+GluGluHToZZTo4L

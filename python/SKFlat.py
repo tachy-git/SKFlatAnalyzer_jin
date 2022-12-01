@@ -1,6 +1,7 @@
-#!/usr/bin/env python
-
-import os,sys,time
+#!/usr/bin/env python3
+import os, sys
+import shutil
+import time
 import argparse
 import datetime
 from CheckJobStatus import *
@@ -10,7 +11,6 @@ import random
 import subprocess
 
 ## Arguments
-
 parser = argparse.ArgumentParser(description='SKFlat Command')
 parser.add_argument('-a', dest='Analyzer', default="")
 parser.add_argument('-i', dest='InputSample', default="")
@@ -22,6 +22,7 @@ parser.add_argument('-q', dest='Queue', default="fastq")
 parser.add_argument('-e', dest='Era', default="2017",help="2016preVFP(2016a), 2016postVFP(2016b), 2017, 2018")
 parser.add_argument('-y', dest='Year', default="",help="deprecated. use -e")
 parser.add_argument('--skim', dest='Skim', default="", help="ex) SkimTree_Dilepton")
+parser.add_argument('--python', action='store_true')
 parser.add_argument('--no_exec', action='store_true')
 parser.add_argument('--FastSim', action='store_true')
 parser.add_argument('--userflags', dest='Userflags', default="")
@@ -32,599 +33,487 @@ parser.add_argument('--memory', dest='Memory', default=0, type=float)
 parser.add_argument('--batchname',dest='BatchName', default="")
 args = parser.parse_args()
 
-if args.Year!="":
-  print("-y is deprecated. Using -e (Era) instead")
-  args.Era=args.Year
+if args.Year:
+    print("-y is depreciated. Using -e (Era) instead") 
+    args.Era = args.Year
 
-if args.Era=="2016a": args.Era="2016preVFP"
-if args.Era=="2016b": args.Era="2016postVFP"
+if args.Era == "2016a": args.Era = "2016preVFP"
+if args.Era == "2016b": args.Era = "2016postVFP"
 
 ## make userflags as a list
 Userflags = []
 if args.Userflags != "":
-  Userflags = (args.Userflags).split(',')
+    Userflags = (args.Userflags).split(',')
 
-## Add Abosolute path for outputdir
-if args.Outputdir!='':
-  if args.Outputdir[0]!='/':
-    args.Outputdir = os.getcwd()+'/'+args.Outputdir
+## Add absolute path for outputdir
+if args.Outputdir and (not os.path.isabs(args.Outputdir)):
+    args.Outputdir = f"{os.getcwd()}/{args.Outputdir}"
 
 ## TimeStamp
-
-# 1) dir/file name style
-JobStartTime = datetime.datetime.now()
-timestamp =  JobStartTime.strftime('%Y_%m_%d_%H%M%S')
+# 1) directory / file name style
+timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 # 2) log style
-JobStartTime = datetime.datetime.now()
-string_JobStartTime =  JobStartTime.strftime('%Y-%m-%d %H:%M:%S')
-string_ThisTime = ""
+jobStartTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+thisTime = ""
 
 ## Environment Variables
-
-USER = os.environ['USER']
+USER = os.environ["USER"]
 if os.path.exists(os.environ['SKFlat_WD']+'/python/UserInfo_'+USER+'.py'):
-  exec('from UserInfo_'+USER+' import *')
+    exec('from UserInfo_'+USER+' import *')
 else:
-  print("No UserInfo file")
-  exit(1)
+    print("No UserInfo file")
+    exit(1)
 SKFlatLogEmail = UserInfo['SKFlatLogEmail']
 SKFlatLogWebDir = UserInfo['SKFlatLogWebDir']
-LogEvery = UserInfo['LogEvery']
+logEvery = UserInfo['LogEvery']
 
-SCRAM_ARCH = os.environ['SCRAM_ARCH']
-cmsswrel = os.environ['cmsswrel']
 SKFlat_WD = os.environ['SKFlat_WD']
 SKFlatV = os.environ['SKFlatV']
-SAMPLE_DATA_DIR = SKFlat_WD+'/data/'+SKFlatV+'/'+args.Era+'/Sample/'
+SAMPLE_DATA_DIR = f"{SKFlat_WD}/data/{SKFlatV}/{args.Era}/Sample"
 SKFlatRunlogDir = os.environ['SKFlatRunlogDir']
 SKFlatOutputDir = os.environ['SKFlatOutputDir']
 SKFlat_LIB_PATH = os.environ['SKFlat_LIB_PATH']
 UID = str(os.getuid())
 HOSTNAME = os.environ['HOSTNAME']
-SampleHOSTNAME = HOSTNAME
 
 ## Check joblog email
-
-SendLogToEmail=True
-if SKFlatLogEmail=='':
-  SendLogToEmail=False
-SendLogToWeb = True
-if SKFlatLogWebDir=='':
-  SendLogToWeb = False
+sendLogToEmail = False if SKFlatLogEmail  == "" else True
+sendLogToWeb   = False if SKFlatLogWebDir == "" else True
 
 ## Check hostname
-
-IsKISTI = ("sdfarm.kr" in HOSTNAME)
-IsUI10 = ("ui10.sdfarm.kr" in HOSTNAME)
-IsUI20 = ("ui20.sdfarm.kr" in HOSTNAME)
-IsTAMSA1 = ("tamsa1" in HOSTNAME)
-IsTAMSA2 = ("tamsa2" in HOSTNAME)
-IsTAMSA = IsTAMSA1 or IsTAMSA2
-IsKNU = ("knu" in HOSTNAME)
-if IsKISTI:
-  HOSTNAME = "KISTI"
-  SampleHOSTNAME = "KISTI"
-if IsTAMSA:
-  if IsTAMSA1:
-    HOSTNAME = "TAMSA1"
-  elif IsTAMSA2:
-    HOSTNAME = "TAMSA2"
-  SampleHOSTNAME = "SNU"
-if IsKNU:
-  HOSTNAME = "KNU"
-  SampleHOSTNAME = "KNU"
+isTAMSA1 = ("tamsa1" in HOSTNAME)
+isTAMSA2 = ("tamsa2" in HOSTNAME)
+isTAMSA = isTAMSA1 or isTAMSA2
+if isTAMSA:
+    if isTAMSA1: HOSTNAME = "TAMSA1"
+    if isTAMSA2: HOSTNAME = "TAMSA2"
+    sampleHOSTNAME = "SNU"
+else:
+    print("Working in local...")
+    sampleHOSTNAME = "SNU"
 
 ## Are you skimming trees?
+isSkimTree = "SkimTree" in args.Analyzer
+if isSkimTree:
+    if args.NMax == 0: args.NMax = 100  # Preventing from too heavy IO
+    if args.NJobs == 1: args.NJobs = 0  # NJobs = 0 means NJobs -> NFiles
+    if not isTAMSA:
+        print("Skimming is only possible in SNU")
+        exit(1)
 
-IsSkimTree = "SkimTree" in args.Analyzer
-if IsSkimTree:
-  if args.NMax==0: args.NMax=100 ## Preventing from too heavy IO
-  if args.NJobs==1: args.NJobs=0 ## NJobs=0 means NJobs->NFiles
-  if not IsTAMSA:
-    print "Skimming only possible in SNU"
-    exit()
-
-## Machine-dependent variables
-
-if IsKNU:
-  args.Queue = "cms"
-
-## Make Sample List
-
-InputSample_Data = ["DoubleMuon", "DoubleEG", "SingleMuon", "SingleElectron", "SinglePhoton", "MuonEG", "EGamma"]
-AvailableDataPeriods = []
+## Make sample list
+inputDataSampleList = ["DoubleMuon", "DoubleEG", "SingleMuon", "SingleElectron",
+                       "SinglePhoton", "MuonEG", "EGamma"]
+availableDataPeriods = []
 if args.Era == "2016preVFP":
-  AvailableDataPeriods = ["B_ver2","C","D","E","F"]
+    availableDataPeriods = ["B_ver2","C","D","E","F"]
 elif args.Era == "2016postVFP":
-  AvailableDataPeriods = ["F","G","H"]
+    availableDataPeriods = ["F","G","H"]
 elif args.Era == "2017":
-  AvailableDataPeriods = ["B","C","D","E","F"]
+    availableDataPeriods = ["B","C","D","E","F"]
 elif args.Era == "2018":
-  AvailableDataPeriods = ["A", "B","C","D"]
+    availableDataPeriods = ["A", "B","C","D"]
 else:
-  print "[SKFlat.py] Wrong Era : "+args.Era
-  exit(1)
-
-InputSamples = []
-StringForHash = ""
-
+    print(f"[SKFlat.py] Wrong Era: {args.Era}")
+    exit(1)
+    
+inputSampleList = []
+stringForHash = ""
 ## When using txt file for input (i.e., -l option)
-
-if args.InputSampleList is not "":
-  lines = open(args.InputSampleList)
-  for line in lines:
-    if "#" in line:
-      continue
-    line = line.strip('\n')
-    InputSamples.append(line)
-    StringForHash += line
+if args.InputSampleList:
+    lines = open(args.InputSampleList)
+    for line in lines:
+        if line[0] == "#":
+            continue
+        line = line.strip("\n")
+        inputSampleList.append(line)
+        stringForHash += line
 else:
-  if args.InputSample in InputSample_Data:
-    if args.DataPeriod=="ALL":
-      for period in AvailableDataPeriods:
-        InputSamples.append(args.InputSample+":"+period)
-        StringForHash += args.InputSample+":"+period
-    elif args.DataPeriod in AvailableDataPeriods:
-      InputSamples.append(args.InputSample+":"+args.DataPeriod)
-      StringForHash += args.InputSample+":"+args.DataPeriod
-  else:
-    InputSamples.append(args.InputSample)
-    StringForHash += args.InputSample
-FileRangesForEachSample = []
+    if args.InputSample in inputDataSampleList:
+        if args.DataPeriod == "ALL":
+            for period in availableDataPeriods:
+                inputSampleList.append(f"{args.InputSample}:{period}")
+                stringForHash += f"{args.InputSample}:{period}"
+        elif args.DataPeriod in availableDataPeriods:
+            inputSampleList.append(f"{args.InputSample}:{args.DataPeriod}")
+            stringForHash += f"{args.InputSample}:{args.DataPeriod}"
+        else:
+            pass
+    else:
+        inputSampleList.append(args.InputSample)
+        stringForHash += args.InputSample
+fileRangesForEachSample = []
 
 ## add flags to hash
 for flag in Userflags:
-  StringForHash += flag
+    stringForHash += flag
 
-## Get Random Number for webdir
-
-random.seed(hash(StringForHash+timestamp+args.Era))
-RandomNumber = int(random.random()*1000000)
-str_RandomNumber = str(RandomNumber)
-webdirname = timestamp+"_"+str_RandomNumber
-webdirpathbase = SKFlatRunlogDir+'/www/SKFlatAnalyzerJobLogs/'+webdirname
+## Get random number for webdir
+random.seed(hash(stringForHash+timestamp+args.Era))
+randomNumber = int(random.random()*1000000)
+webdirname = f"{timestamp}_{randomNumber}"
+webdirpathbase = f"{SKFlatRunlogDir}/www/SKFlatAnalyzerJobLogs/{webdirname}"
 while os.path.isdir(webdirpathbase):
-  webdirpathbase += '_'
+    webdirpathbase += "_"
 
-## skim string
+## Skim string
+skimString = f"{args.Skim}_" if args.Skim else ""
 
-SkimString = ""
-if args.Skim!="":
-  SkimString = args.Skim+"_"
-
-## Define MasterJobDir
-
-MasterJobDir = SKFlatRunlogDir+'/'+timestamp+'__'+str_RandomNumber+"__"+args.Analyzer+'__'+'Era'+args.Era
-if args.Skim!="":
-  MasterJobDir += "__"+args.Skim
+## Difine master job directory
+masterJobDir = f"{SKFlatRunlogDir}/{timestamp}__{randomNumber}__{args.Analyzer}__Era{args.Era}"
+if args.Skim:
+    masterJobDir = f"{masterJobDir}__{args.Skim}"
 for flag in Userflags:
-  MasterJobDir += '__'+flag
-MasterJobDir += '__'+HOSTNAME+'/'
+    masterJobDir += f"__{flag}"
+masterJobDir += f"__{HOSTNAME}"
 
-## Copy libray
-
-os.system('mkdir -p '+MasterJobDir+'/lib/')
-os.system('cp '+SKFlat_LIB_PATH+'/* '+MasterJobDir+'/lib')
+## copy library
+os.makedirs(masterJobDir)
+shutil.copytree(SKFlat_LIB_PATH, f"{masterJobDir}/lib")
 
 ## Loop over samples
-
-# true or false for each sample
-SampleFinishedForEachSample = []
-PostJobFinishedForEachSample = []
-BaseDirForEachSample = []
-XsecForEachSample = []
-for InputSample in InputSamples:
-
-  NJobs = args.NJobs
-
-  SampleFinishedForEachSample.append(False)
-  PostJobFinishedForEachSample.append(False)
-
-  ## Global Varialbes
-
-  IsDATA = False
-  DataPeriod = ""
-  if ":" in InputSample:
-    IsDATA = True
-    tmp = InputSample
-    InputSample = tmp.split(":")[0]
-    DataPeriod = tmp.split(":")[1]
-
-  ## Prepare output
-
-  base_rundir = MasterJobDir+InputSample
-  if IsDATA:
-    base_rundir = base_rundir+'_period'+DataPeriod
-  base_rundir = base_rundir+"/"
-
-  os.system('mkdir -p '+base_rundir)
-  os.system('mkdir -p '+base_rundir+'/output/')
-
-  ## Create webdir
-  ## cf) base_rundir = $SKFlatRunlogDir/2019_02_26_222038__GetEffLumi__Era2016__KISTI/WW_pythia/
-
-  this_webdir = webdirpathbase+'/'+base_rundir.replace(SKFlatRunlogDir,'').replace(HOSTNAME+'/',HOSTNAME+'__')
-  os.system('mkdir -p '+this_webdir)
-
-  ## If KNU, copy grid cert
-
-  if IsKNU:
-    os.system('cp /tmp/x509up_u'+UID+' '+base_rundir)
-
-  ## Get Sample Path
-
-  lines_files = []
-
-  tmpfilepath = SAMPLE_DATA_DIR+'/For'+SampleHOSTNAME+'/'+SkimString+InputSample+'.txt'
-  if IsDATA:
-    tmpfilepath = SAMPLE_DATA_DIR+'/For'+SampleHOSTNAME+'/'+SkimString+InputSample+'_'+DataPeriod+'.txt'
-  lines_files = os.popen("sed 's/#.*//' "+tmpfilepath+"|grep '.root'").readlines()
-  os.system('cp '+tmpfilepath+' '+base_rundir+'/input_filelist.txt')
-
-  NTotalFiles = len(lines_files)
-
-  if NJobs>NTotalFiles or NJobs==0:
-    NJobs = NTotalFiles
-
-  SubmitOutput = open(base_rundir+'/SubmitOutput.log','w')
-
-  SubmitOutput.write("<SKFlat> NTotalFiles = "+str(NTotalFiles)+'\n')
-  SubmitOutput.write("<SKFlat> NJobs = "+str(NJobs)+'\n')
-  nfilepjob = int(NTotalFiles/NJobs)
-  SubmitOutput.write("<SKFlat> --> # of files per job = "+str(nfilepjob)+'\n')
-  nfilepjob_remainder = NTotalFiles-(NJobs)*(nfilepjob)
-  if nfilepjob_remainder>=(NJobs):
-    SubmitOutput.write('nfilepjob_remainder = '+str(nfilepjob_remainder)+'\n')
-    SubmitOutput.write('while, NJobs = '+str(NJobs)+'\n')
-    SubmitOutput.write('--> exit'+'\n')
-    sys.exit()
-
-  FileRanges = []
-  temp_end_largerjob = 0
-  nfile_checksum = 0
-
-  ## First nfilepjob_remainder jobs will have (nfilepjob+1) files per job
-
-  for it_job in range(0,nfilepjob_remainder):
-    FileRanges.append(range(it_job*(nfilepjob+1),(it_job+1)*(nfilepjob+1)))
-    temp_end_largerjob = (it_job+1)*(nfilepjob+1)
-    nfile_checksum += len(range(it_job*(nfilepjob+1),(it_job+1)*(nfilepjob+1)))
-
-  ## Remaining NJobs-nfilepjob_remainder jobs will have (nfilepjob) files per job
-
-  for it_job in range(0,NJobs-nfilepjob_remainder):
-    FileRanges.append(range(temp_end_largerjob+(it_job*nfilepjob),temp_end_largerjob+((it_job+1)*nfilepjob) ))
-    nfile_checksum += len(range(temp_end_largerjob+(it_job*nfilepjob),temp_end_largerjob+((it_job+1)*nfilepjob) ))
-  SubmitOutput.write('nfile_checksum = '+str(nfile_checksum)+'\n')
-  SubmitOutput.write('NTotalFiles = '+str(NTotalFiles)+'\n')
-  SubmitOutput.close()
-  FileRangesForEachSample.append(FileRanges)
-
-  ## Get xsec and SumW
-
-  this_dasname = ""
-  this_xsec = -1
-  this_sumsign = -1
-  this_sumw = -1
-  if not IsDATA and args.Analyzer!="GetEffLumi":
-    if not os.path.exists(SAMPLE_DATA_DIR+'/CommonSampleInfo/'+InputSample+'.txt'):
-      print("No "+SAMPLE_DATA_DIR+'/CommonSampleInfo/'+InputSample+'.txt')
-      exit(2)
-    lines_SamplePath = open(SAMPLE_DATA_DIR+'/CommonSampleInfo/'+InputSample+'.txt').readlines()
-    for line in lines_SamplePath:
-      if line[0]=="#":
-        continue
-      words = line.split()
-      if InputSample==words[0]:
-        this_dasname = words[1]
-        this_xsec = words[2]
-        this_sumsign = words[4]
-        this_sumw = words[5]
-        break
-
-  XsecForEachSample.append(this_xsec)
-
-  ## Write run script
-
-  if IsKISTI or IsTAMSA:
-
-    commandsfilename = args.Analyzer+'_'+args.Era+'_'+InputSample
-    if IsDATA:
-      commandsfilename += '_'+DataPeriod
+# mask for each sample
+isDoneForEachSample = []
+isPostJobDoneForEachSample = []
+baseDirForEachSample = []
+xsecForEachSample = []
+for inputSample in inputSampleList:
+    njobs = args.NJobs
+    isDoneForEachSample.append(False)
+    isPostJobDoneForEachSample.append(False)
+    
+    # gloval variables
+    isDATA = False
+    dataPeriod = ""
+    if ":" in inputSample:
+        isDATA = True
+        tmp = inputSample.split(":")
+        inputSample, dataPeriod = tmp[0], tmp[1]
+    
+    # prepare output
+    baseRunDir = f"{masterJobDir}/{inputSample}"
+    if isDATA:
+        baseRunDir = f"{baseRunDir}_period{dataPeriod}"
+    os.makedirs(f"{baseRunDir}/output")
+    
+    # create webdir
+    # cf) baseRunDir = $SKFlatRunlogDir/2019_02_26_222038__GetEffLumi__Era2016__KISTI/WW_pythia/
+    thisWebDir = f"{webdirpathbase}/{baseRunDir.replace(SKFlatRunlogDir, '').replace(HOSTNAME+'/', HOSTNAME+'__')}"
+    os.makedirs(thisWebDir)
+    
+    # get sample path
+    samplePath = f"{SAMPLE_DATA_DIR}/For{sampleHOSTNAME}/{skimString}{inputSample}.txt"
+    if isDATA:
+        samplePath = f"{SAMPLE_DATA_DIR}/For{sampleHOSTNAME}/{skimString}{inputSample}_{dataPeriod}.txt"
+    shutil.copy(samplePath, f"{baseRunDir}/input_filelist.txt")
+    
+    totalFiles = os.popen("sed 's/#.*//' "+samplePath+"|grep '.root'").readlines()
+    nTotalFiles = len(totalFiles)
+    if njobs > nTotalFiles or njobs == 0:
+        njobs = nTotalFiles
+    nfileperjob = int(nTotalFiles/njobs)
+    remainder = nTotalFiles - njobs*nfileperjob
+    
+    fileRanges = []
+    tmpEndLargerJob = 0
+    nfileCheckSum = 0
+    ## First remainder jobs will have (nfileperjob+1) files per job
+    for it_job in range(remainder):
+        fileRanges.append(range(it_job*(nfileperjob+1), (it_job+1)*(nfileperjob+1)))
+        tmpEndLargerJob = (it_job+1)*(nfileperjob+1)
+        nfileCheckSum += len(range(it_job*(nfileperjob+1), (it_job+1)*(nfileperjob+1)))
+    
+    ## Remaining njobs - remainder jobs will have (nfileperjob) files per job
+    for it_job in range(njobs - remainder):
+        fileRanges.append(range(tmpEndLargerJob+(it_job*nfileperjob), tmpEndLargerJob+((it_job+1)*(nfileperjob))))
+        nfileCheckSum += len(range(tmpEndLargerJob+(it_job*nfileperjob), tmpEndLargerJob+((it_job+1)*(nfileperjob))))
+    
+    submitOutput = open(f"{baseRunDir}/SubmitOutput.log", "w")
+    submitOutput.write(f"<SKFlat> nTotlaFiles = {nTotalFiles}\n")
+    submitOutput.write(f"<SKFlat> njobs = {njobs}\n")
+    submitOutput.write(f"<SKFlat> --> # of files per jobs = {nfileperjob}\n")
+    if remainder >= njobs:
+        submitOutput.write(f"<SKFlat> remainder = {remainder}\n")
+        submitOutput.write(f"<SKFlat> while, njobs = {njobs}\n")
+        submitOutput.write(f"<SKFlat> --> exit\n")
+        print(f"Wrong matched job numbers, see {baseRunDir}/SubmitOutput.log for more detail")
+        exit(1)
+    submitOutput.write(f"nfileCheckSum = {nfileCheckSum}\n")
+    submitOutput.write(f"nTotalFiles = {nTotalFiles}\n")
+    assert nfileCheckSum == nTotalFiles
+    submitOutput.close()
+    fileRangesForEachSample.append(fileRanges)
+    
+    ## Get xsec ans sumW
+    thisDasname = ""
+    thisXsec = -1
+    thisSumsign = -1
+    thisSumW = -1
+    if not isDATA and args.Analyzer != "GetEffLumi":
+        sampleFilePath = f"{SAMPLE_DATA_DIR}/CommonSampleInfo/{inputSample}.txt"
+        if not os.path.exists(sampleFilePath):
+            print(f"No {sampleFilePath}")
+            exit(1)
+        for line in open(sampleFilePath).readlines():
+            if line[0] == "#":
+                continue
+            words = line.split()
+            assert inputSample == words[0]
+            thisDasName, thisXsec, thisSumsign, thisSumW = words[1], words[2], words[4], words[5]
+            break
+    xsecForEachSample.append(thisXsec)
+    
+    ## Write run script
+    commandsFileName = f"{args.Analyzer}_{args.Era}_{inputSample}"
+    if isDATA:
+        commandsFileName += f"_{dataPeriod}"
     for flag in Userflags:
-      commandsfilename += '__'+flag
-    run_commands = open(base_rundir+'/'+commandsfilename+'.sh','w')
-    print>>run_commands,'''#!/bin/bash
-SECTION=`printf $1`
-WORKDIR=`pwd`
-
-Trial=0
-
-#### make sure use C locale
-export LC_ALL=C
-
-#### Don't make root history
-export ROOT_HIST=0
-
-#### use cvmfs for root ####
-export CMS_PATH=/cvmfs/cms.cern.ch
-source $CMS_PATH/cmsset_default.sh
-export SCRAM_ARCH={2}
-export cmsswrel={3}
-cd /cvmfs/cms.cern.ch/$SCRAM_ARCH/cms/$cmsswrel/src
-echo "@@@@ SCRAM_ARCH = "$SCRAM_ARCH
-echo "@@@@ cmsswrel = "$cmsswrel
-echo "@@@@ scram..."
-eval `scramv1 runtime -sh`
-cd -
-source /cvmfs/cms.cern.ch/$SCRAM_ARCH/cms/$cmsswrel/external/$SCRAM_ARCH/bin/thisroot.sh
-
-### modifying LD_LIBRARY_PATH to use libraries in base_rundir
-export LD_LIBRARY_PATH=$(echo $LD_LIBRARY_PATH|sed 's@'$SKFlat_WD'/lib@{0}/lib@')
-
-while [ "$Trial" -lt 3 ]; do
-  echo "#### running ####"
-  echo "root -l -b -q {1}/run_${{SECTION}}.C"
-  root -l -b -q {1}/run_${{SECTION}}.C 2> err.log 
-  EXITCODE=$?
-  if [ "$EXITCODE" -eq 5 ]; then
-    echo "IO error occured.. running again in 300 seconds.."
-    Trial=$((Trial+=1))
-    sleep 300
-  else
-    break
-  fi
-done
-
-if [ "$EXITCODE" -ne 0 ]; then
-  echo "ERROR errno=$EXITCODE" >> err.log
-fi
-
-cat err.log >&2
-exit $EXITCODE
-'''.format(MasterJobDir, base_rundir, SCRAM_ARCH, cmsswrel)
-    run_commands.close()
-
-    submit_command = open(base_rundir+'/submit.jds','w')
-    if IsUI10:
-      print>>submit_command,'''executable = {1}.sh
-universe   = vanilla
-arguments  = $(Process)
-requirements = OpSysMajorVer == 6
-log = condor.log
-getenv     = True
-should_transfer_files = YES
-when_to_transfer_output = ON_EXIT
-output = job_$(Process).log
-error = job_$(Process).err
-transfer_output_remaps = "hists.root = output/hists_$(Process).root"
-queue {0}
-'''.format(str(NJobs), commandsfilename)
-      submit_command.close()
-    elif IsUI20:
-      print>>submit_command,'''executable = {1}.sh
-universe   = vanilla
-requirements = ( HasSingularity == true )
-arguments  = $(Process)
-log = condor.log
-getenv     = True
-should_transfer_files = YES
-when_to_transfer_output = ON_EXIT
-output = job_$(Process).log
-error = job_$(Process).err
-accounting_group=group_cms
-+SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el6:latest"
-+SingularityBind = "/cvmfs, /cms, /share"
-transfer_output_remaps = "hists.root = output/hists_$(Process).root"
-queue {0}
-'''.format(str(NJobs), commandsfilename)
-      submit_command.close()
-    elif IsTAMSA:
-      concurrency_limits=''
-      if args.NMax:
-        concurrency_limits='concurrency_limits = n'+str(args.NMax)+'.'+os.getenv("USER")
-      request_memory=''
-      if args.Memory:
-        request_memory='request_memory = '+str(args.Memory)
-      print>>submit_command,'''executable = {1}.sh
-jobbatchname = {1}
-universe   = vanilla
-arguments  = $(Process)
-log = condor.log
-getenv     = True
-should_transfer_files = YES
-when_to_transfer_output = ON_EXIT
-output = job_$(Process).log
-error = job_$(Process).err
-transfer_output_remaps = "hists.root = output/hists_$(Process).root"
-{2}
-{3}
-queue {0}
-'''.format(str(NJobs), commandsfilename,concurrency_limits,request_memory)
-      submit_command.close()
-
-  CheckTotalNFile=0
-  for it_job in range(0,len(FileRanges)):
-
-    #print "["+str(it_job)+"th]",
-    #print FileRanges[it_job],
-    #print " --> "+str(len(FileRanges[it_job]))
-
-    CheckTotalNFile = CheckTotalNFile+len(FileRanges[it_job])
-
-    thisjob_dir = base_rundir+'/job_'+str(it_job)+'/'
-
-    runfunctionname = "run"
-    libdir = (MasterJobDir+'/lib').replace('///','/').replace('//','/')+'/'
-    runCfileFullPath = ""
-    if IsKISTI or IsTAMSA:
-      runfunctionname = "run_"+str(it_job)
-      runCfileFullPath = base_rundir+'/run_'+str(it_job)+'.C'
+        commandsFileName += f"__{flag}"
+    runCommands = open(f"{baseRunDir}/{commandsFileName}.sh", "w")
+    runCommands.write("#!/bin/bash\n")
+    runCommands.write("SECTION=`printf $1`\n")
+    runCommands.write("WORKDIR=`pwd`\n")
+    runCommands.write("Trial=0\n")
+    runCommands.write("\n")
+    runCommands.write(f'export SKFlat_WD="{SKFlat_WD}"\n')
+    runCommands.write("export SKFlat_LIB_PATH=$SKFlat_WD/lib\n")
+    runCommands.write('export SKFlatV="Run2UltraLegacy_v3"\n')
+    runCommands.write('export DATA_DIR="$SKFlat_WD/data/$SKFlatV"\n')
+    runCommands.write('export MYBIN="$SKFlat_WD/bin"\n')
+    runCommands.write('export PYTHONDIR="$SKFlat_WD/python"\n')
+    runCommands.write("export PATH=${MYBIN}:${PYTHONDIR}:${PATH}\n")
+    runCommands.write("export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$SKFlat_WD/DataFormats/include/:$SKFlat_WD/AnalyzerTools/include/:$SKFlat_WD/Analyzers/include/\n")
+    runCommands.write("export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SKFlat_LIB_PATH\n")
+    runCommands.write("\n")
+    runCommands.write("source $SKFlat_WD/bin/BashColorSets.sh\n")
+    runCommands.write("\n")
+    runCommands.write("#### make sure use C locale\n")
+    runCommands.write("export LC_ALL=C\n")
+    runCommands.write("\n")
+    runCommands.write("#### Don't make root history\n")
+    runCommands.write("export ROOT_HIST=0\n")
+    runCommands.write("\n")
+    runCommands.write("#### User conda env for root\n")
+    runCommands.write("source /opt/conda/bin/activate\n")
+    runCommands.write("conda activate torch\n")
+    runCommands.write("\n")    
+    runCommands.write("#### modifying LD_LIBRARY_PATH to use libraries in baseRunDir\n")
+    runCommands.write(f"export LD_LIBRARY_PATH=$(echo $LD_LIBRARY_PATH|sed 's@'$SKFlat_WD'/lib@{masterJobDir}/lib@')\n")
+    runCommands.write("\n")
+    runCommands.write('while [ "$Trial" -lt 3 ]; do\n')
+    runCommands.write('  echo "#### running ####"\n')
+    if args.python:
+        runCommands.write(f'  echo "python {baseRunDir}'+'/run_${SECTION}.py"\n')
+        runCommands.write(f'  echo Processing python {baseRunDir}'+'/run_${SECTION}.py...\n')
+        runCommands.write(f"  python {baseRunDir}"+"/run_${SECTION}.py 2> err.log\n")
     else:
-      os.system('mkdir -p '+thisjob_dir)
-      runCfileFullPath = thisjob_dir+'run.C'
-
-    IncludeLine = 'R__LOAD_LIBRARY(/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so)\n'
-
-    out = open(runCfileFullPath, 'w')
-    print>>out,'''{3}
-
-void {2}(){{
-
-  {0} m;
-
-  m.SetTreeName("recoTree/SKFlat");
-'''.format(args.Analyzer, libdir, runfunctionname, IncludeLine)
-
-    out.write('  m.LogEvery = '+str(LogEvery)+';\n')
-
-    if IsDATA:
-      out.write('  m.IsDATA = true;\n')
-      out.write('  m.DataStream = "'+InputSample+'";\n')
-    else:
-      out.write('  m.MCSample = "'+InputSample+'";\n');
-      out.write('  m.IsDATA = false;\n')
-      out.write('  m.xsec = '+str(this_xsec)+';\n')
-      out.write('  m.sumSign = '+str(this_sumsign)+';\n')
-      out.write('  m.sumW = '+str(this_sumw)+';\n')
-
-      if args.FastSim:
-        out.write('  m.IsFastSim = true;\n')
-      else:
-        out.write('  m.IsFastSim = false;\n')
-
-    out.write('  m.SetEra("'+str(args.Era)+'");\n')
-
-    if len(Userflags)>0:
-      out.write('  m.Userflags = {\n')
-      for flag in Userflags:
-        out.write('    "'+flag+'",\n')
-      out.write('  };\n')
-
-    for it_file in FileRanges[it_job]:
-      thisfilename = lines_files[it_file].strip('\n')
-      out.write('  if(!m.AddFile("'+thisfilename+'")) exit(EIO);\n')
-
-    if IsSkimTree:
-      tmp_filename = lines_files[ FileRanges[it_job][0] ].strip('\n')
-      ## /data7/DATA/SKFlat/v949cand2_2/2017/DATA/SingleMuon/periodB/181107_231447/0000/SKFlatNtuple_2017_DATA_100.root
-      ## /data7/DATA/SKFlat/v949cand2_2/2017/MC/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/181108_152345/0000/SKFlatNtuple_2017_MC_100.root
-      skimoutdir = '/gv0/DATA/SKFlat/'+SKFlatV+'/'+args.Era+'/'
-      if args.Outputdir!='': skimoutdir=args.Outputdir+'/'+SKFlatV+'/'+args.Era+'/'
-      skimoutfilename = ""
-      if IsDATA:
-        skimoutdir += "DATA_"+args.Analyzer+"/"+InputSample+"/period"+DataPeriod+"/"
-        skimoutfilename = "SKFlatNtuple_"+args.Era+"_DATA_"+str(it_job)+".root"
-      else:
-        skimoutdir += "MC_"+args.Analyzer+"/"+this_dasname+"/"
-        skimoutfilename = "SKFlatNtuple_"+args.Era+"_MC_"+str(it_job)+".root"
-      skimoutdir += timestamp+"/"
-
-      os.system('mkdir -p '+skimoutdir)
-      out.write('  m.SetOutfilePath("'+skimoutdir+skimoutfilename+'");\n')
-
-    else:
-      if IsKISTI or IsTAMSA:
-        out.write('  m.SetOutfilePath("hists.root");\n')
-      else:
-        out.write('  m.SetOutfilePath("'+thisjob_dir+'/hists.root");\n')
-
-    if args.Reduction>1:
-      out.write('  m.MaxEvent=m.fChain->GetEntries()/'+str(args.Reduction)+';\n')
-
-    print>>out,'''  m.Init();
-  m.initializeAnalyzer();
-  m.initializeAnalyzerTools();
-  m.SwitchToTempDir();
-  m.Loop();
-
-  m.WriteHist();
-
-}'''
-
-    out.close()
-
-    if IsKNU:
-      run_commands = open(thisjob_dir+'commands.sh','w')
-      print>>run_commands,'''cd {0}
-cp ../x509up_u{1} /tmp/
-echo "[SKFlat.py] Okay, let's run the analysis"
-root -l -b -q run.C 1>stdout.log 2>stderr.log
-'''.format(thisjob_dir,UID)
-      run_commands.close()
-
-      jobname = 'job_'+str(it_job)+'_'+args.Analyzer
-      cmd = 'qsub -V -q '+args.Queue+' -N '+jobname+' commands.sh'
-
-      if not args.no_exec:
-        cwd = os.getcwd()
-        os.chdir(thisjob_dir)
-        os.system(cmd+' > submitlog.log')
-        os.chdir(cwd)
-      sublog = open(thisjob_dir+'/submitlog.log','a')
-      sublog.write('\nSubmission command was : '+cmd+'\n')
-      sublog.close()
-
-  if IsKISTI or IsTAMSA:
-
-    cwd = os.getcwd()
-    os.chdir(base_rundir)
+        runCommands.write(f'  echo "root -l -b -q {baseRunDir}'+'/run_${SECTION}.C"\n')
+        runCommands.write(f"  root -l -b -q {baseRunDir}"+"/run_${SECTION}.C 2> err.log\n")
+    runCommands.write("  EXITCODE=$?\n")
+    runCommands.write('  if [ "$EXITCODE" -eq 5 ]; then\n')
+    runCommands.write('    echo "IO error occured.. running again in 300 seconds.."\n')
+    runCommands.write("    Trial=$((Trial+=1))\n")
+    runCommands.write("    sleep 300\n")
+    runCommands.write("  else\n")
+    runCommands.write("    break\n")
+    runCommands.write("  fi\n")
+    runCommands.write("done\n")
+    runCommands.write("\n")
+    runCommands.write('if [ "$EXITCODE" -ne 0 ]; then\n')
+    runCommands.write('  echo "ERROR errno=$EXITCODE" >> err.log\n')
+    runCommands.write("fi\n")
+    runCommands.write("")
+    runCommands.write("cat err.log >&2\n")
+    runCommands.write("exit $EXITCODE\n")
+    runCommands.close()
+    
+    concurencyLimit = ""
+    if args.NMax:
+        concurrencyLimits = f"concurrencyLimits = n{args.NMax}.{os.genenv('USER')}"
+    request_memory = ""
+    if args.Memory:
+        request_memory = f"request_memory = {args.Memory}"
+    submitCommands = open(f"{baseRunDir}/submit.jds", "w")
+    submitCommands.write(f"universe                = vanilla\n")
+    submitCommands.write(f"executable              = {commandsFileName}.sh\n")
+    submitCommands.write(f"jobbatchname            = {commandsFileName}\n")
+    submitCommands.write(f'+singularityimage       = "/data6/Users/choij/Singularity/SKFlat"\n')
+    submitCommands.write(f'+singularitybind        = "/cvmfs, /cms, /share"\n')
+    submitCommands.write(f"requirements            = HasSingularity\n")
+    submitCommands.write(f"arguments               = $(Process)\n")
+    submitCommands.write(f"log                     = condor.log\n")
+    # submitCommands.write(f"getenv                  = True\n")
+    submitCommands.write(f"should_transfer_files   = Yes\n")
+    submitCommands.write(f"when_to_transfer_output = ON_EXIT\n")
+    submitCommands.write(f"output                  = job_$(Process).log\n")
+    submitCommands.write(f"error                   = job_$(Process).err\n")
+    submitCommands.write(f'transfer_output_remaps  = "hists.root = output/hists_$(Process).root"\n')
+    submitCommands.write(f"{concurencyLimit}\n")
+    submitCommands.write(f"{request_memory}\n")
+    submitCommands.write(f"queue {njobs}\n")
+    submitCommands.close()
+    
+    checkTotalNFile = 0
+    for it_job in range(len(fileRanges)):
+        checkToalNFile = checkTotalNFile + len(fileRanges[it_job])
+        thisJobDir = f"{baseRunDir}/job_{it_job}"
+        libDir = f"{masterJobDir}/lib".replace('///', '/').replace('//', '/')
+        runFunctionName = f"run_{it_job}"
+        runCfileFullPath = f"{baseRunDir}/run_{it_job}.C"
+        runPyfileFullPath = f"{baseRunDir}/run_{it_job}.py"
+        lhapdfpath = "/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so"
+        if args.python:
+            # first copy analyzer
+            shutil.copy(f"PyAnalyzers/{args.Analyzer}.py", runPyfileFullPath)
+            out = open(runPyfileFullPath, "a")
+            out.write("\n\n\n")
+            out.write('if __name__ == "__main__":\n')
+            out.write(f"    m = {args.Analyzer}()\n")
+            out.write(f'    m.SetTreeName("recoTree/SKFlat")\n')
+            if isDATA:
+                out.write(f'    m.IsDATA = True\n')
+                out.write(f'    m.DataStream = "{inputSample}"\n')
+            else:
+                out.write(f'    m.IsDATA = False\n')
+                out.write(f'    m.MCSample = "{inputSample}"\n')
+                out.write(f'    m.xsec = {thisXsec}\n')
+                out.write(f'    m.sumSign = {thisSumsign}\n')
+                out.write(f'    m.sumW = {thisSumW}\n')
+                if args.FastSim:
+                    out.write(f"    m.IsFastSim = True\n")
+                else:
+                    out.write(f"    m.IsFastSim = False\n")
+            out.write(f'    m.SetEra("{args.Era}")\n')
+            if Userflags:
+                out.write(f'    m.Userflags = [\n')
+                for flag in Userflags:
+                    out.write(f'    "{flag}",\n')
+                out.write("    ]\n")
+            for it_file in fileRanges[it_job]:
+                thisFileName = totalFiles[it_file].strip("\n")
+                out.write(f'    if not m.AddFile("{thisFileName}"): exit(1)\n')
+            if isSkimTree:
+                tmpFileName = totalFiles[ fileRanges[it_job][0] ].strip("\n")
+                skimOutDir = f"/gv0/DATA/SKFlat/{SKFlatV}/{args.Era}"
+                if args.OutputDir:
+                    skimOutDir = f"{args.Outputdir}/{SKFlatV}/{args.Era}"
+                skimOutFileName = ""
+                if isDATA:
+                    skimOutDir = f"{skimOutDir}/DATA_{args.Analyzer}/{inputSample}/period{dataPeriod}"
+                    skimOutFileName = f"SKFlatNtuple_{args.Era}_DATA_{it_job}.root"
+                else:
+                    skimOutDir = f"{skimOutDir}/MC_{args.Analyzer}/{thisDasName}"
+                    skimOutFileName = f"SKFlatNtuple_{args.Era}_MC_{it_job}.root"
+                skimOutDir += f"{skimOutDir}/{timestamp}/"
+                os.makedirs(skimOutDir)
+                out.write(f'    m.SetOutfilePath("{skimOutDir+skimOutFileName}")\n')
+            else:
+                out.write(f'    m.SetOutfilePath("hists.root")\n')
+            if args.Reduction > 1:
+                out.write(f"    m.MaxEvent = int(m.fChain.GetEntries()/{args.Reduction})\n")
+            out.write(f"    m.Init()\n")
+            out.write(f"    m.initializeAnalyzer()\n")
+            out.write(f"    m.initializeAnalyzerTools()\n")
+            out.write(f"    m.SwitchToTempDir()\n")
+            out.write(f"    m.Loop()\n")
+            out.write(f"    m.WriteHist()\n")
+            out.close()
+        else:
+            out = open(runCfileFullPath, "w")
+            out.write(f"R__LOAD_LIBRARY({lhapdfpath})\n")
+            out.write(f"void {runFunctionName}()" + "{\n")
+            out.write(f"    {args.Analyzer} m;\n")
+            out.write(f'    m.SetTreeName("recoTree/SKFlat");\n')
+            if isDATA:
+                out.write(f"    m.IsDATA = true;\n")
+                out.write(f'    m.DataStream = "{inputSample}";\n')
+            else:
+                out.write(f'    m.MCSample = "{inputSample}";\n')
+                out.write(f"    m.IsDATA = false;\n")
+                out.write(f"    m.xsec = {thisXsec};\n")
+                out.write(f"    m.sumSign = {thisSumsign};\n")
+                out.write(f"    m.sumW = {thisSumW};\n")
+                if args.FastSim:
+                    out.write(f"    m.IsFastSim = true;\n")
+                else:
+                    out.write(f"    m.IsFastSim = false;\n")
+            out.write(f'    m.SetEra("{args.Era}");\n')
+            if Userflags:
+                out.write("    m.Userflags = {\n")
+                for flag in Userflags:
+                    out.write(f'    "{flag}",\n')
+                out.write("    };\n")
+            for it_file in fileRanges[it_job]:
+                thisFileName = totalFiles[it_file].strip("\n")
+                out.write(f'    if(!m.AddFile("{thisFileName}")) exit(EIO);\n')
+            if isSkimTree:
+                tmpFileName = totalFiles[ fileRanges[it_job][0] ].strip("\n")
+                skimOutDir = f"/gv0/DATA/SKFlat/{SKFlatV}/{args.Era}"
+                if args.Outputdir:
+                    skimOutDir = f"{args.Outputdir}/{SKFlatV}/{args.Era}"
+                skimOutFileName = ""
+                if isDATA:
+                    skimOutDir = f"{skimOutDir}/DATA_{args.Analyzer}/{inputSample}/period{dataPeriod}"
+                    skimOutFileName = f"SKFlatNtuple_{args.Era}_DATA_{it_job}.root"
+                else:
+                    skimOutDir = f"{skimOutDir}/MC_{args.Analyzer}/{thisDasName}"
+                    skimOutFileName = f"SKFlatNtuple_{args.Era}_MC_{it_job}.root"
+                skimOutDir += f"{skimOutDir}/{timestamp}/"
+                os.makedirs(skimOutDir)
+                out.write(f'    m.SetOutfilePath("{skimOutDir+skimOutFileName}");\n')
+            else:
+                out.write(f'    m.SetOutfilePath("hists.root");\n')
+            if args.Reduction > 1:
+                out.write(f"    m.MaxEvent = m.fChain->GetEntries()/{args.Reduction};\n")
+            out.write(f"    m.Init();\n")
+            out.write(f"    m.initializeAnalyzer();\n")
+            out.write(f"    m.initializeAnalyzerTools();\n")
+            out.write(f"    m.SwitchToTempDir();\n")
+            out.write(f"    m.Loop();\n")
+            out.write(f"    m.WriteHist();\n")
+            out.write("}")
+            out.close()
+        
+    # submit the jobs
     if not args.no_exec:
-      condorOptions = ''
-      if args.BatchName!="":
-        condorOptions = ' -batch-name '+args.BatchName
-      os.system('condor_submit submit.jds '+condorOptions)
-    os.chdir(cwd)
-
-  else:
-
-    if args.no_exec:
-      continue
-
-    ## Write Kill Command
-
-    KillCommand = open(base_rundir+'/Script_JobKill.sh','w')
-    for it_job in range(0,len(FileRanges)):
-      thisjob_dir = base_rundir+'/job_'+str(it_job)+'/'
-      jobid = GetJobID(thisjob_dir, args.Analyzer, it_job, HOSTNAME)
-      KillCommand.write('qdel '+jobid+' ## job_'+str(it_job)+' ##\n')
-    KillCommand.close()
+        cwd = os.getcwd()
+        os.chdir(baseRunDir)
+        condorOptions = ""
+        if args.BatchName:
+            condorOptions = f" -batch-name {args.BatchName}"
+        os.system(f"condor_submit submit.jds {condorOptions}")
+        os.chdir(cwd)
 
 if args.no_exec:
-  print '- RunDir = '+base_rundir
-  exit()
-
-## Set Output directory
+    print(f"- RunDir = {baseRunDir}")
+    exit()
+    
+## Set output directory
 ## if args.Outputdir is not set, go to default setting
+finalOutputPath = args.Outputdir
+if not args.Outputdir:
+    finalOutputPath = f"{SKFlatOutputDir}/{SKFlatV}/{args.Analyzer}/{args.Era}/"
+    for flag in Userflags:
+        finalOutputPath += f"{flag}__"
+    if isDATA:
+        finalOutputPath += "/DATA/"
+    if isSkimTree:
+        finalOutputPath = f"/gv0/DATA/SKFlat/{SKFlatV}/{args.Era}"
+if not os.path.exists(os.path.dirname(finalOutputPath)):
+    os.makedirs(finalOutputPath)
 
-FinalOutputPath = args.Outputdir
-if args.Outputdir=="":
-  FinalOutputPath = SKFlatOutputDir+'/'+SKFlatV+'/'+args.Analyzer+'/'+args.Era+'/'
-  for flag in Userflags:
-    FinalOutputPath += flag+"__"
-  if IsDATA:
-    FinalOutputPath += '/DATA/'
-  if IsSkimTree:
-    FinalOutputPath = '/gv0/DATA/SKFlat/'+SKFlatV+'/'+args.Era+'/'
-
-os.system('mkdir -p '+FinalOutputPath)
-
-print '##################################################'
-print 'Submission Finished'
-print '- JobID = '+str_RandomNumber
-print '- Analyzer = '+args.Analyzer
-print '- Skim = '+args.Skim
-print '- InputSamples =',
-print InputSamples
-print '- NJobs = '+str(NJobs)
-print '- Era = '+args.Era
-print '- UserFlags =',
-print Userflags
-if IsKNU:
-  print '- Queue = '+args.Queue
-print '- RunDir = '+base_rundir
-print '- output will be send to : '+FinalOutputPath
-print '##################################################'
+print(f"#################################################")
+print(f"Submission Finished")
+print(f"- JobID = {randomNumber}")
+print(f"- Analyzer = {args.Analyzer}")
+print(f"- Skim = {args.Skim}")
+print(f"- inputSampleList = {inputSampleList}")
+print(f"- njobs = {njobs}")
+print(f"- Era = {args.Era}")
+print(f"- UserFlags = {Userflags}")
+print(f"- RunDir = {baseRunDir}")
+print(f"- output will be send to {finalOutputPath}")
+print(f"#################################################")
 
 ##########################
 ## Submittion all done. ##
@@ -632,315 +521,235 @@ print '##################################################'
 ##########################
 
 ## Loop over samples again
-
-AllSampleFinished = False
-GotError = False
-ErrorLog = ""
+isAllSampleDone = False
+gotError = False
+errorLog = ""
 
 try:
-  while not AllSampleFinished:
-
-    if GotError:
-      break
-
-    AllSampleFinished = True
-
-    for it_sample in range(0,len(InputSamples)):
-
-      InputSample = InputSamples[it_sample]
-      SampleFinished = SampleFinishedForEachSample[it_sample]
-      PostJobFinished = PostJobFinishedForEachSample[it_sample]
-
-      if PostJobFinished:
-        continue
-      else:
-        AllSampleFinished = False
-
-      ## Global Varialbes
-
-      IsDATA = False
-      DataPeriod = ""
-      if ":" in InputSample:
-        IsDATA = True
-        tmp = InputSample
-        InputSample = tmp.split(":")[0]
-        DataPeriod = tmp.split(":")[1]
-
-      ## Prepare output
-      ## This should be copied from above
-
-      base_rundir = MasterJobDir+InputSample
-      if IsDATA:
-        base_rundir = base_rundir+'_period'+DataPeriod
-      base_rundir = base_rundir+"/"
-
-      ## base_rundir = $SKFlatRunlogDir/2019_02_26_222038__GetEffLumi__Era2016__KISTI/WW_pythia/
-
-      this_webdir = webdirpathbase+'/'+base_rundir.replace(SKFlatRunlogDir,'').replace(HOSTNAME+'/',HOSTNAME+'__')
-
-      if not SampleFinished:
-
-        ## This sample was not finished in the previous monitoring
-        ## Monitor again this time
-
-        ThisSampleFinished = True
-
-        ## Write Job status until it's done
-
-        statuslog = open(base_rundir+'/JobStatus.log','w')
-        statuslog.write('Job submitted at '+string_JobStartTime+'\n')
-        statuslog.write('JobNumber\t| Status\n')
-
-        ToStatuslog = []
-        n_eventran = 0
-        finished = []
-        EventDone = 0
-        EventTotal = 0
-
-        TotalEventRunTime = 0
-        MaxTimeLeft = 0
-        MaxEventRunTime = 0
-
-        FileRanges = FileRangesForEachSample[it_sample]
-
-        for it_job in range(0,len(FileRanges)):
-
-          thisjob_dir = base_rundir+'/'
-          if IsKISTI or IsTAMSA:
-            thisjob_dir = base_rundir
-
-          this_status = ""
-          this_status = CheckJobStatus(thisjob_dir, args.Analyzer, it_job, HOSTNAME)
-
-          if "ERROR" in this_status:
-            GotError = True
-            statuslog.write("#### ERROR OCCURED ####\n")
-            statuslog.write(this_status+'\n')
-            ErrorLog = this_status
-            break
-
-          if "FINISHED" not in this_status:
-            ThisSampleFinished = False
-
-          outlog = ""
-          if "FINISHED" in this_status:
-            finished.append("Finished")
-
-            EventInfo = this_status.split()[1].split(':')
-
-            this_EventDone = int(EventInfo[2])
-            this_EventTotal = int(EventInfo[2])
-
-            EventDone += this_EventDone
-            EventTotal += this_EventTotal
-
-            #### start
-            line_EventRunTime = this_status.split()[2]+' '+this_status.split()[3]
-            this_jobstarttime = GetDatetimeFromMyFormat(line_EventRunTime)
-            #### end
-            line_EventEndTime = this_status.split()[4]+' '+this_status.split()[5]
-            this_jobendtime   = GetDatetimeFromMyFormat(line_EventEndTime)
-
-            this_diff = this_jobendtime-this_jobstarttime
-            this_EventRunTime = 86400*this_diff.days+this_diff.seconds
-
-            this_TimePerEvent = float(this_EventRunTime)/float(this_EventDone)
-            this_TimeLeft = (this_EventTotal-this_EventDone)*this_TimePerEvent
-
-            TotalEventRunTime += this_EventRunTime
-            MaxTimeLeft = max(MaxTimeLeft,this_TimeLeft)
-            MaxEventRunTime = max(MaxEventRunTime,this_EventRunTime)
-
-          elif "RUNNING" in this_status:
-            outlog = str(it_job)+'\t| '+this_status.split()[1]+' %'
-
-            EventInfo = this_status.split()[2].split(':')
-
-            this_EventDone = int(EventInfo[1])
-            this_EventTotal = int(EventInfo[2])
-
-            EventDone += this_EventDone
-            EventTotal += this_EventTotal
-
-            line_EventRunTime = this_status.split()[3]+' '+this_status.split()[4]
-            this_jobstarttime = GetDatetimeFromMyFormat(line_EventRunTime)
-            this_diff = datetime.datetime.now()-this_jobstarttime
-            this_EventRunTime = 86400*this_diff.days+this_diff.seconds
-
-            if this_EventDone==0:
-              this_EventDone = 1
-
-            this_TimePerEvent = float(this_EventRunTime)/float(this_EventDone)
-            this_TimeLeft = (this_EventTotal-this_EventDone)*this_TimePerEvent
-
-            TotalEventRunTime += this_EventRunTime
-            MaxTimeLeft = max(MaxTimeLeft,this_TimeLeft)
-            MaxEventRunTime = max(MaxEventRunTime,this_EventRunTime)
-
-            round_this_TimeLeft = round(this_TimeLeft,1)
-            round_this_EventRunTime = round(this_EventRunTime,1)
-
-            outlog += ' ('+str(round_this_EventRunTime)+' s ran, and '+str(round_this_TimeLeft)+' s left)'
-            ToStatuslog.append(outlog)
-            n_eventran += 1
-
-          else:
-            outlog = str(it_job)+'\t| '+this_status
-            ToStatuslog.append(outlog)
-
-          ##---- END it_job loop
-
-        if GotError:
-
-          ## When error occured, change both Finished/PostJob Flag to True
-
-          SampleFinishedForEachSample[it_sample] = True
-          PostJobFinishedForEachSample[it_sample] = True
-          break
-
-        for l in ToStatuslog:
-          statuslog.write(l+'\n')
-        statuslog.write('\n==============================================================\n')
-        statuslog.write('HOSTNAME = '+HOSTNAME+'\n')
-        statuslog.write('queue = '+args.Queue+'\n')
-        statuslog.write(str(len(FileRanges))+' jobs submitted\n')
-        statuslog.write(str(n_eventran)+' jobs are running\n')
-        statuslog.write(str(len(finished))+' jobs are finished\n')
-
-        ThisTime = datetime.datetime.now()
-        string_ThisTime =  ThisTime.strftime('%Y-%m-%d %H:%M:%S')
-
-        statuslog.write('XSEC = '+str(XsecForEachSample[it_sample])+'\n')
-        statuslog.write('EventDone = '+str(EventDone)+'\n')
-        statuslog.write('EventTotal = '+str(EventTotal)+'\n')
-        statuslog.write('EventLeft = '+str(EventTotal-EventDone)+'\n')
-        statuslog.write('TotalEventRunTime = '+str(TotalEventRunTime)+'\n')
-        statuslog.write('MaxTimeLeft = '+str(MaxTimeLeft)+'\n')
-        statuslog.write('MaxEventRunTime = '+str(MaxEventRunTime)+'\n')
-
-        t_per_event = 1
-        if EventDone is not 0:
-          t_per_event = float(TotalEventRunTime)/float(EventDone)
-        statuslog.write('t_per_event = '+str(t_per_event)+'\n')
-
-        EstTime = ThisTime+datetime.timedelta(0, MaxTimeLeft)
-
-        statuslog.write('Estimated Finishing Time : '+EstTime.strftime('%Y-%m-%d %H:%M:%S')+'\n')
-        statuslog.write('Last checked at '+string_ThisTime+'\n')
-        statuslog.close()
-
-        ## copy statuslog to webdir
-
-        os.system('cp '+base_rundir+'/JobStatus.log '+this_webdir)
-
-        ## This time, it is found to be finished
-        ## Change the flag
-
-        if ThisSampleFinished:
-          SampleFinishedForEachSample[it_sample] = True
-
-        ##---- END if finished
-
-      else:
-
-        ## Job was finished in the previous monitoring
-        ## Check if PostJob is also finished
-
-        if not PostJobFinished:
-
-          ## PostJob was not done in the previous monitoring
-          ## Copy output, and change the PostJob flag
-
-
-          ## if Skim, no need to hadd. move on!
-
-          if IsSkimTree:
-            PostJobFinishedForEachSample[it_sample] = True
-            continue
-
-          outputname = args.Analyzer+'_'+SkimString+InputSample
-          if IsDATA:
-            outputname += '_'+DataPeriod
-
-          if args.TagOutput != '':
-            outputname += '_' + args.TagOutput
-
-          if not GotError:
-            cwd = os.getcwd()
-            os.chdir(base_rundir)
-
-            #### if number of job is 1, we can just move the file, not hadd
-            nFiles = len( FileRangesForEachSample[it_sample] )
-            if nFiles==1:
-              if IsKISTI or IsTAMSA:
-                os.system('echo "nFiles = 1, so skipping hadd and just move the file" >> JobStatus.log')
-                os.system('ls -1 output/*.root >> JobStatus.log')
-                os.system('mv output/hists_0.root '+outputname+'.root')
-              else:
-                os.system('echo "nFiles = 1, so skipping hadd and just move the file" >> JobStatus.log')
-                os.system('ls -1 job_0/*.root >> JobStatus.log')
-                os.system('mv job_0/hists.root '+outputname+'.root')
-
+    while not isAllSampleDone:
+        if gotError: break
+        isAllSampleDone = True
+        for it_sample in range(len(inputSampleList)):
+            inputSample = inputSampleList[it_sample]
+            isDone = isDoneForEachSample[it_sample]
+            isPostJobDone = isPostJobDoneForEachSample[it_sample]
+            
+            if isPostJobDone: continue
+            else: isAllSampleDone = False
+            
+            ## Global Variables
+            isDATA = False
+            dataPeriod = ""
+            if ":" in inputSample:
+                isDATA = True
+                tmp = inputSample.split(":")
+                inputSample, dataPeriod = tmp[0], tmp[1]
+            
+            ## Prepare output
+            ## This should be copied from above
+            baseRunDir = f"{masterJobDir}/{inputSample}"
+            if isDATA:
+                baseRunDir += f"_period{dataPeriod}"
+            thisWebDir = f"{webdirpathbase}/{baseRunDir.replace(SKFlatRunlogDir,'').replace(HOSTNAME+'/',HOSTNAME+'__')}"
+            
+            if not isDone:
+                ## This sample was not done in the previous monitoring
+                ## Monitor again this time
+                thisSampleDone = True
+                
+                ## Write job status until it's done
+                statusLog = open(f"{baseRunDir}/JobStatus.log", "w")
+                statusLog.write(f"Job submitted at {jobStartTime}\n")
+                statusLog.write(f"JobNumber\t| Status\n")
+                
+                toStatusLog = []
+                nEventRan = 0
+                finished = []
+                eventDone = 0
+                eventTotal = 0
+                
+                totalEventRunTime = 0
+                maxTimeLeft = 0
+                maxEventRunTime = 0
+                
+                fileRanges = fileRangesForEachSample[it_sample]
+                
+                for it_job in range(len(fileRanges)):
+                    thisJobDir = baseRunDir
+                    thisStatus = CheckJobStatus(thisJobDir, args.Analyzer, it_job, HOSTNAME)
+                    
+                    if "ERROR" in thisStatus:
+                        gotError = True
+                        statusLog.write("#### ERROR OCCURED ####\n") 
+                        statusLog.write(f"{thisStatus}\n") 
+                        errorLog = thisStatus
+                        break
+                
+                    if "FINISHED" not in thisStatus:
+                        thisSampleDone = False
+                        
+                    outLog = ""
+                    if "FINISHED" in thisStatus:
+                        finished.append("Finished")
+                        eventInfo = thisStatus.split()[1].split(":")
+                        thisEventDone = int(eventInfo[2])
+                        thisEventTotal = int(eventInfo[2])
+                        
+                        eventDone += thisEventDone
+                        eventTotal += thisEventTotal
+                        
+                        #### start
+                        lineEventRunTime = f"{thisStatus.split()[2]} {thisStatus.split()[3]}"
+                        thisJobStartTime = GetDatetimeFromMyFormat(lineEventRunTime)
+                        #### end
+                        lineEventEndTime = f"{thisStatus.split()[4]} {thisStatus.split()[5]}"
+                        thisJobEndTime = GetDatetimeFromMyFormat(lineEventEndTime)
+                        
+                        thisDiff = thisJobEndTime - thisJobStartTime
+                        thisEventRunTime = 86400*thisDiff.days + thisDiff.seconds
+                        
+                        thisTimePerEvent = float(thisEventRunTime)/float(thisEventDone)
+                        thisTimeLeft = (thisEventTotal-thisEventDone)*thisTimePerEvent
+                        
+                        totalEventRunTime += thisEventRunTime
+                        maxTimeLeft = max(maxTimeLeft, thisTimeLeft)
+                    elif "RUNNING" in thisStatus:
+                        outLog = f"{it_job}\t| {this_status.split()[1]} %"
+                        eventInfo = thisStatus.split()[2].spllit(":")
+                        
+                        thisEventDone, thisEventTotal = int(eventInfo[1]), int(eventInfo[2])
+                        eventDone += thisEventDone
+                        eventTotal += thisEventTotal
+                        
+                        lineEventRunTime = f"{thisStatus.split()[3]} {thisStatus.split()[4]}"
+                        thisJobStartTime = GetDatetimeFromMyFormat(lineEventRunTime)
+                        thisDiff = datetime.datetime.now() - thisJobStartTime
+                        thisEventRunTime = 86400*thisDiff.days + thisDiff.seconds
+                        
+                        if thisEventDone == 0: thisEventDone = 1
+                        thisTimePerEvent = float(thisEventRunTime) / float(thisEventDone)
+                        thisTimeLeft = (thisEventTotal-thisEventDone)*thisTimePerEvent
+                        
+                        totalEventRunTime += thisEventRunTime
+                        maxTimeLeft = max(maxTimeLeft, thisTimeLeft)
+                        maxEventRunTime = max(maxEventRunTime, thisEventRunTime)
+                        
+                        outLog += f"({thisTimeLeft:.1}+ s ran, and {thisEventRunTime:.1} s left)"
+                        toStatusLog.append(outlog)
+                        nEventRan += 1
+                    else:
+                        outLog = f"{it_job}\t| {thisStatus}"
+                        toStatusLog.append(outLog)
+                        
+                    ##---- END it_job loop
+                    
+                if gotError:
+                    ## When error occured, change both isDone/postJob flag to True
+                    isDoneForEachSample[it_sample] = True
+                    isPostJobDoneForEachSample[it_sample] = True
+                    break
+
+                for line in toStatusLog: 
+                    statusLog.write(f"{line}\n")
+                statusLog.write("\n=====================================\n")
+                statusLog.write(f"HOSTNAME = {HOSTNAME}\n")
+                statusLog.write(f"queue = {args.Queue}\n")
+                statusLog.write(f"{len(fileRanges)} job submitted\n")
+                statusLog.write(f"{nEventRan} jobs are running\n")
+                statusLog.write(f"{len(finished)} jobs are finished\n")
+                thisTime = datetime.datetime.now()
+                statusLog.write(f"XSEC = {xsecForEachSample[it_sample]}\n")
+                statusLog.write(f"eventDone = {eventDone}\n")
+                statusLog.write(f"eventTotal = {eventTotal}\n")
+                statusLog.write(f"eventLeft = {eventTotal-eventDone}\n")
+                statusLog.write(f"totalEventRunTime = {totalEventRunTime}\n")
+                statusLog.write(f"maxTimeLeft = {maxTimeLeft}\n")
+                statusLog.write(f"maxEventRunTime = {maxEventRunTime}\n")
+                
+                timePerEvent = 1
+                if eventDone:       # exist finished events
+                    timePerEvent = float(totalEventRunTime)/float(eventDone)
+                statusLog.write(f"timePerEvent = {timePerEvent}\n")
+                estTime = thisTime+datetime.timedelta(0, maxTimeLeft)
+                statusLog.write(f"Estimated finishing time: {estTime.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                statusLog.write(f"Last checked at {thisTime.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                statusLog.close()
+                
+                ## copy statusLog to webdir
+                shutil.copy(f"{baseRunDir}/JobStatus.log", thisWebDir)
+                
+                ## This time, it is found to be finished
+                ## change the flag
+                if thisSampleDone:
+                    isDoneForEachSample[it_sample] = True
+                
+                ##---- END if finished
             else:
-              if IsKISTI or IsTAMSA:
-                while True:
-                  nhadd=int(os.popen("pgrep -x hadd -u $USER |wc -l").read().strip())
-                  if nhadd<4: break
-                  os.system('echo "Too many hadd currently (nhadd='+str(nhadd)+'). Sleep 60s" >> JobStatus.log')
-                  time.sleep(60)                  
-                os.system('hadd -f '+outputname+'.root output/*.root >> JobStatus.log')
-                os.system('rm output/*.root')
-                #os.system('condor_run -a request_cpus=10 "hadd -j 10 -f '+outputname+'.root output/*.root 2>&1 >> JobStatus.log"')
-              else:
-                os.system('hadd -f '+outputname+'.root job_*/*.root >> JobStatus.log')
-                os.system('rm job_*/*.root')
+                ## Job was finished in the previous monitoring
+                ## check if postjob is also finished
+                if not isPostJobDone:
+                    # copy output and change the postjob flag
+                    # if skim, no need to hadd
+                    if isSkimTree:
+                        isPostJobDoneForEachSample[it_sample] = True
+                        continue
+                    
+                    outputName = f"{args.Analyzer}_{skimString}{inputSample}"
+                    if isDATA:
+                        outputName += f"_{dataPeriod}"
+                    
+                    if args.TagOutput:
+                        outputName += f"_{args.TagOutput}"
+                        
+                    if not gotError:
+                        cwd = os.getcwd()
+                        os.chdir(baseRunDir)
+                        
+                        ## if number of job is 1, we can just move the file
+                        nFiles = len(fileRangesForEachSample[it_sample])
+                        if nFiles == 1:
+                            os.system('echo "nFiles = 1, so skipping hadd and just move the file" >> JobStatus.log')
+                            os.system('ls -1 output/*.root >> JobStatus.log')
+                            os.system(f'mv output/hists_0.root {outputName}.root')
+                        else:
+                            while True:
+                                nhadd=int(os.popen("pgrep -x hadd -u $USER |wc -l").read().strip())
+                                if nhadd<4: break
+                                os.system(f'echo "Too many hadd currently (nhadd={nhadd}). Sleep 60s" >> JobStatus.log')
+                                time.sleep(60)
+                            print(f"hadd target {outputName}.root")
+                            os.system(f'hadd -f {outputName}.root output/*.root >> JobStatus.log')
+                            os.system('rm output/*.root')
 
-            ## Final Outputpath
-
-            os.system('mv '+outputname+'.root '+FinalOutputPath)
-            os.chdir(cwd)
-
-          PostJobFinishedForEachSample[it_sample] = True
-
-    if SendLogToWeb:
-
-      os.system('cp -r '+webdirpathbase+'/* '+SKFlatLogWebDir)
-
-    time.sleep(20)
+                        ## Final Outputpath
+                        shutil.move(f"{outputName}.root", finalOutputPath)
+                        os.chdir(cwd)
+                    isPostJobDoneForEachSample[it_sample] = True
+        
+        if sendLogToWeb:
+            shutil.copytree(webdirpathbase, SKFlatLogWebDir)
+        time.sleep(20)
 
 except KeyboardInterrupt:
-  print('interrupted!')
-
+    print("interrupted!")
+    
 ## Send Email now
-
-if SendLogToEmail: 
-  from SendEmail import *
-  JobFinishEmail = '''#### Job Info ####
-  HOST = {3}
-  JobID = {6}
-  Analyzer = {0}
-  Era = {7}
-  Skim = {5}
-  # of Jobs = {4}
-  InputSample = {1}
-  {8}
-  Output sent to : {2}
-  '''.format(args.Analyzer,InputSamples,FinalOutputPath,HOSTNAME,NJobs,args.Skim,str_RandomNumber,args.Era,GetXSECTable(InputSamples,XsecForEachSample))
-  JobFinishEmail += '''##################
-  Job started at {0}
-  Job finished at {1}
-  '''.format(string_JobStartTime,string_ThisTime)
-  
-  if IsKNU:
-    JobFinishEmail += 'Queue = '+args.Queue+'\n'
-  
-  EmailTitle = '['+HOSTNAME+']'+' Summary of JobID '+str_RandomNumber
-  if GotError:
-    JobFinishEmail = "#### ERROR OCCURED ####\n"+JobFinishEmail
-    JobFinishEmail = ErrorLog+"\n------------------------------------------------\n"+JobFinishEmail
-    EmailTitle = '[ERROR] Summary of JobID '+str_RandomNumber
-  
-  if IsKNU:
-    SendEmailbyGMail(USER,SKFlatLogEmail,EmailTitle,JobFinishEmail)
-  else:
-    SendEmail(USER,SKFlatLogEmail,EmailTitle,JobFinishEmail)
+if sendLogToEmail:
+    from SendEmail import *
+    jobFinishedEmail = f"""#### Job Info ####
+    HOST = {HOSTNAME}
+    JobID = {randomNumber}
+    Analyzer = {args.Analyzer}
+    Era = {args.Era}
+    Skim = {args.Skim}
+    # of jobs = {njobs}
+    inputSample = {inputSampleList}
+    {GetXSECTable(inputSampleList, xsecForEachSample)}
+    Output sent to: {finalOutputPath}
+    """
+    emailTitle = f"[{HOSTNAME}] Summary of JobID {randomNumber}"
+    if gotError:
+        jobFinishedEmail = f"#### ERROR OCCURED ####\n" + jobFinishedEmail
+        jobFinishedEmail = errorLog+"\n--------------------------------------\n"+jobFinishedEmail
+        emailTitle = f"[ERROR] Summary of JobID {randomNumber}"
+    SendEmail(USER, SKFlatLogEmail, emailTitle, jobFinishedEmail)
