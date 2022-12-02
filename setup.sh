@@ -7,16 +7,15 @@ export SKFlatV="Run2UltraLegacy_v3"
 mkdir -p $SKFlat_WD/data/$SKFlatV
 export DATA_DIR=$SKFlat_WD/data/$SKFlatV
 
-#### use cvmfs for root ####
+#### root configuration ####
 RELEASE="`cat /etc/redhat-release`"
 if [[ $RELEASE == *"Fedora"* ]]; then
-    # working in local
-    if [[ $HOSTNAME == *"fedora"* ]]; then
-        source ~/.conda-activate
-        conda activate torch
-    # Using singularity image, source conda environment
-    else
+    if [[ $HOSTNAME == *"tamsa"* ]]; then
+        # Using singularity image
         source /opt/conda/bin/activate
+        conda activate torch
+    else    # working in local
+        source ~/.conda-activate
         conda activate torch
     fi
 else

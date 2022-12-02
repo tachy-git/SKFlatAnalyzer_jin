@@ -163,10 +163,19 @@ bool Electron::PassID(TString ID) const{
   if(ID=="SUSYLoose") return Pass_SUSYLoose();
   if(ID=="NOCUT") return true;
   if(ID=="TEST") return Pass_TESTID();
-
+  if(ID=="HcToWATight16a") return Pass_HcToWATight16a();
+  if(ID=="HcToWALoose16a") return Pass_HcToWALoose16a();
+  if(ID=="HcToWAVeto16a") return Pass_HcToWAVeto16a();
+  if(ID=="HcToWATight16b") return Pass_HcToWATight16b();
+  if(ID=="HcToWALoose16b") return Pass_HcToWALoose16b();
+  if(ID=="HcToWAVeto16b") return Pass_HcToWAVeto16b();
+  if(ID=="HcToWATight17") return Pass_HcToWATight17();
+  if(ID=="HcToWALoose17") return Pass_HcToWALoose17();
+  if(ID=="HcToWAVeto17") return Pass_HcToWAVeto17();
+  if(ID=="HcToWATight18") return Pass_HcToWATight18();
+  if(ID=="HcToWALoose18") return Pass_HcToWALoose18();
+  if(ID=="HcToWAVeto18") return Pass_HcToWAVeto18();
   if(ID=="HNLoosest") return Pass_HNLoosest(); // OR of VETO IDs
-
-  
 
   cout << "[Electron::PassID] No id : " << ID << endl;
   exit(ENODATA);
@@ -387,6 +396,140 @@ bool Electron::Pass_CutBasedVeto() const{
 
 }
 
+// HcToWA
+bool Electron::Pass_CaloIdL_TrackIdL_IsoVL() const{
+  bool ApplyEA = true;
+  if (fabs(scEta()) <= 1.479) {
+    if(! (Full5x5_sigmaIetaIeta() < 0.013)) return false;
+    if(! (fabs(dEtaSeed()) < 0.01)) return false;
+    if(! (fabs(dPhiIn()) < 0.07)) return false;
+    if(! (HoverE() < 0.13)) return false;
+    if(! (max(0., ecalPFClusterIso() - Rho()*(ApplyEA? 0.16544: 0.)) < 0.5*Pt())) return false;
+    if(! (max(0., hcalPFClusterIso() - Rho()*(ApplyEA? 0.05956: 0.)) < 0.3*Pt())) return false;
+    if(! (dr03TkSumPt() < 0.2*Pt())) return false;
+  }
+  else {
+    if(! (Full5x5_sigmaIetaIeta() < 0.035)) return false;
+    if(! (fabs(dEtaSeed()) < 0.015)) return false;
+    if(! (fabs(dPhiIn()) < 0.1)) return false;
+    if(! (HoverE() < 0.13)) return false;
+    if(! (max(0., ecalPFClusterIso() - Rho()*(ApplyEA? 0.13212: 0.)) < 0.5*Pt())) return false;
+    if(! (max(0., hcalPFClusterIso() - Rho()*(ApplyEA? 0.13052: 0.)) < 0.3*Pt())) return false;
+    if(! (dr03TkSumPt() < 0.2*Pt())) return false;
+  }
+  return true;
+}
+
+bool Electron::Pass_HcToWABaseline() const {
+  // baseline electron ID for HcToWA study
+    // without MVA && MiniIso cuts
+  if (! Pass_CaloIdL_TrackIdL_IsoVL()) return false;
+    if (! PassConversionVeto()) return false;
+    if (! (NMissingHits() < 2)) return false;
+    if (! (fabs(dZ()) < 0.1)) return false;
+    return true;
+}
+
+bool Electron::Pass_HcToWA(TString era, TString wp) const{
+  if (wp == "tight") {
+    if (! passMVAID_noIso_WP90()) return false;
+    if (! (MiniRelIso() < 0.1)) return false;
+  }
+  else if (wp == "loose") {
+    float cutA, cutB, cutC;
+    if      (era == "2016a") { cutA = 0.97; cutB = 0.93; cutC = 0.85; }
+    else if (era == "2016b") { cutA = 0.97; cutB = 0.95; cutC = 0.85; }
+    else if (era == "2017")  { cutA = 0.96; cutB = 0.83; cutC = 0.5;  }
+    else if (era == "2018")  { cutA = 0.96; cutB = 0.83; cutC = 0.5;  }
+    else {
+      cerr << "[Electron] Wrong era " << era << endl;
+      exit(EXIT_FAILURE);
+    }
+
+    if (fabs(scEta()) < 0.8) { if (! (MVANoIso() > cutA)) return false; }
+    else if (fabs(scEta()) < 1.47) { if (! (MVANoIso() > cutB)) return false; }
+    else if (fabs(scEta()) < 2.5) { if (! (MVANoIso() > cutC)) return false; }
+    else {
+      cerr << "[Electron::Pass_HcToWAMVA] Wrong scEta value " << scEta() << endl;
+      cerr << "[Electron::Pass_HcToWAMVA] should be in [-2.5, 2.5]" << endl;
+    }
+     if (! (MiniRelIso() < 0.4)) return false;
+  }
+  else if (wp == "veto") {
+    if (! (MVANoIso() > -0.8)) return false;
+    if (! (MiniRelIso() < 0.4)) return false;
+  }
+  else {
+    cerr << "[Electron::Pass_HcToWA] Wrong WP " << wp << endl;
+    exit(EXIT_FAILURE);
+  }
+  return true;
+}
+
+// 2016a
+bool Electron::Pass_HcToWATight16a() const {
+  if (! Pass_HcToWABaseline()) return false;
+  if (! Pass_HcToWA("2016a", "tight")) return false;
+  return true;
+}
+bool Electron::Pass_HcToWALoose16a() const {
+  if (! Pass_HcToWABaseline()) return false;
+    if (! Pass_HcToWA("2016a", "loose")) return false;
+    return true;
+}
+bool Electron::Pass_HcToWAVeto16a() const {
+  if (! Pass_HcToWABaseline()) return false;
+    if (! Pass_HcToWA("2016a", "veto")) return false;
+    return true;
+}
+// 2016b
+bool Electron::Pass_HcToWATight16b() const {
+  if (! Pass_HcToWABaseline()) return false;
+  if (! Pass_HcToWA("2016b", "tight")) return false;
+  return true;
+}
+bool Electron::Pass_HcToWALoose16b() const {
+  if (! Pass_HcToWABaseline()) return false;
+  if (! Pass_HcToWA("2016b", "loose")) return false;
+    return true;
+}
+bool Electron::Pass_HcToWAVeto16b() const {
+  if (! Pass_HcToWABaseline()) return false;
+  if (! Pass_HcToWA("2016b", "veto")) return false;
+    return true;
+}
+// 2017
+bool Electron::Pass_HcToWATight17() const {
+  if (! Pass_HcToWABaseline()) return false;
+  if (! Pass_HcToWA("2017", "tight")) return false;
+  return true;
+}
+bool Electron::Pass_HcToWALoose17() const {
+  if (! Pass_HcToWABaseline()) return false;
+  if (! Pass_HcToWA("2017", "loose")) return false;
+    return true;
+}
+bool Electron::Pass_HcToWAVeto17() const {
+  if (! Pass_HcToWABaseline()) return false;
+  if (! Pass_HcToWA("2017", "veto")) return false;
+    return true;
+}
+// 2018
+bool Electron::Pass_HcToWATight18() const {
+  if (! Pass_HcToWABaseline()) return false;
+  if (! Pass_HcToWA("2018", "tight")) return false;
+  return true;
+}
+bool Electron::Pass_HcToWALoose18() const {
+  if (! Pass_HcToWABaseline()) return false;
+  if (! Pass_HcToWA("2018", "loose")) return false;
+    return true;
+}
+bool Electron::Pass_HcToWAVeto18() const {
+  if (! Pass_HcToWABaseline()) return false;
+  if (! Pass_HcToWA("2018", "veto")) return false;
+    return true;
+}
 
 // Add loosest electron ID for Skim requirements 
 bool Electron::Pass_HNLoosest() const{

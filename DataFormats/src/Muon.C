@@ -113,6 +113,9 @@ bool Muon::PassID(TString ID) const {
   if(ID=="POGHighPtWithLooseTrkIso") return Pass_POGHighPtWithLooseTrkIso();
   //==== Customized
   if(ID=="TEST") return Pass_TESTID();
+  if(ID=="HcToWAVeto") return Pass_HcToWAVeto();
+  if(ID=="HcToWALoose") return Pass_HcToWALoose();
+  if(ID=="HcToWATight") return Pass_HcToWATight();
 
   //==== No cut
   if(ID=="NOCUT") return true;
@@ -151,6 +154,29 @@ bool Muon::Pass_HNVeto() const {
 
 bool Muon::Pass_TESTID() const {
   return true;
+}
+
+bool Muon::Pass_HcToWAVeto() const {
+  if(! Pass_HcToWALoose()) return false;
+    return true;
+}
+
+bool Muon::Pass_HcToWALoose() const {
+  if(! (isPOGMedium())) return false;
+    if(! (fabs(dZ()) < 0.1)) return false;
+    if(! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 5.)) return false;
+    if(! (TrkIso() < 0.4*Pt())) return false;
+    if(! (MiniRelIso() < 0.6)) return false;
+  return true;
+}
+
+bool Muon::Pass_HcToWATight() const {
+  if(! (isPOGMedium())) return false;
+    if(! (fabs(dZ()) < 0.1)) return false;
+  if(! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 3.)) return false;
+    if(! (TrkIso() < 0.4*Pt())) return false;
+    if(! (MiniRelIso() < 0.1)) return false;
+    return true;
 }
 
 void Muon::SetTrackerLayers(int n){

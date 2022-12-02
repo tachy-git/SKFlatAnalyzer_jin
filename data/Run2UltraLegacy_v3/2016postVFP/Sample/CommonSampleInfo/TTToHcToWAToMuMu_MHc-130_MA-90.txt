@@ -1,0 +1,2 @@
+# alias PD xsec nmc sumsign sumw
+TTToHcToWAToMuMu_MHc-130_MA-90	TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8	0.015	273642	273642.0	1492.79

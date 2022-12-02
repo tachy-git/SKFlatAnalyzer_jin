@@ -134,6 +134,21 @@ public:
   bool Pass_CutBasedVetoNoIso() const;
   bool Pass_CutBasedLoose() const;
   bool Pass_CutBasedVeto() const;
+  bool Pass_CaloIdL_TrackIdL_IsoVL() const;
+  bool Pass_HcToWABaseline() const;
+  bool Pass_HcToWA(TString era, TString wp) const;
+  bool Pass_HcToWATight16a() const;
+  bool Pass_HcToWALoose16a() const;
+  bool Pass_HcToWAVeto16a() const;
+  bool Pass_HcToWATight16b() const;
+  bool Pass_HcToWALoose16b() const;
+  bool Pass_HcToWAVeto16b() const;
+  bool Pass_HcToWATight17() const;
+  bool Pass_HcToWALoose17() const;
+  bool Pass_HcToWAVeto17() const;
+  bool Pass_HcToWATight18() const;
+  bool Pass_HcToWALoose18() const;
+  bool Pass_HcToWAVeto18() const;
 
   bool Pass_HNLoosest() const;
 
