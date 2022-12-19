@@ -1,0 +1,4 @@
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/MC_SkimTree_SS2lOR3l/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/2022_07_18_021213/SKFlatNtuple_2017_MC_3.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/MC_SkimTree_SS2lOR3l/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/2022_07_18_021213/SKFlatNtuple_2017_MC_1.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/MC_SkimTree_SS2lOR3l/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/2022_07_18_021213/SKFlatNtuple_2017_MC_2.root
+/gv0/DATA/SKFlat/Run2UltraLegacy_v3/2017/MC_SkimTree_SS2lOR3l/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/2022_07_18_021213/SKFlatNtuple_2017_MC_0.root
