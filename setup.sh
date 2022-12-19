@@ -1,4 +1,4 @@
-export SKFlat_WD=`pwd`
+export SKFlat_WD="/data6/Users/choij/SKFlatAnalyzer"
 export SKFlat_LIB_PATH=$SKFlat_WD/lib/
 mkdir -p $SKFlat_LIB_PATH
 mkdir -p $SKFlat_WD/tar
@@ -19,8 +19,9 @@ if [[ $RELEASE == *"Fedora"* ]]; then
         conda activate torch
     fi
 else
-    # Using from host, temporarily use ROOT from lcg
-    source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.24.06/x86_64-centos7-gcc48-opt/bin/thisroot.sh
+    # Using from host, temporarily use ROOT and python from LCG environment
+    source /cvmfs/sft.cern.ch/lcg/views/LCG_102cuda/x86_64-centos7-gcc8-opt/setup.sh
+    #source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.24.06/x86_64-centos7-gcc48-opt/bin/thisroot.sh
 fi
 
 if [[ $HOSTNAME == *"ui"*".sdfarm.kr"* ]]; then

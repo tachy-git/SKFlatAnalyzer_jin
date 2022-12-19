@@ -69,3 +69,39 @@ class ParticleNet(torch.nn.Module):
         x = self.output(x)
 
         return F.softmax(x, dim=1)
+
+
+class ParticleNetLite(torch.nn.Module):
+    def __init__(self, num_features, num_classes):
+        super(ParticleNetLite, self).__init__()
+        self.gn0 = GraphNorm(num_features)
+        self.conv1 = DynamicEdgeConv(num_features, 32)
+        self.gn1 = GraphNorm(32)
+        self.conv2 = DynamicEdgeConv(32, 64)
+        self.gn2 = GraphNorm(64)
+        self.conv3 = DynamicEdgeConv(64, 64)
+        self.gn3 = GraphNorm(64)
+        self.dense1 = Linear(64, 32)
+        self.dense2 = Linear(32, 32)
+        self.output = Linear(32, num_classes)
+
+    def forward(self, x, edge_index, batch=None):
+        # Convolution layers
+        x = self.gn0(x, batch=batch)
+        x = self.conv1(x, edge_index, batch=batch)
+        x = self.gn1(x, batch=batch)
+        x = self.conv2(x, batch=batch)
+        x = self.gn2(x, batch=batch)
+        x = self.conv3(x, batch=batch)
+        x = self.gn3(x, batch=batch)
+        # readout layers
+        x = global_mean_pool(x, batch=batch)
+
+        # dense layers                                                                  
+        x = F.relu(self.dense1(x))
+        x = F.dropout(x, p=0.2)     
+        x = F.relu(self.dense2(x))
+        x = F.dropout(x, p=0.2)    
+        x = self.output(x)
+   
+        return F.softmax(x, dim=1)
