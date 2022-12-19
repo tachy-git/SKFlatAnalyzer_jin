@@ -15,7 +15,7 @@ class ValidParticleNet(TriLeptonBase):
     def __init__(self):
         super().__init__()
         self.__loadModels()
-
+        
     def __loadModels(self):
         self.models = {}
         
@@ -229,7 +229,7 @@ class ValidParticleNet(TriLeptonBase):
                 super().FillHist(f"{channel}/{key}/ACand/phi", ACand.Phi(), weight, 64, -3.2, 3.2)
                 super().FillHist(f"{channel}/{key}/ACand/mass", ACand.M(), weight, 200, 0., 200.)
             else: # 3Mu
-                mA = int(string.split("_")[1].split("-")[1])
+                mA = int(key.split("_")[1].split("-")[1])
                 if abs(pair1.M() - mA) < abs(pair2.M() - mA):
                     ACand, nACand = pair1, pair2
                 else:
