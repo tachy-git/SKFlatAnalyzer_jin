@@ -2,7 +2,7 @@ from ROOT import gSystem
 from ROOT import TriLeptonBase
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
 
-import sys; sys.path.insert(0, "/data6/Users/choij/SKFlatAnalyzer/python")
+import os, sys; sys.path.insert(0, f"{os.environ['SKFlat_WD']}/python")
 import numpy as np
 import pandas as pd
 import torch
@@ -20,7 +20,7 @@ class ValidParticleNet(TriLeptonBase):
         self.models = {}
         
         # read csv file
-        csv = pd.read_csv("/data6/Users/choij/SKFlatAnalyzer/external/ParticleNet/modelInfo.csv",
+        csv = pd.read_csv(f"{os.environ['SKFlat_WD']}/external/ParticleNet/modelInfo.csv",
                           sep=",\s",
                           engine="python")
         for idx in csv.index:
@@ -33,7 +33,7 @@ class ValidParticleNet(TriLeptonBase):
             else:
                 print(f"[ValidParticleNet] Wrong model {model}")
                 exit(1)
-            modelPath = f"/data6/Users/choij/SKFlatAnalyzer/external/ParticleNet/models/{sig}_vs_{bkg}.pt"
+            modelPath = f"{os.environ['SKFlat_WD']}/external/ParticleNet/models/{sig}_vs_{bkg}.pt"
             thisModel.load_state_dict(torch.load(modelPath, map_location=torch.device("cpu")))
             self.models[f"{sig}_vs_{bkg}"] = thisModel
 
@@ -163,4 +163,24 @@ class ValidParticleNet(TriLeptonBase):
         data = evtToGraph(nodeList, y=None, k=4)
         for key, model in self.models.items():
             score = predictProba(model, data.x, data.edge_index)
-            super().FillHist(f"{channel}/{key}/score", score, 1., 100, 0., 1.) 
+            super().FillHist(f"{channel}/{key}/score", score, 1., 100, 0., 1.)
+
+if __name__ == "__main__":
+    m = ValidParticleNet()
+    m.SetTreeName("recoTree/SKFlat")
+    m.IsDATA = False
+    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
+    m.xsec = 0.015
+    m.sumSign = 599702.0
+    m.sumW = 3270.46
+    m.IsFastSim = False
+    m.SetEra("2017")
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
+    m.SetOutfilePath("hists.root")
+    m.Init()
+    m.initializeAnalyzer()
+    m.initializeAnalyzerTools()
+    m.SwitchToTempDir()
+    m.Loop()
+    m.WriteHist()

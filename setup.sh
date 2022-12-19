@@ -1,4 +1,30 @@
-export SKFlat_WD="/data6/Users/choij/SKFlatAnalyzer"
+RELEASE="`cat /etc/redhat-release`"
+if [[ $HOSTNAME == *"tamsa"* ]]; then
+  echo "@@@@ Working in tamsa"
+  export SKFlat_WD="/data6/Users/$USER/SKFlatAnalyzer"
+  export SKFlatRunlogDir="/data6/Users/$USER/SKFlatRunlog"
+  export SKFlatOutputDir="/data6/Users/$USER/SKFlatOutput"
+
+  # root configuration
+  # Singlarity image
+  if [[ $RELEASE == *"Fedora"* ]]; then
+    source /opt/conda/bin/activate
+    conda activate torch
+  # using from host
+  else
+    # temporarily use ROOT and python from LCG environment
+    source /cvmfs/sft.cern.ch/lcg/views/LCG_102cuda/x86_64-centos7-gcc8-opt/setup.sh
+  fi
+else
+  echo "@@@@ Working in local"
+  export SKFlat_WD="/home/$USER/workspace/SKFlatAnalyzer"
+  export SKFlatRunlogDir="/home/$USER/workspace/SKFlatRunlog"
+  export SKFlatOutputDir="/home/$USER/workspace/SKFlatOutput"
+  # root configuration
+  source ~/.conda-activate
+  conda activate torch
+fi
+
 export SKFlat_LIB_PATH=$SKFlat_WD/lib/
 mkdir -p $SKFlat_LIB_PATH
 mkdir -p $SKFlat_WD/tar
@@ -6,45 +32,6 @@ mkdir -p $SKFlat_WD/tar
 export SKFlatV="Run2UltraLegacy_v3"
 mkdir -p $SKFlat_WD/data/$SKFlatV
 export DATA_DIR=$SKFlat_WD/data/$SKFlatV
-
-#### root configuration ####
-RELEASE="`cat /etc/redhat-release`"
-if [[ $RELEASE == *"Fedora"* ]]; then
-    if [[ $HOSTNAME == *"tamsa"* ]]; then
-        # Using singularity image
-        source /opt/conda/bin/activate
-        conda activate torch
-    else    # working in local
-        source ~/.conda-activate
-        conda activate torch
-    fi
-else
-    # Using from host, temporarily use ROOT and python from LCG environment
-    source /cvmfs/sft.cern.ch/lcg/views/LCG_102cuda/x86_64-centos7-gcc8-opt/setup.sh
-    #source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.24.06/x86_64-centos7-gcc48-opt/bin/thisroot.sh
-fi
-
-if [[ $HOSTNAME == *"ui"*".sdfarm.kr"* ]]; then
-  echo "@@@@ Working on KISTI"
-  export SKFlatRunlogDir="/cms/ldap_home/$USER/SKFlatRunlog"
-  export SKFlatOutputDir="/cms/ldap_home/$USER/SKFlatOutput"
-elif [[ $HOSTNAME == *"tamsa1"* ]]; then
-  echo "@@@@ Working on tamsa1"
-  export SKFlatRunlogDir="/data6/Users/$USER/SKFlatRunlog"
-  export SKFlatOutputDir="/data6/Users/$USER/SKFlatOutput"
-elif [[ $HOSTNAME == *"tamsa2"* ]]; then
-  echo "@@@@ Working on tamsa2"
-  export SKFlatRunlogDir="/data6/Users/$USER/SKFlatRunlog"
-  export SKFlatOutputDir="/data6/Users/$USER/SKFlatOutput"
-elif [[ $HOSTNAME == *"knu"* ]]; then
-  echo "@@@@ Working on KNU"
-  export SKFlatRunlogDir="/u/user/$USER/scratch/SKFlatRunlog"
-  export SKFlatOutputDir="/u/user/$USER/scratch/SKFlatOutput"
-else
-  echo "@@@@ Working in local"
-  export SKFlatRunlogDir="/home/$USER/workspace/SKFlatRunlog"
-  export SKFlatOutputDir="/home/$USER/workspace/SKFlatOutput"
-fi
 
 alias skout="cd $SKFlatOutputDir/$SKFlatV"
 
