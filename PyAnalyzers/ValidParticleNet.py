@@ -20,7 +20,7 @@ class ValidParticleNet(TriLeptonBase):
                 "MHc-100_MA-15", "MHc-100_MA-60", "MHc-100_MA-95",
                 "MHc-130_MA-15", "MHc-130_MA-55", "MHc-130_MA-90", "MHc-130_MA-125",
                 "MHc-160_MA-15", "MHc-160_MA-85", "MHc-160_MA-120", "MHc-160_MA-155"]
-
+    
     def __loadModels(self):
         self.models = {}
         
@@ -252,26 +252,26 @@ class ValidParticleNet(TriLeptonBase):
             super().FillHist(f"{channel}/{signal}/score_TTX", score_TTX, weight, 100, 0., 1.)
             super().FillHist(f"{channel}/{signal}/3D",
                              ACand.M(), score_TTFake, score_TTX, weight,
-                             80, mA-4, mA+4,
+                             100, mA-5., mA+5.,
                              100, 0., 1.,
                              100, 0., 1.)
 
-if __name__ == "__main__":
-    m = ValidParticleNet()
-    m.SetTreeName("recoTree/SKFlat")
-    m.IsDATA = False
-    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
-    m.xsec = 0.015
-    m.sumSign = 599702.0
-    m.sumW = 3270.46
-    m.IsFastSim = False
-    m.SetEra("2017")
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
-    m.SetOutfilePath("hists.root")
-    m.Init()
-    m.initializeAnalyzer()
-    m.initializeAnalyzerTools()
-    m.SwitchToTempDir()
-    m.Loop()
-    m.WriteHist()
+#if __name__ == "__main__":
+#    m = ValidParticleNet()
+#    m.SetTreeName("recoTree/SKFlat")
+#    m.IsDATA = False
+#    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
+#    m.xsec = 0.015
+#    m.sumSign = 599702.0
+#    m.sumW = 3270.46
+#    m.IsFastSim = False
+#    m.SetEra("2017")
+#    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
+#    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
+#    m.SetOutfilePath("hists.root")
+#    m.Init()
+#    m.initializeAnalyzer()
+#    m.initializeAnalyzerTools()
+#    m.SwitchToTempDir()
+#    m.Loop()
+#    m.WriteHist()
