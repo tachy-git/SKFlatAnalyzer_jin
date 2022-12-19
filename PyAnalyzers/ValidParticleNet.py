@@ -15,6 +15,11 @@ class ValidParticleNet(TriLeptonBase):
     def __init__(self):
         super().__init__()
         self.__loadModels()
+        self.signalStrings = [
+                "MHc-70_MA-15", "MHc-70_MA-40", "MHc-70_MA-65",
+                "MHc-100_MA-15", "MHc-100_MA-60", "MHc-100_MA-95",
+                "MHc-130_MA-15", "MHc-130_MA-55", "MHc-130_MA-90", "MHc-130_MA-125",
+                "MHc-160_MA-15", "MHc-160_MA-85", "MHc-160_MA-120", "MHc-160_MA-155"]
 
     def __loadModels(self):
         self.models = {}
@@ -160,24 +165,24 @@ class ValidParticleNet(TriLeptonBase):
             weight *= ev.GetTriggerLumi("Full") 
 
         ## fill input observables
-        for idx, mu in enumerate(looseMuons):
+        for idx, mu in enumerate(looseMuons, start=1):
             super().FillHist(f"{channel}/muons/{idx}/pt", mu.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/muons/{idx}/eta", mu.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/muons/{idx}/phi", mu.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/muons/{idx}/mass", mu.M(), weight, 10, 0., 1.)
-        for idx, ele in enumerate(looseElectrons):
+        for idx, ele in enumerate(looseElectrons, start=1):
             super().FillHist(f"{channel}/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
             super().FillHist(f"{channel}/electrons/{idx}/Phi", ele.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
-        for idx, jet in enumerate(jets):
+        for idx, jet in enumerate(jets, start=1):
             super().FillHist(f"{channel}/jets/{idx}/pt", jet.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/jets/{idx}/eta", jet.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/jets/{idx}/phi", jet.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/jets/{idx}/mass", jet.M(), weight, 100, 0., 100.)
             super().FillHist(f"{channel}/jets/{idx}/charge", jet.Charge(), weight, 200, -5., 5.)
             super().FillHist(f"{channel}/jets/{idx}/btagScore", jet.GetTaggerResult(3), weight, 100, 0., 1.)
-        for idx, bjet in enumerate(bjets):
+        for idx, bjet in enumerate(bjets, start=1):
             super().FillHist(f"{channel}/bjets/{idx}/pt", bjet.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/bjets/{idx}/eta", bjet.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/bjets/{idx}/phi", bjet.Phi(), weight, 64, -3.2, 3.2)
@@ -186,7 +191,7 @@ class ValidParticleNet(TriLeptonBase):
             super().FillHist(f"{channel}/bjets/{idx}/btagScore", bjet.GetTaggerResult(3), weight, 100, 0., 1.)
         super().FillHist(f"{channel}/METv/pt", METv.Pt(), weight, 300, 0., 300.)
         super().FillHist(f"{channel}/METv/phi", METv.Phi(), weight, 64, -3.2, 3.2)
-    
+
         ## make a graph
         particles = []
         for muon in tightMuons:
@@ -217,49 +222,56 @@ class ValidParticleNet(TriLeptonBase):
                              particle.Charge(), particle.IsMuon(), particle.IsElectron(),
                              particle.IsJet(), particle.BtagScore()])
         data = evtToGraph(nodeList, y=None, k=4)
-        for key, model in self.models.items():
-            score = predictProba(model, data.x, data.edge_index)
-            super().FillHist(f"{channel}/{key}/score", score, weight, 100, 0., 1.)
 
-            # pair
+        for signal in self.signalStrings:
             if "1E2Mu" in channel:
                 ACand = pair
-                super().FillHist(f"{channel}/{key}/ACand/pt", ACand.Pt(), weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{key}/ACand/eta", ACand.Eta(), weight, 100, -5., 5.)
-                super().FillHist(f"{channel}/{key}/ACand/phi", ACand.Phi(), weight, 64, -3.2, 3.2)
-                super().FillHist(f"{channel}/{key}/ACand/mass", ACand.M(), weight, 200, 0., 200.)
-            else: # 3Mu
-                mA = int(string.split("_")[1].split("-")[1])
+                super().FillHist(f"{channel}/{signal}/ACand/pt", ACand.Pt(), weight, 300, 0., 300.)
+                super().FillHist(f"{channel}/{signal}/ACand/eta", ACand.Eta(), weight, 100, -5., 5.)
+                super().FillHist(f"{channel}/{signal}/ACand/phi", ACand.Phi(), weight, 64, -3.2, 3.2)
+                super().FillHist(f"{channel}/{signal}/ACand/mass", ACand.M(), weight, 200, 0., 200.)
+            else:
+                mA = int(signal.split("_")[1].split("-")[1])
                 if abs(pair1.M() - mA) < abs(pair2.M() - mA):
                     ACand, nACand = pair1, pair2
                 else:
                     ACand, nACand = pair2, pair2
-                    
-                super().FillHist(f"{channel}/{key}/ACand/pt", ACand.Pt(), weight, 300, 0., 300.)                
-                super().FillHist(f"{channel}/{key}/ACand/eta", ACand.Eta(), weight, 100, -5., 5.)
-                super().FillHist(f"{channel}/{key}/ACand/phi", ACand.Phi(), weight, 64, -3.2, 3.2)
-                super().FillHist(f"{channel}/{key}/ACand/mass", ACand.M(), weight, 200, 0., 200.) 
-                super().FillHist(f"{channel}/{key}/nACand/pt", nACand.Pt(), weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{key}/nACand/eta", nACand.Eta(), weight, 100, -5., 5.)
-                super().FillHist(f"{channel}/{key}/nACand/phi", nACand.Phi(), weight, 64, -3.2, 3.2)
-                super().FillHist(f"{channel}/{key}/nACand/mass", nACand.M(), weight, 300, 0., 300.)
 
-#if __name__ == "__main__":
-#    m = ValidParticleNet()
-#    m.SetTreeName("recoTree/SKFlat")
-#    m.IsDATA = False
-#    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
-#    m.xsec = 0.015
-#    m.sumSign = 599702.0
-#    m.sumW = 3270.46
-#    m.IsFastSim = False
-#    m.SetEra("2017")
-#    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
-#    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
-#    m.SetOutfilePath("hists.root")
-#    m.Init()
-#    m.initializeAnalyzer()
-#    m.initializeAnalyzerTools()
-#    m.SwitchToTempDir()
-#    m.Loop()
-#    m.WriteHist()
+                super().FillHist(f"{channel}/{signal}/ACand/pt", ACand.Pt(), weight, 300, 0., 300.)
+                super().FillHist(f"{channel}/{signal}/ACand/eta", ACand.Eta(), weight, 100, -5., 5.)
+                super().FillHist(f"{channel}/{signal}/ACand/phi", ACand.Phi(), weight, 64, -3.2, 3.2)
+                super().FillHist(f"{channel}/{signal}/ACand/mass", ACand.M(), weight, 200, 0., 200.)
+                super().FillHist(f"{channel}/{signal}/nACand/pt", nACand.Pt(), weight, 300, 0., 300.)
+                super().FillHist(f"{channel}/{signal}/nACand/eta", nACand.Eta(), weight, 100, -5., 5.)
+                super().FillHist(f"{channel}/{signal}/nACand/phi", nACand.Phi(), weight, 64, -3.2, 3.2)
+                super().FillHist(f"{channel}/{signal}/nACand/mass", nACand.M(), weight, 300, 0., 300.)
+            
+            score_TTFake = predictProba(self.models[f"{signal}_vs_TTLL_powheg"], data.x, data.edge_index)
+            score_TTX = predictProba(self.models[f"{signal}_vs_ttX"], data.x, data.edge_index)
+            super().FillHist(f"{channel}/{signal}/score_TTFake", score_TTFake, weight, 100, 0., 1.)
+            super().FillHist(f"{channel}/{signal}/score_TTX", score_TTX, weight, 100, 0., 1.)
+            super().FillHist(f"{channel}/{signal}/3D",
+                             ACand.M(), score_TTFake, score_TTX, weight,
+                             2000, 0., 200.,
+                             100, 0., 1.,
+                             100, 0., 1.)
+
+if __name__ == "__main__":
+    m = ValidParticleNet()
+    m.SetTreeName("recoTree/SKFlat")
+    m.IsDATA = False
+    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
+    m.xsec = 0.015
+    m.sumSign = 599702.0
+    m.sumW = 3270.46
+    m.IsFastSim = False
+    m.SetEra("2017")
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
+    m.SetOutfilePath("hists.root")
+    m.Init()
+    m.initializeAnalyzer()
+    m.initializeAnalyzerTools()
+    m.SwitchToTempDir()
+    m.Loop()
+    m.WriteHist()
