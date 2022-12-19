@@ -224,6 +224,7 @@ class ValidParticleNet(TriLeptonBase):
         data = evtToGraph(nodeList, y=None, k=4)
 
         for signal in self.signalStrings:
+            mA = int(signal.split("_")[1].split("-")[1])
             if "1E2Mu" in channel:
                 ACand = pair
                 super().FillHist(f"{channel}/{signal}/ACand/pt", ACand.Pt(), weight, 300, 0., 300.)
@@ -231,7 +232,6 @@ class ValidParticleNet(TriLeptonBase):
                 super().FillHist(f"{channel}/{signal}/ACand/phi", ACand.Phi(), weight, 64, -3.2, 3.2)
                 super().FillHist(f"{channel}/{signal}/ACand/mass", ACand.M(), weight, 200, 0., 200.)
             else:
-                mA = int(signal.split("_")[1].split("-")[1])
                 if abs(pair1.M() - mA) < abs(pair2.M() - mA):
                     ACand, nACand = pair1, pair2
                 else:
@@ -252,7 +252,7 @@ class ValidParticleNet(TriLeptonBase):
             super().FillHist(f"{channel}/{signal}/score_TTX", score_TTX, weight, 100, 0., 1.)
             super().FillHist(f"{channel}/{signal}/3D",
                              ACand.M(), score_TTFake, score_TTX, weight,
-                             2000, 0., 200.,
+                             80, mA-4, mA+4,
                              100, 0., 1.,
                              100, 0., 1.)
 
