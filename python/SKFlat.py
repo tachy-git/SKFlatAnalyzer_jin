@@ -282,6 +282,7 @@ for inputSample in inputSampleList:
     runCommands.write('export MYBIN="$SKFlat_WD/bin"\n')
     runCommands.write('export PYTHONDIR="$SKFlat_WD/python"\n')
     runCommands.write("export PATH=${MYBIN}:${PYTHONDIR}:${PATH}\n")
+    runCommands.write('export PYTHONPATH="${PYTHONPATH}:${PYTHONDIR}"\n')
     runCommands.write("export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$SKFlat_WD/DataFormats/include/:$SKFlat_WD/AnalyzerTools/include/:$SKFlat_WD/Analyzers/include/\n")
     runCommands.write("export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SKFlat_LIB_PATH\n")
     runCommands.write("\n")
