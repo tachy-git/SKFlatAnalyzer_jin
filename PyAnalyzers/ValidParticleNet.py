@@ -5,6 +5,7 @@ gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/lib
 import os
 import numpy as np
 import pandas as pd
+import ctypes as c
 import torch
 from MLTools.models import ParticleNet, ParticleNetLite
 from MLTools.helpers import evtToGraph, predictProba
@@ -20,7 +21,7 @@ class ValidParticleNet(TriLeptonBase):
                 "MHc-100_MA-15", "MHc-100_MA-60", "MHc-100_MA-95",
                 "MHc-130_MA-15", "MHc-130_MA-55", "MHc-130_MA-90", "MHc-130_MA-125",
                 "MHc-160_MA-15", "MHc-160_MA-85", "MHc-160_MA-120", "MHc-160_MA-155"]
-    
+
     def __loadModels(self):
         self.models = {}
         
@@ -42,7 +43,27 @@ class ValidParticleNet(TriLeptonBase):
             thisModel.load_state_dict(torch.load(modelPath, map_location=torch.device("cpu")))
             self.models[f"{sig}_vs_{bkg}"] = thisModel
 
+    def __getDblMuTriggerEff(self, muons, isData, sys):
+        mu1, mu2, mu3 = tuple(muons)
+        
+        # data
+        case1 = super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
+        case1 *= super().getTriggerEff(mu2, "Mu8Leg2", isData, sys)
+        case2 = 1.-super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
+        case2 *= super().getTriggerEff(mu2, "Mu17Leg1", isData, sys)
+        case2 *= super().getTriggerEff(mu3, "Mu8Leg2", isData, sys)
+        case3 = super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
+        case3 *= 1.-super().getTriggerEff(mu2, "Mu8Leg2", isData, sys)
+        case3 *= super().getTriggerEff(mu3, "Mu8Leg2", isData, sys)
 
+        return case1+case2+case3
+
+    def getDblMuTriggerSF(self, muons, sys):
+        effData = self.__getDblMuTriggerEff(muons, True, sys)
+        effMC = self.__getDblMuTriggerEff(muons, False, sys)
+
+        return effData / effMC
+    
     def executeEvent(self):
         if not super().PassMETFilter(): return None
         ev = super().GetEvent()
@@ -162,7 +183,21 @@ class ValidParticleNet(TriLeptonBase):
         weight = 1.
         if not super().IsDATA:
             weight *= super().MCweight()
-            weight *= ev.GetTriggerLumi("Full") 
+            weight *= ev.GetTriggerLumi("Full")
+            w_prefire = super().GetPrefireWeight(0)
+            w_pileup = super().GetPileUpWeight(super().nPileUp, 0)
+            w_muonIDSF = 1.
+            w_dblMuTrigSF = 1.
+            if "3Mu" in channel:
+                w_muonIDSF = 1.
+                for mu in looseMuons:
+                    w_muonIDSF *= super().getMuonIDSF(mu, 0)
+
+                w_dblMuTrigSF = self.getDblMuTriggerSF(looseMuons, 0)
+            weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
+            weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
+            weight *= w_muonIDSF           # print(f"muonID: {w_muonIDSF}")
+            weight *= w_dblMuTrigSF        # print(f"muontrig: {w_dblMuTrigSF}")
 
         ## fill input observables
         for idx, mu in enumerate(looseMuons, start=1):
@@ -191,7 +226,29 @@ class ValidParticleNet(TriLeptonBase):
             super().FillHist(f"{channel}/bjets/{idx}/btagScore", bjet.GetTaggerResult(3), weight, 100, 0., 1.)
         super().FillHist(f"{channel}/METv/pt", METv.Pt(), weight, 300, 0., 300.)
         super().FillHist(f"{channel}/METv/phi", METv.Phi(), weight, 64, -3.2, 3.2)
+        
+        ## ZCand
+        mZ = 91.2
+        if "1E2Mu" in channel:
+            ZCand = pair
+            super().FillHist(f"{channel}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
+        else:
+            if abs(pair1.M() - mZ) < abs(pair2.M() - mZ):
+                ZCand, nZCand = pair1, pair2
+            else:
+                ZCand, nZCand = pair2, pair1
 
+            super().FillHist(f"{channel}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/nZCand/pt", nZCand.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/nZCand/eta", nZCand.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/nZCand/mass", nZCand.M(), weight, 200, 0., 200.)
         ## make a graph
         particles = []
         for muon in tightMuons:
@@ -256,22 +313,22 @@ class ValidParticleNet(TriLeptonBase):
                              100, 0., 1.,
                              100, 0., 1.)
 
-#if __name__ == "__main__":
-#    m = ValidParticleNet()
-#    m.SetTreeName("recoTree/SKFlat")
-#    m.IsDATA = False
-#    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
-#    m.xsec = 0.015
-#    m.sumSign = 599702.0
-#    m.sumW = 3270.46
-#    m.IsFastSim = False
-#    m.SetEra("2017")
-#    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
-#    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
-#    m.SetOutfilePath("hists.root")
-#    m.Init()
-#    m.initializeAnalyzer()
-#    m.initializeAnalyzerTools()
-#    m.SwitchToTempDir()
-#    m.Loop()
-#    m.WriteHist()
+if __name__ == "__main__":
+    m = ValidParticleNet()
+    m.SetTreeName("recoTree/SKFlat")
+    m.IsDATA = False
+    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
+    m.xsec = 0.015
+    m.sumSign = 599702.0
+    m.sumW = 3270.46
+    m.IsFastSim = False
+    m.SetEra("2017")
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
+    m.SetOutfilePath("hists.root")
+    m.Init()
+    m.initializeAnalyzer()
+    m.initializeAnalyzerTools()
+    m.SwitchToTempDir()
+    m.Loop()
+    m.WriteHist()

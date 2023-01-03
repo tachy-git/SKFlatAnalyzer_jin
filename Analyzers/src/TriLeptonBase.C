@@ -1,7 +1,13 @@
 #include "TriLeptonBase.h"
 
 TriLeptonBase::TriLeptonBase() {}
-TriLeptonBase::~TriLeptonBase() {}
+TriLeptonBase::~TriLeptonBase() {
+    delete hMuonIDSF;
+    delete hMu17Leg1_Data;
+    delete hMu17Leg1_MC;
+    delete hMu8Leg2_Data;
+    delete hMu8Leg2_MC;
+}
 
 void TriLeptonBase::initializeAnalyzer() {
     // flags
@@ -68,7 +74,30 @@ void TriLeptonBase::initializeAnalyzer() {
         cerr << "[diLepControlRegion::initializeAnalyzer] Wrong era " << DataEra << endl;
         exit(EXIT_FAILURE);
     }
-    
+
+    TString datapath = getenv("DATA_DIR");
+    // muonID
+    TString muonIDpath = datapath + "/" + GetEra() + "/ID/Muon";
+    TFile* fMuonID = new TFile(muonIDpath+"/efficiency_TopHN_IDIso.root");
+    hMuonIDSF = (TH2D*)fMuonID->Get("SF_fabs(probe_eta)_probe_pt");
+    hMuonIDSF->SetDirectory(0);
+    fMuonID->Close();
+
+    // doublemuon trigger
+    TFile* fMu17Leg1 = new TFile(muonIDpath+"/efficiency_Mu17Leg1_DoubleMuonTriggers.root");
+    hMu17Leg1_Data = (TH2D*)fMu17Leg1->Get("muonEffi_data_fabs(probe_eta)_probe_pt");
+    hMu17Leg1_MC = (TH2D*)fMu17Leg1->Get("muonEffi_mc_fabs(probe_eta)_probe_pt");
+    hMu17Leg1_Data->SetDirectory(0);
+    hMu17Leg1_MC->SetDirectory(0);
+    fMu17Leg1->Close();
+
+    TFile* fMu8Leg2 = new TFile(muonIDpath+"/efficiency_Mu8Leg2_DoubleMuonTriggers.root");
+    hMu8Leg2_Data = (TH2D*)fMu8Leg2->Get("muonEffi_data_fabs(probe_eta)_probe_pt");
+    hMu8Leg2_MC = (TH2D*)fMu8Leg2->Get("muonEffi_mc_fabs(probe_eta)_probe_pt");
+    hMu8Leg2_Data->SetDirectory(0);
+    hMu8Leg2_MC->SetDirectory(0);
+    fMu8Leg2->Close();
+
     // Jet tagger
     vector<JetTagging::Parameters> jtps;
     jtps.emplace_back(JetTagging::Parameters(JetTagging::DeepJet, JetTagging::Medium, JetTagging::incl, JetTagging::mujets));
@@ -78,3 +107,55 @@ void TriLeptonBase::initializeAnalyzer() {
 void TriLeptonBase::executeEvent() {
     double a;
 }
+
+double TriLeptonBase::getMuonIDSF(Muon &mu, int sys) {
+    double pt = max(mu.Pt(), 10.);
+    double eta = min(fabs(mu.Eta()), 2.4);
+    int thisBin = hMuonIDSF->FindBin(eta, pt);
+    double value = hMuonIDSF->GetBinContent(thisBin);
+    double error = hMuonIDSF->GetBinError(thisBin);
+    
+    return value + int(sys)*error;
+}
+
+double TriLeptonBase::getTriggerEff(Muon &mu, TString histkey, bool isDataEff, int sys) {
+    TH2D *h = nullptr;
+    double pt = mu.Pt();
+    double eta = fabs(mu.Eta());
+    if (histkey == "Mu17Leg1" && isDataEff) {
+        h = hMu17Leg1_Data;
+        if (pt < 16.) pt = 16.;
+        if (eta > 2.5) eta = 2.5;
+    }
+    else if (histkey == "Mu17Leg1" && (!isDataEff)) {
+        h = hMu17Leg1_MC;
+        if (pt < 16.) pt = 16.;
+        if (eta > 2.5) eta = 2.5;
+    }
+    else if (histkey == "Mu8Leg2" && isDataEff) {
+        h = hMu8Leg2_Data;
+        if (pt < 10.) pt = 10.;
+        if (eta > 2.5) eta = 2.5;
+    }
+    else if (histkey == "Mu8Leg2" && (!isDataEff)) {
+        h = hMu8Leg2_MC;
+        if (pt < 10.) pt = 10.;
+        if (eta > 2.5) eta = 2.5;
+    }
+    else {
+        cerr << "[TriLeptonBase::getTriggerEff] Wrong combination of histkey and isDataEff" << endl;
+        cerr << "[TriLeptonBase::getTriggerEff] histkey = " << histkey << endl;
+        cerr << "[TriLeptonBase::getTriggerEff] isDataEff = " << isDataEff << endl;
+    }
+
+    int thisBin = h->FindBin(eta, pt);
+    double value = h->GetBinContent(thisBin);
+    double error = h->GetBinError(thisBin);
+
+    return value + int(sys)*error;
+}
+
+
+
+
+
