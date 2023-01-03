@@ -7,5 +7,6 @@
 lib/*.tar.gz
 lib/*.rootmap
 */obj
+.vscode/*
 python/UserInfo_*.py
 !python/UserInfo_template.py

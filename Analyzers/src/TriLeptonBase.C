@@ -7,6 +7,8 @@ TriLeptonBase::~TriLeptonBase() {
     delete hMu17Leg1_MC;
     delete hMu8Leg2_Data;
     delete hMu8Leg2_MC;
+    delete hMuonFR;
+    delete hElectronFR;
 }
 
 void TriLeptonBase::initializeAnalyzer() {
@@ -98,6 +100,15 @@ void TriLeptonBase::initializeAnalyzer() {
     hMu8Leg2_MC->SetDirectory(0);
     fMu8Leg2->Close();
 
+    // muon fake rate
+    TFile* fMuonFR = new TFile(muonIDpath+"/fakerate_TopHN.root");
+    hMuonFR = (TH2D*)fMuonFR->Get("FR_cent_TopHNT_TopHNL");
+    hMuonFR->SetDirectory(0);
+    fMuonFR->Close();
+
+    // electron fake rate
+    hElectronFR = nullptr;
+
     // Jet tagger
     vector<JetTagging::Parameters> jtps;
     jtps.emplace_back(JetTagging::Parameters(JetTagging::DeepJet, JetTagging::Medium, JetTagging::incl, JetTagging::mujets));
@@ -155,7 +166,33 @@ double TriLeptonBase::getTriggerEff(Muon &mu, TString histkey, bool isDataEff, i
     return value + int(sys)*error;
 }
 
+double TriLeptonBase::getMuonFakeProb(const Muon &mu) {
+    if (mu.PassID(MuonIDs[0]))
+        return 1.;
+    double ptCorr = mu.Pt()*(1.+max(0., mu.MiniRelIso()-0.1));
+    int thisBin = hMuonFR->FindBin(ptCorr, fabs(mu.Eta()));
+    return hMuonFR->GetBinContent(thisBin);
+}
 
+double TriLeptonBase::getElectronFakeProb(const Electron &ele) {
+    if (ele.PassID(ElectronIDs[0]))
+        return 1.;
+    double ptCorr = ele.Pt()*(1.+max(0., ele.MiniRelIso()-0.1));
+    int thisBin = hElectronFR->FindBin(ptCorr, fabs(ele.Eta()));
+    return hElectronFR->GetBinContent(thisBin);
+}
 
+double TriLeptonBase::getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons) {
+    double weight = -1.;
+    for (const auto &mu: muons) {
+        double fr = getMuonFakeProb(mu);
+        weight *= -1.*(fr / (1.-fr));
+    }
+    for (const auto &ele: electrons) {
+        double fr = getElectronFakeProb(ele);
+        weight *= -1.*(fr / (1.-fr));
+    }
 
+    return weight;
+}
 
