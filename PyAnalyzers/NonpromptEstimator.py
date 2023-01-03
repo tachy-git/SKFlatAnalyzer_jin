@@ -217,13 +217,13 @@ class NonpromptEstimator(TriLeptonBase):
             
         ## make a graph
         particles = []
-        for muon in tightMuons:
+        for muon in looseMuons:
             node = NodeParticle()
             node.isMuon = True
             node.SetPtEtaPhiM(muon.Pt(), muon.Eta(), muon.Phi(), muon.M())
             node.charge = muon.Charge()
             particles.append(node)
-        for ele in tightElectrons:
+        for ele in looseElectrons:
             node = NodeParticle()
             node.isElectron = True
             node.SetPtEtaPhiM(ele.Pt(), ele.Eta(), ele.Phi(), ele.M())
@@ -279,17 +279,17 @@ class NonpromptEstimator(TriLeptonBase):
                              100, 0., 1.,
                              100, 0., 1.)
 
-if __name__ == "__main__":
-    m = NonpromptEstimator()
-    m.SetTreeName("recoTree/SKFlat")
-    m.IsDATA = True
-    m.DataStream = "DoubleMuon"
-    m.SetEra("2018")
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2018/SKFlatNtuple_2018_DATA_4.root"): exit(1)
-    m.SetOutfilePath("hists.root")
-    m.Init()
-    m.initializeAnalyzer()
-    m.initializeAnalyzerTools()
-    m.SwitchToTempDir()
-    m.Loop()
-    m.WriteHist()
+#if __name__ == "__main__":
+#    m = NonpromptEstimator()
+#    m.SetTreeName("recoTree/SKFlat")
+#    m.IsDATA = True
+#    m.DataStream = "DoubleMuon"
+#    m.SetEra("2018")
+#    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2018/SKFlatNtuple_2018_DATA_4.root"): exit(1)
+#    m.SetOutfilePath("hists.root")
+#    m.Init()
+#    m.initializeAnalyzer()
+#    m.initializeAnalyzerTools()
+#    m.SwitchToTempDir()
+#    m.Loop()
+#    m.WriteHist()

@@ -262,13 +262,13 @@ class ValidParticleNet(TriLeptonBase):
             super().FillHist(f"{channel}/nZCand/mass", nZCand.M(), weight, 200, 0., 200.)
         ## make a graph
         particles = []
-        for muon in tightMuons:
+        for muon in looseMuons:
             node = NodeParticle()
             node.isMuon = True
             node.SetPtEtaPhiM(muon.Pt(), muon.Eta(), muon.Phi(), muon.M())
             node.charge = muon.Charge()
             particles.append(node)
-        for ele in tightElectrons:
+        for ele in looseElectrons:
             node = NodeParticle()
             node.isElectron = True
             node.SetPtEtaPhiM(ele.Pt(), ele.Eta(), ele.Phi(), ele.M())
