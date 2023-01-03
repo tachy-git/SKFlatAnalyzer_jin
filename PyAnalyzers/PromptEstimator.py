@@ -13,7 +13,7 @@ from MLTools.helpers import evtToGraph, predictProba
 from MLTools.formats import NodeParticle
 
 
-class ConversionEstimator(TriLeptonBase):
+class PromptEstimator(TriLeptonBase):
     def __init__(self):
         super().__init__()
         self.__loadModels()
@@ -59,16 +59,14 @@ class ConversionEstimator(TriLeptonBase):
         case3 *= super().getTriggerEff(mu3, "Mu8Leg2", isData, sys)
 
         eff = case1+case2+case3
-        if eff == 0.:
-            print(mu1.Pt(), mu1.Eta())
-            print(mu2.Pt(), mu2.Eta())
-            print(mu3.Pt(), mu3.Eta())
         return eff
 
     def getDblMuTriggerSF(self, muons, sys):
         effData = self.__getDblMuTriggerEff(muons, True, sys)
         effMC = self.__getDblMuTriggerEff(muons, False, sys)
-
+        if effMC == 0 or effData == 0:
+            return 1.
+        
         return effData / effMC
     
     def executeEvent(self):
@@ -187,17 +185,6 @@ class ConversionEstimator(TriLeptonBase):
                     else: return None
 
         if not ("1E2Mu" in channel or "3Mu" in channel): return None
-        
-        ## for patching sample
-        leptons = std.vector[Lepton]()
-        for mu in tightMuons: leptons.emplace_back(mu)
-        for ele in tightElectrons: leptons.emplace_back(ele)
-        if leptons[0].Pt() < 20. or leptons[1].Pt() < 20. or leptons[2].Pt() < 20.:
-            measure = "DYJets"
-        else:
-            measure = "ZGToLLG"
-        if not measure in super().MCSample: return None
-        ## event selection done
         
         ## set weight
         weight = 1.
@@ -338,3 +325,23 @@ class ConversionEstimator(TriLeptonBase):
                              100, mA-5., mA+5.,
                              100, 0., 1.,
                              100, 0., 1.)
+
+if __name__ == "__main__":
+    m = PromptEstimator()
+    m.SetTreeName("recoTree/SKFlat")
+    m.IsDATA = False
+    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
+    m.xsec = 0.015
+    m.sumSign = 599702.0
+    m.sumW = 3270.46
+    m.IsFastSim = False
+    m.SetEra("2017")
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
+    m.SetOutfilePath("hists.root")
+    m.Init()
+    m.initializeAnalyzer()
+    m.initializeAnalyzerTools()
+    m.SwitchToTempDir()
+    m.Loop()
+    m.WriteHist()

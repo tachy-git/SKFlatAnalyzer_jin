@@ -278,18 +278,3 @@ class NonpromptEstimator(TriLeptonBase):
                              100, mA-5., mA+5.,
                              100, 0., 1.,
                              100, 0., 1.)
-
-#if __name__ == "__main__":
-#    m = NonpromptEstimator()
-#    m.SetTreeName("recoTree/SKFlat")
-#    m.IsDATA = True
-#    m.DataStream = "DoubleMuon"
-#    m.SetEra("2018")
-#    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2018/SKFlatNtuple_2018_DATA_4.root"): exit(1)
-#    m.SetOutfilePath("hists.root")
-#    m.Init()
-#    m.initializeAnalyzer()
-#    m.initializeAnalyzerTools()
-#    m.SwitchToTempDir()
-#    m.Loop()
-#    m.WriteHist()
