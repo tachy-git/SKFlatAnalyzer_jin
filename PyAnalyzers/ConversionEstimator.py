@@ -1,7 +1,8 @@
 from ROOT import gSystem
 from ROOT import TriLeptonBase
 from ROOT import std
-from ROOT import Lepton, Jet
+from ROOT.JetTagging import Parameters as jParameters
+from ROOT import Lepton, Muon, Electron, Jet
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
 
 import os
@@ -12,7 +13,7 @@ from MLTools.helpers import evtToGraph, predictProba
 from MLTools.formats import NodeParticle
 
 
-class NonpromptEstimator(TriLeptonBase):
+class ConversionEstimator(TriLeptonBase):
     def __init__(self):
         super().__init__()
         self.__loadModels()
@@ -42,7 +43,34 @@ class NonpromptEstimator(TriLeptonBase):
             modelPath = f"{os.environ['SKFlat_WD']}/external/ParticleNet/models/{sig}_vs_{bkg}.pt"
             thisModel.load_state_dict(torch.load(modelPath, map_location=torch.device("cpu")))
             self.models[f"{sig}_vs_{bkg}"] = thisModel
-            
+    
+    def __getDblMuTriggerEff(self, muons, isData, sys):
+        assert len(muons) == 3
+        mu1, mu2, mu3 = tuple(muons)
+        
+        # data
+        case1 = super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
+        case1 *= super().getTriggerEff(mu2, "Mu8Leg2", isData, sys)
+        case2 = 1.-super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
+        case2 *= super().getTriggerEff(mu2, "Mu17Leg1", isData, sys)
+        case2 *= super().getTriggerEff(mu3, "Mu8Leg2", isData, sys)
+        case3 = super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
+        case3 *= 1.-super().getTriggerEff(mu2, "Mu8Leg2", isData, sys)
+        case3 *= super().getTriggerEff(mu3, "Mu8Leg2", isData, sys)
+
+        eff = case1+case2+case3
+        if eff == 0.:
+            print(mu1.Pt(), mu1.Eta())
+            print(mu2.Pt(), mu2.Eta())
+            print(mu3.Pt(), mu3.Eta())
+        return eff
+
+    def getDblMuTriggerSF(self, muons, sys):
+        effData = self.__getDblMuTriggerEff(muons, True, sys)
+        effMC = self.__getDblMuTriggerEff(muons, False, sys)
+
+        return effData / effMC
+    
     def executeEvent(self):
         if not super().PassMETFilter(): return None
         ev = super().GetEvent()
@@ -53,11 +81,9 @@ class NonpromptEstimator(TriLeptonBase):
         
         #### Object definition
         vetoMuons = super().SelectMuons(rawMuons, super().MuonIDs[2], 10., 2.4)
-        looseMuons = super().SelectMuons(vetoMuons, super().MuonIDs[1], 10., 2.4)
-        tightMuons = super().SelectMuons(looseMuons, super().MuonIDs[0], 10., 2.4)
+        tightMuons = super().SelectMuons(vetoMuons, super().MuonIDs[0], 10., 2.4)
         vetoElectrons = super().SelectElectrons(rawElectrons, super().ElectronIDs[2], 10., 2.5)
-        looseElectrons = super().SelectElectrons(vetoElectrons, super().ElectronIDs[1], 10., 2.5)
-        tightElectrons = super().SelectElectrons(looseElectrons, super().ElectronIDs[0], 10., 2.5)
+        tightElectrons = super().SelectElectrons(vetoElectrons, super().ElectronIDs[0], 10., 2.5)
         jets = super().SelectJets(rawJets, "tight", 20., 2.4)
         jets = super().JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4)
         bjets = std.vector[Jet]()
@@ -68,24 +94,30 @@ class NonpromptEstimator(TriLeptonBase):
         
         # sort objects
         sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True)
-        sorted(looseMuons, key=lambda x: x.Pt(), reverse=True)
         sorted(tightMuons, key=lambda x: x.Pt(), reverse=True)
         sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True)
-        sorted(looseElectrons, key=lambda x: x.Pt(), reverse=True)
         sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True)
         sorted(jets, key=lambda x: x.Pt(), reverse=True)
         sorted(bjets, key=lambda x: x.Pt(), reverse=True)
         
         #### event selection
-        is3Mu = (len(looseMuons) == 3 and len(vetoMuons) == 3 and \
-                len(looseElectrons) == 0 and len(vetoElectrons) == 0)
-        is1E2Mu = len(looseMuons) == 2 and len(vetoMuons) == 2 and \
-                  len(looseElectrons) == 1 and len(vetoElectrons) == 1
+        is3Mu = (len(tightMuons) == 3 and len(vetoMuons) == 3 and \
+                len(tightElectrons) == 0 and len(vetoElectrons) == 0)
+        is1E2Mu = len(tightMuons) == 2 and len(vetoMuons) == 2 and \
+                  len(tightElectrons) == 1 and len(vetoElectrons) == 1
         if not (is3Mu or is1E2Mu): return None
         
-        #### not all leptons tight
-        if len(tightMuons) == len(looseMuons): return None
-        if len(tightElectrons) == len(looseElectrons): return None
+        # prompt matching
+        truth = super().GetGens()
+        promptMuons = std.vector[Muon]()
+        promptElectrons = std.vector[Electron]()
+        for mu in tightMuons:
+            if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
+        for ele in tightElectrons:
+            if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
+            
+        if len(promptMuons) != len(tightMuons): return None
+        if len(promptElectrons) != len(tightElectrons): return None
         
         channel = ""
         ## 1E2Mu baseline
@@ -95,8 +127,8 @@ class NonpromptEstimator(TriLeptonBase):
         if is1E2Mu:
             if not ev.PassTrigger(super().EMuTriggers): return None
             leptons = std.vector[Lepton]()
-            for mu in looseMuons: leptons.emplace_back(mu)
-            for ele in looseElectrons: leptons.emplace_back(ele)
+            for mu in tightMuons: leptons.emplace_back(mu)
+            for ele in tightElectrons: leptons.emplace_back(ele)
             mu1, mu2, ele = tuple(leptons)
             passLeadMu = mu1.Pt() > 25. and ele.Pt() > 15.
             passLeadEle = mu1.Pt() > 10. and ele.Pt() > 25.
@@ -125,7 +157,7 @@ class NonpromptEstimator(TriLeptonBase):
         ## 4. All OS muon pair mass > 12 GeV
         else:
             if not ev.PassTrigger(super().DblMuTriggers): return None
-            mu1, mu2, mu3  = tuple(looseMuons)
+            mu1, mu2, mu3  = tuple(tightMuons)
             if not mu1.Pt() > 20.: return None
             if not mu2.Pt() > 10.: return None
             if not mu3.Pt() > 10.: return None
@@ -155,22 +187,51 @@ class NonpromptEstimator(TriLeptonBase):
                     else: return None
 
         if not ("1E2Mu" in channel or "3Mu" in channel): return None
+        
+        ## for patching sample
+        leptons = std.vector[Lepton]()
+        for mu in tightMuons: leptons.emplace_back(mu)
+        for ele in tightElectrons: leptons.emplace_back(ele)
+        if leptons[0].Pt() < 20. or leptons[1].Pt() < 20. or leptons[2].Pt() < 20.:
+            measure = "DYJets"
+        else:
+            measure = "ZGToLLG"
+        if not measure in super().MCSample: return None
         ## event selection done
         
-        ## set fake weight
+        ## set weight
         weight = 1.
-        if is1E2Mu:
-            pass
-        else:
-            weight = super().getFakeWeight(looseMuons, looseElectrons)
+        weight *= super().MCweight()
+        weight *= ev.GetTriggerLumi("Full")
+        w_prefire = super().GetPrefireWeight(0)
+        w_pileup = super().GetPileUpWeight(super().nPileUp, 0)
+        w_muonIDSF = 1.
+        w_dblMuTrigSF = 1.
+        if "3Mu" in channel:
+            w_muonIDSF = 1.
+            for mu in tightMuons:
+                w_muonIDSF *= super().getMuonIDSF(mu, 0)
+
+            w_dblMuTrigSF = self.getDblMuTriggerSF(tightMuons, 0)
+        weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
+        weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
+        weight *= w_muonIDSF           # print(f"muonID: {w_muonIDSF}")
+        weight *= w_dblMuTrigSF        # print(f"muontrig: {w_dblMuTrigSF}")
+        
+        # b-tagging
+        jtp_DeepJet_Medium = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
+        vjets = std.vector[Jet]()
+        for j in jets: vjets.emplace_back(j)
+        w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp_DeepJet_Medium)
+        weight *= w_btag
         
         ## fill input observables
-        for idx, mu in enumerate(looseMuons, start=1):
+        for idx, mu in enumerate(tightMuons, start=1):
             super().FillHist(f"{channel}/muons/{idx}/pt", mu.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/muons/{idx}/eta", mu.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/muons/{idx}/phi", mu.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/muons/{idx}/mass", mu.M(), weight, 10, 0., 1.)
-        for idx, ele in enumerate(looseElectrons, start=1):
+        for idx, ele in enumerate(tightElectrons, start=1):
             super().FillHist(f"{channel}/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
             super().FillHist(f"{channel}/electrons/{idx}/Phi", ele.Phi(), weight, 64, -3.2, 3.2)
@@ -214,16 +275,15 @@ class NonpromptEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/nZCand/eta", nZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/nZCand/mass", nZCand.M(), weight, 200, 0., 200.)
-            
         ## make a graph
         particles = []
-        for muon in looseMuons:
+        for muon in tightMuons:
             node = NodeParticle()
             node.isMuon = True
             node.SetPtEtaPhiM(muon.Pt(), muon.Eta(), muon.Phi(), muon.M())
             node.charge = muon.Charge()
             particles.append(node)
-        for ele in looseElectrons:
+        for ele in tightElectrons:
             node = NodeParticle()
             node.isElectron = True
             node.SetPtEtaPhiM(ele.Pt(), ele.Eta(), ele.Phi(), ele.M())
@@ -245,7 +305,7 @@ class NonpromptEstimator(TriLeptonBase):
                              particle.Charge(), particle.IsMuon(), particle.IsElectron(),
                              particle.IsJet(), particle.BtagScore()])
         data = evtToGraph(nodeList, y=None, k=4)
-        
+
         for signal in self.signalStrings:
             mA = int(signal.split("_")[1].split("-")[1])
             if "1E2Mu" in channel:
@@ -278,18 +338,24 @@ class NonpromptEstimator(TriLeptonBase):
                              100, mA-5., mA+5.,
                              100, 0., 1.,
                              100, 0., 1.)
+        
 
-#if __name__ == "__main__":
-#    m = NonpromptEstimator()
-#    m.SetTreeName("recoTree/SKFlat")
-#    m.IsDATA = True
-#    m.DataStream = "DoubleMuon"
-#    m.SetEra("2018")
-#    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2018/SKFlatNtuple_2018_DATA_4.root"): exit(1)
-#    m.SetOutfilePath("hists.root")
-#    m.Init()
-#    m.initializeAnalyzer()
-#    m.initializeAnalyzerTools()
-#    m.SwitchToTempDir()
-#    m.Loop()
-#    m.WriteHist()
+if __name__ == "__main__":
+    m = ConversionEstimator()
+    m.SetTreeName("recoTree/SKFlat")
+    m.IsDATA = False
+    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
+    m.xsec = 0.015
+    m.sumSign = 599702.0
+    m.sumW = 3270.46
+    m.IsFastSim = False
+    m.SetEra("2017")
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
+    m.SetOutfilePath("hists.root")
+    m.Init()
+    m.initializeAnalyzer()
+    m.initializeAnalyzerTools()
+    m.SwitchToTempDir()
+    m.Loop()
+    m.WriteHist()

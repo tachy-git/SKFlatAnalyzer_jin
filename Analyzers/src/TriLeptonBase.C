@@ -136,22 +136,26 @@ double TriLeptonBase::getTriggerEff(Muon &mu, TString histkey, bool isDataEff, i
     if (histkey == "Mu17Leg1" && isDataEff) {
         h = hMu17Leg1_Data;
         if (pt < 16.) pt = 16.;
-        if (eta > 2.5) eta = 2.5;
+        if (pt > 200.) pt = 199.;
+        if (eta > 2.4) eta = 2.39;
     }
     else if (histkey == "Mu17Leg1" && (!isDataEff)) {
         h = hMu17Leg1_MC;
         if (pt < 16.) pt = 16.;
-        if (eta > 2.5) eta = 2.5;
+        if (pt > 200.) pt = 199.;
+        if (eta > 2.4) eta = 2.39;
     }
     else if (histkey == "Mu8Leg2" && isDataEff) {
         h = hMu8Leg2_Data;
         if (pt < 10.) pt = 10.;
-        if (eta > 2.5) eta = 2.5;
+        if (pt > 200.) pt = 199.;
+        if (eta > 2.4) eta = 2.39;
     }
     else if (histkey == "Mu8Leg2" && (!isDataEff)) {
         h = hMu8Leg2_MC;
         if (pt < 10.) pt = 10.;
-        if (eta > 2.5) eta = 2.5;
+        if (pt > 200.) pt = 199.;
+        if (eta > 2.4) eta = 2.39;
     }
     else {
         cerr << "[TriLeptonBase::getTriggerEff] Wrong combination of histkey and isDataEff" << endl;
