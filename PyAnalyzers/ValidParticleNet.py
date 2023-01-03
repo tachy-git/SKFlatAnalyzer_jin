@@ -1,5 +1,8 @@
 from ROOT import gSystem
 from ROOT import TriLeptonBase
+from ROOT.JetTagging import Parameters as JParameters
+from ROOT import Jet
+from ROOT.std import vector
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
 
 import os
@@ -198,6 +201,14 @@ class ValidParticleNet(TriLeptonBase):
             weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
             weight *= w_muonIDSF           # print(f"muonID: {w_muonIDSF}")
             weight *= w_dblMuTrigSF        # print(f"muontrig: {w_dblMuTrigSF}")
+        
+            # b-tagging
+            jtp_DeepJet_Medium = JParameters(3, 1, 2, 1)    # DeepJet, Medium, comb, mujets
+            vjets = vector[Jet]()
+            for j in jets: vjets.emplace_back(j)
+            w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp_DeepJet_Medium)
+            weight *= w_btag
+
 
         ## fill input observables
         for idx, mu in enumerate(looseMuons, start=1):
