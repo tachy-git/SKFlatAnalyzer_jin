@@ -106,16 +106,17 @@ class PromptEstimator(TriLeptonBase):
         if not (is3Mu or is1E2Mu): return None
         
         # prompt matching
-        truth = super().GetGens()
-        promptMuons = std.vector[Muon]()
-        promptElectrons = std.vector[Electron]()
-        for mu in tightMuons:
-            if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
-        for ele in tightElectrons:
-            if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
+        if not super().IsDATA:
+            truth = super().GetGens()
+            promptMuons = std.vector[Muon]()
+            promptElectrons = std.vector[Electron]()
+            for mu in tightMuons:
+                if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
+            for ele in tightElectrons:
+                if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
             
-        if len(promptMuons) != len(tightMuons): return None
-        if len(promptElectrons) != len(tightElectrons): return None
+            if len(promptMuons) != len(tightMuons): return None
+            if len(promptElectrons) != len(tightElectrons): return None
         
         channel = ""
         ## 1E2Mu baseline
@@ -188,29 +189,30 @@ class PromptEstimator(TriLeptonBase):
         
         ## set weight
         weight = 1.
-        weight *= super().MCweight()
-        weight *= ev.GetTriggerLumi("Full")
-        w_prefire = super().GetPrefireWeight(0)
-        w_pileup = super().GetPileUpWeight(super().nPileUp, 0)
-        w_muonIDSF = 1.
-        w_dblMuTrigSF = 1.
-        if "3Mu" in channel:
+        if not super().IsDATA:
+            weight *= super().MCweight()
+            weight *= ev.GetTriggerLumi("Full")
+            w_prefire = super().GetPrefireWeight(0)
+            w_pileup = super().GetPileUpWeight(super().nPileUp, 0)
             w_muonIDSF = 1.
-            for mu in tightMuons:
-                w_muonIDSF *= super().getMuonIDSF(mu, 0)
+            w_dblMuTrigSF = 1.
+            if "3Mu" in channel:
+                w_muonIDSF = 1.
+                for mu in tightMuons:
+                    w_muonIDSF *= super().getMuonIDSF(mu, 0)
 
-            w_dblMuTrigSF = self.getDblMuTriggerSF(tightMuons, 0)
-        weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
-        weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
-        weight *= w_muonIDSF           # print(f"muonID: {w_muonIDSF}")
-        weight *= w_dblMuTrigSF        # print(f"muontrig: {w_dblMuTrigSF}")
+                w_dblMuTrigSF = self.getDblMuTriggerSF(tightMuons, 0)
+            weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
+            weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
+            weight *= w_muonIDSF           # print(f"muonID: {w_muonIDSF}")
+            weight *= w_dblMuTrigSF        # print(f"muontrig: {w_dblMuTrigSF}")
         
-        # b-tagging
-        jtp_DeepJet_Medium = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
-        vjets = std.vector[Jet]()
-        for j in jets: vjets.emplace_back(j)
-        w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp_DeepJet_Medium)
-        weight *= w_btag
+            # b-tagging
+            jtp_DeepJet_Medium = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
+            vjets = std.vector[Jet]()
+            for j in jets: vjets.emplace_back(j)
+            w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp_DeepJet_Medium)
+            weight *= w_btag
         
         ## fill input observables
         for idx, mu in enumerate(tightMuons, start=1):
@@ -326,22 +328,3 @@ class PromptEstimator(TriLeptonBase):
                              100, 0., 1.,
                              100, 0., 1.)
 
-if __name__ == "__main__":
-    m = PromptEstimator()
-    m.SetTreeName("recoTree/SKFlat")
-    m.IsDATA = False
-    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
-    m.xsec = 0.015
-    m.sumSign = 599702.0
-    m.sumW = 3270.46
-    m.IsFastSim = False
-    m.SetEra("2017")
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
-    m.SetOutfilePath("hists.root")
-    m.Init()
-    m.initializeAnalyzer()
-    m.initializeAnalyzerTools()
-    m.SwitchToTempDir()
-    m.Loop()
-    m.WriteHist()
