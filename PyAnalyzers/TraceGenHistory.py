@@ -187,6 +187,7 @@ class TraceGenHistory(TriLeptonBase):
                 ACand = mu1 + mu2
                 WCand = ele + METv
                 ChargedHiggs = ACand + WCand
+                if abs(ChargedHiggs.M() - 130.) > 40.: return None
                 super().FillHist(f"{channel}/Aenu/mA", ACand.M(), 1., 200, 0., 200.)
                 super().FillHist(f"{channel}/Aenu/mW", WCand.M(), 1., 200, 0., 200.)
                 super().FillHist(f"{channel}/Aenu/mHc", ChargedHiggs.M(), 1., 200, 0., 200.)
@@ -238,14 +239,18 @@ class TraceGenHistory(TriLeptonBase):
                 for mu in tightMuons:
                     if super().GetLeptonType(mu, truth) == 2:
                         signalColl.append(mu)
-                    else:
+                    elif super().GetLeptonType(mu, truth) > 0:
                         promptColl.append(mu)
+                    else:
+                        pass
                 if not len(signalColl) == 2: return None
+                if not len(signalColl) == 1: return None
                 mu1, mu2 = tuple(signalColl)
                 m3 = promptColl[0]
                 ACand = mu1 + mu2
                 WCand = mu3 + METv
                 ChargedHiggs = ACand + WCand
+                if abs(ChargedHiggs.M() - 130.) > 40.: return None
                 super().FillHist(f"{channel}/Aenu/mA", ACand.M(), 1., 200, 0., 200.)
                 super().FillHist(f"{channel}/Aenu/mW", WCand.M(), 1., 200, 0., 200.)
                 super().FillHist(f"{channel}/Aenu/mHc", ChargedHiggs.M(), 1., 200, 0., 200.)
@@ -253,22 +258,22 @@ class TraceGenHistory(TriLeptonBase):
             pass
 
         
-if __name__ == "__main__":
-    m = TraceGenHistory()
-    m.SetTreeName("recoTree/SKFlat")
-    m.IsDATA = False
-    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
-    m.xsec = 0.015
-    m.sumSign = 599702.0
-    m.sumW = 3270.46
-    m.IsFastSim = False
-    m.SetEra("2017")
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
-    m.SetOutfilePath("hists.root")
-    m.Init()
-    m.initializeAnalyzer()
-    m.initializeAnalyzerTools()
-    m.SwitchToTempDir()
-    m.Loop()
-    m.WriteHist()
+#if __name__ == "__main__":
+#    m = TraceGenHistory()
+#    m.SetTreeName("recoTree/SKFlat")
+#    m.IsDATA = False
+#    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
+#    m.xsec = 0.015
+#    m.sumSign = 599702.0
+#    m.sumW = 3270.46
+#    m.IsFastSim = False
+#    m.SetEra("2017")
+#    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
+#    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
+#    m.SetOutfilePath("hists.root")
+#    m.Init()
+#    m.initializeAnalyzer()
+#    m.initializeAnalyzerTools()
+#    m.SwitchToTempDir()
+#    m.Loop()
+#    m.WriteHist()
