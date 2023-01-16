@@ -11,30 +11,30 @@ DataPreprocess::DataPreprocess() {
     // muons
     Events->Branch("nMuons", &nMuons);
     Events->Branch("MuonPtColl", MuonPtColl, "MuonPtColl[nMuons]/F");
-    Events->Branch("MuonEtaColl", MuonPtColl, "MuonEtaColl[nMuons]/F");
-    Events->Branch("MuonPhiColl", MuonPtColl, "MuonPhiColl[nMuons]/F");
-    Events->Branch("MuonMassColl", MuonPtColl, "MuonMassColl[nMuons]/F");
-    Events->Branch("MuonChargeColl", MuonPtColl, "MuonChargeColl[nMuons]/I");
-    Events->Branch("MuonLabelColl", MuonPtColl, "MuonLabelColl[nMuons]/O");
+    Events->Branch("MuonEtaColl", MuonEtaColl, "MuonEtaColl[nMuons]/F");
+    Events->Branch("MuonPhiColl", MuonPhiColl, "MuonPhiColl[nMuons]/F");
+    Events->Branch("MuonMassColl", MuonMassColl, "MuonMassColl[nMuons]/F");
+    Events->Branch("MuonChargeColl", MuonChargeColl, "MuonChargeColl[nMuons]/I");
+    Events->Branch("MuonLabelColl", MuonLabelColl, "MuonLabelColl[nMuons]/O");
 
     // electrons
     Events->Branch("nElectrons", &nElectrons);
     Events->Branch("ElectronPtColl", ElectronPtColl, "ElectronPtColl[nElectrons]/F");
-    Events->Branch("ElectronEtaColl", ElectronPtColl, "ElectronEtaColl[nElectrons]/F");
-    Events->Branch("ElectronPhiColl", ElectronPtColl, "ElectronPhiColl[nElectrons]/F");
-    Events->Branch("ElectronMassColl", ElectronPtColl, "ElectronMassColl[nElectrons]/F");
-    Events->Branch("ElectronChargeColl", ElectronPtColl, "ElectronChargeColl[nElectrons]/I");
-    Events->Branch("ElectronLabelColl", ElectronPtColl, "ElectronLabelColl[nElectrons]/O");
+    Events->Branch("ElectronEtaColl", ElectronEtaColl, "ElectronEtaColl[nElectrons]/F");
+    Events->Branch("ElectronPhiColl", ElectronPhiColl, "ElectronPhiColl[nElectrons]/F");
+    Events->Branch("ElectronMassColl", ElectronMassColl, "ElectronMassColl[nElectrons]/F");
+    Events->Branch("ElectronChargeColl", ElectronChargeColl, "ElectronChargeColl[nElectrons]/I");
+    Events->Branch("ElectronLabelColl", ElectronLabelColl, "ElectronLabelColl[nElectrons]/O");
 
     // jets
     Events->Branch("nJets", &nJets);
     Events->Branch("JetPtColl", JetPtColl, "JetPtColl[nJets]/F");
-    Events->Branch("JetEtaColl", JetPtColl, "JetEtaColl[nJets]/F");
-    Events->Branch("JetPhiColl", JetPtColl, "JetPhiColl[nJets]/F");
-    Events->Branch("JetMassColl", JetPtColl, "JetMassColl[nJets]/F");
-    Events->Branch("JetChargeColl", JetPtColl, "JetChargeColl[nJets]/F");
-    Events->Branch("JetBtagScoreColl", JetBtagScoreColl, "JetBtagScoreColl[nJet]/F");
-    Events->Branch("JetLabelColl", JetPtColl, "JetLabelColl[nJets]/O");
+    Events->Branch("JetEtaColl", JetEtaColl, "JetEtaColl[nJets]/F");
+    Events->Branch("JetPhiColl", JetPhiColl, "JetPhiColl[nJets]/F");
+    Events->Branch("JetMassColl", JetMassColl, "JetMassColl[nJets]/F");
+    Events->Branch("JetChargeColl", JetChargeColl, "JetChargeColl[nJets]/F");
+    Events->Branch("JetBtagScoreColl", JetBtagScoreColl, "JetBtagScoreColl[nJets]/F");
+    Events->Branch("JetLabelColl", JetLabelColl, "JetLabelColl[nJets]/O");
 }
 
 DataPreprocess::~DataPreprocess() {
@@ -197,6 +197,8 @@ void DataPreprocess::executeEvent() {
     // end event selection
     
     // store informations
+    METvPt = METv.Pt();
+    METvPhi = METv.Phi();
     nMuons = looseMuons.size();
     for (unsigned int i = 0; i < nMuons; i++) {
         const Muon &mu = looseMuons.at(i);
@@ -272,7 +274,7 @@ void DataPreprocess::executeEvent() {
             // Find nearest jets
             Jet *j1 = nullptr; double dR1 = 0.3;
             Jet *j2 = nullptr; double dR2 = 0.3;
-            for (auto jet: jets) {
+            for (auto &jet: jets) {
                 if (parton1.DeltaR(jet) < dR1) {
                     j1 = &jet;
                     dR1 = parton1.DeltaR(jet);
@@ -287,7 +289,7 @@ void DataPreprocess::executeEvent() {
             Particle WCand = *j1 + *j2;
             Particle ChargedHiggs = ACand + WCand;
             if (! (fabs(ChargedHiggs.M() - mHc) < 20.)) return;
-
+            
             for (unsigned int i = 0; i < nMuons; i++) {
                 MuonLabelColl[i] = true;
             }
@@ -335,7 +337,9 @@ void DataPreprocess::executeEvent() {
             return;
         }
     }
+    // backgrounds
     Events->Fill();
+    return;
 }
 
 bool DataPreprocess::isWinDecay(vector<Gen> &chargedDecay) {
