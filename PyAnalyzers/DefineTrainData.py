@@ -195,12 +195,14 @@ class DefineTrainData(DataPreparation):
         ACand = mu1+mu2
 
         if 0 < abs(chargedDecays[1].PID()) and abs(chargedDecays[1].PID()) < 6:   # A q q
-            p1, p2 = tuple(chargedDecays[1:])
+            super().FillHist("Ajj/CutFlow", 0., 1., 10, 0., 10.)
             # partons should be inside acceptance
+            p1, p2 = tuple(chargedDecays[1:])
             if not p1.Pt() > 15.: return None
             if not p2.Pt() > 15.: return None
             if not abs(p1.Eta()) < 2.5: return None
             if not abs(p2.Eta()) < 2.5: return None
+            super().FillHist("Ajj/CutFlow", 1., 1., 10, 0., 10.)
 
             # find nearest jets
             j1 = None; dR1 = 5.
@@ -213,33 +215,40 @@ class DefineTrainData(DataPreparation):
             if not j1: return None
             if not j2: return None
             if j1 is j2: return None
+            super().FillHist("Ajj/CutFlow", 2., 1., 10, 0., 10.)
             WCand = j1 + j2
             ChargedHiggs = ACand + WCand
             super().FillHist("Ajj/Acceptance/mW", WCand.M(), 1., 200, 0., 200.)
             super().FillHist("Ajj/Acceptance/mA", ACand.M(), 1., 200, 0., 200.)
-            super().FillHist("Ajj/Acceptance/mHc", ChargedHiggs.M(), 1., 200, 0., 200.)
+            super().FillHist("Ajj/Acceptance/mHc", ChargedHiggs.M(), 1., 500, 0., 500.)
             super().FillHist("Ajj/Acceptance/dRj1", dR1, 1., 500, 0., 5.)
             super().FillHist("Ajj/Acceptance/dRj2", dR2, 1., 500, 0., 5.)
 
             # charged Higgs mass cut
-            if abs(ChargedHiggs.M() - 160.) > 20.: return None
+            mHc = float(str(super().MCSample).split("_")[1].split("-")[1])
+            if abs(ChargedHiggs.M() - mHc) > 20.: return None
+            super().FillHist("Ajj/CutFlow", 3., 1., 10, 0., 10.)
             super().FillHist("Ajj/MassCut/mW", WCand.M(), 1., 200, 0., 200.)
             super().FillHist("Ajj/MassCut/mA", ACand.M(), 1., 200, 0., 200.)
-            super().FillHist("Ajj/MassCut/mHc", ChargedHiggs.M(), 1., 200, 0., 200.)
+            super().FillHist("Ajj/MassCut/mHc", ChargedHiggs.M(), 1., 500, 0., 500.)
             super().FillHist("Ajj/MassCut/dRj1", dR1, 1., 500, 0., 5.)
             super().FillHist("Ajj/MassCut/dRj2", dR2, 1., 500, 0., 5.)
 
             # matching cut
             if dR1 > 0.3: return None
             if dR2 > 0.3: return None
+            super().FillHist("Ajj/CutFlow", 4., 1., 10, 0., 10.)
             super().FillHist("Ajj/Final/mW", WCand.M(), 1., 200, 0., 200.)
             super().FillHist("Ajj/Final/mA", ACand.M(), 1., 200, 0., 200.)
-            super().FillHist("Ajj/Final/mHc", ChargedHiggs.M(), 1., 200, 0., 200.)
+            super().FillHist("Ajj/Final/mHc", ChargedHiggs.M(), 1., 500, 0., 500.)
             super().FillHist("Ajj/Final/dRj1", dR1, 1., 500, 0., 5.)
             super().FillHist("Ajj/Final/dRj2", dR2, 1., 500, 0., 5.)
 
         elif 11 in [abs(gen.PID()) for gen in chargedDecays]:       # A e nu
+            super().FillHist("Aenu/CutFlow", 0., 1., 10, 0., 10.)
             if not "1E2Mu" in channel: return None
+            super().FillHist("Aenu/CutFlow", 1., 1., 10, 0., 10.)
+
             eleGen = None
             nuGen = None
             for gen in chargedDecays:
@@ -253,18 +262,22 @@ class DefineTrainData(DataPreparation):
             super().FillHist("Aenu/NoCut/mWgen", WGen.M(), 1., 200, 0., 200.)
             super().FillHist("Aenu/NoCut/mA", ACand.M(), 1., 200, 0., 200.)
             super().FillHist("Aenu/NoCut/mW", WCand.M(), 1., 200, 0., 200.)
-            super().FillHist("Aenu/NoCut/mHc", ChargedHiggs.M(), 1., 300, 0., 300.)
+            super().FillHist("Aenu/NoCut/mHc", ChargedHiggs.M(), 1., 500, 0., 500.)
             super().FillHist("Aenu/NoCut/MT", WCand.Mt(), 1., 200, 0., 200.)
 
             if ele.DeltaR(eleGen) > 0.1: return None
+            super().FillHist("Aenu/CutFlow", 2., 1., 10, 0., 10.)
             super().FillHist("Aenu/Final/dRele", ele.DeltaR(eleGen), 1., 500, 0., 500.)
             super().FillHist("Aenu/Final/mWgen", WGen.M(), 1., 200, 0., 200.)
             super().FillHist("Aenu/Final/mA", ACand.M(), 1., 200, 0., 200.)
             super().FillHist("Aenu/Final/mW", WCand.M(), 1., 200, 0., 200.)
             super().FillHist("Aenu/Final/MT", WCand.Mt(), 1., 200, 0., 200.)
-            super().FillHist("Aenu/Final/mHc", ChargedHiggs.M(), 1., 300, 0., 300.)
+            super().FillHist("Aenu/Final/mHc", ChargedHiggs.M(), 1., 500, 0., 500.)
         elif 13 in [abs(gen.PID()) for gen in chargedDecays]:       # A mu nu
+            super().FillHist("Amunu/CutFlow", 0., 1., 10, 0., 10.)
             if not "3Mu" in channel: return None
+            super().FillHist("Amunu/CutFlow", 1., 1., 10, 0., 10.)
+
             if not len(promptColl) == 1: return None
             muGen = None
             nuGen = None
@@ -279,18 +292,19 @@ class DefineTrainData(DataPreparation):
             super().FillHist("Amunu/NoCut/mW", WCand.M(), 1., 200, 0., 200.)
             super().FillHist("Amunu/NoCut/mWgen", WGen.M(), 1., 200, 0., 200.)
             super().FillHist("Amunu/NoCut/MT", WCand.Mt(), 1., 200, 0., 200.)
-            super().FillHist("Amunu/NoCut/mHc", ChargedHiggs.M(), 1., 300, 0., 300.)
+            super().FillHist("Amunu/NoCut/mHc", ChargedHiggs.M(), 1., 500, 0., 500.)
 
             if promptMu.DeltaR(muGen) > 0.1: return None
+            super().FillHist("Amunu/CutFlow", 2., 1., 10, 0., 10.)
             super().FillHist("Amunu/Final/mA", ACand.M(), 1., 200, 0., 200.)
             super().FillHist("Amunu/Final/mW", WCand.M(), 1., 200, 0., 200.)
             super().FillHist("Amunu/Final/mWgen", WGen.M(), 1., 200, 0., 200.)
             super().FillHist("Amunu/Final/MT", WCand.Mt(), 1., 200, 0., 200.)
-            super().FillHist("Amunu/Final/mHc", ChargedHiggs.M(), 1., 300, 0., 300.)
+            super().FillHist("Amunu/Final/mHc", ChargedHiggs.M(), 1., 500, 0., 500.)
         else:       # A tau nu case
             return None
         
-if __name__ == "__main__":
+#if __name__ == "__main__":
     #m = DefineTrainData()
     #m.SetTreeName("recoTree/SKFlat")
     #m.IsDATA = False
