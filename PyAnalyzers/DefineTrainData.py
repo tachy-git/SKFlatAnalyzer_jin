@@ -58,6 +58,8 @@ class DefineTrainData(DataPreparation):
         return chargedDecay
 
     def executeEvent(self):
+        mHc = int(str(super().MCSample).split("_")[1].split("-")[1])
+        print(mHc)
         if not super().PassMETFilter(): return None
         ev = super().GetEvent()
         rawMuons = super().GetAllMuons()
@@ -291,23 +293,23 @@ class DefineTrainData(DataPreparation):
             return None
         
 if __name__ == "__main__":
-    #m = DefineTrainData()
-    #m.SetTreeName("recoTree/SKFlat")
-    #m.IsDATA = False
-    #m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
-    #m.xsec = 0.015
-    #m.sumSign = 599702.0
-    #m.sumW = 3270.46
-    #m.IsFastSim = False
-    #m.SetEra("2017")
-    #if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
-    #if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
+    m = DefineTrainData()
+    m.SetTreeName("recoTree/SKFlat")
+    m.IsDATA = False
+    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
+    m.xsec = 0.015
+    m.sumSign = 599702.0
+    m.sumW = 3270.46
+    m.IsFastSim = False
+    m.SetEra("2017")
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_14.root"): exit(1)
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_5.root"): exit(1)
     #if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-160_MA-15_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/221012_081454/0000/SKFlatNtuple_2017_MC_15.root"): exit(1)
     #if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-160_MA-15_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/221012_081454/0000/SKFlatNtuple_2017_MC_1.root"): exit(1)
-    #m.SetOutfilePath("hists.root")
-    #m.Init()
-    #m.initializeAnalyzer()
-    #m.initializeAnalyzerTools()
-    #m.SwitchToTempDir()
-    #m.Loop()
-    #m.WriteHist()
+    m.SetOutfilePath("hists.root")
+    m.Init()
+    m.initializeAnalyzer()
+    m.initializeAnalyzerTools()
+    m.SwitchToTempDir()
+    m.Loop()
+    m.WriteHist()
