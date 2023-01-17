@@ -1882,6 +1882,7 @@ int AnalyzerCore::GetLeptonType_Public(int TruthIdx, const std::vector<Gen>& Tru
   if     ( TruthIdx==-1 )                                       LeptonType= 0;
   else if( fabs(MPID)==23 || fabs(MPID)==24 || fabs(MPID)==25 ) LeptonType= 1;
   else if( IsSignalPID(MPID) )                                  LeptonType= 2;
+  else if( abs(MPID) == 37 )                                    LeptonType= 6; 
   else if( Status_orig>20 && Status_orig<30 )                   LeptonType= 1;//1)
   else if( fabs(MPID)>50 )                                      LeptonType=-2;
   else if( fabs(MPID)==15 && MStatus_last==2 ){
@@ -1940,6 +1941,7 @@ int AnalyzerCore::GetLeptonType(const Lepton& lep, const std::vector<Gen>& gens)
   //====  3 : EWtau daughter
   //====  4 : Internal Conversion daughter from t/EWV/EWlep(Implicit,Explicit)
   //====  5 : Internal Conversion daughter from HardScatterPhoton
+  //====  6 : From Offshell W (mother == 37)
   //==== -1 : Unmatched & not EW Conversion candidate
   //==== -2 : Hadron daughter
   //==== -3 : Daughter of tau from hadron or parton
@@ -2101,7 +2103,7 @@ bool AnalyzerCore::IsSignalPID(int pid){
   //==== HeavyNeutrino
   if(pid>=9900000) return true;
   //==== ChargedHiggs
-  if(pid==36 || pid==37) return true;
+  if(pid==36) return true;
 
   return false;
 

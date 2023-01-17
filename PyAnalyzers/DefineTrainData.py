@@ -66,30 +66,33 @@ class DefineTrainData(DataPreprocess):
         ## 2. Exact 2 tight muons and 1 tight electron, no additional lepton
         ## 3. Exists OS muon pair with mass > 12 GeV
         if is1E2Mu:
-            if not ev.PassTrigger(super().EMuTriggers): return None
+            #if not ev.PassTrigger(super().EMuTriggers): return None
             leptons = std.vector[Lepton]()
             for mu in tightMuons: leptons.emplace_back(mu)
             for ele in tightElectrons: leptons.emplace_back(ele)
             mu1, mu2, ele = tuple(leptons)
-            passLeadMu = mu1.Pt() > 25. and ele.Pt() > 15.
-            passLeadEle = mu1.Pt() > 10. and ele.Pt() > 25.
-            passSafeCut = passLeadMu or passLeadEle
-            if not passSafeCut: return None
+            #passLeadMu = mu1.Pt() > 25. and ele.Pt() > 15.
+            #passLeadEle = mu1.Pt() > 10. and ele.Pt() > 25.
+            #passSafeCut = passLeadMu or passLeadEle
+            #if not passSafeCut: return None
             if not mu1.Charge()+mu2.Charge() == 0: return None
             pair = mu1 + mu2
             if not pair.M() > 12.: return None
 
+            if not jets.size() >= 2: return None
+            if not bjets.size() >= 1: return None
+            channel = "SR1E2Mu"
             # orthogonality of SR and CR done by bjet multiplicity
-            if len(bjets) >= 1:
-                if len(jets) >= 2: channel = "SR1E2Mu"
-                else: return None
-            else:
-                mZ = 91.2
-                isOnZ = abs(pair.M() - mZ) < 10.
-                if isOnZ: channel = "ZFake1E2Mu"
-                else:
-                    if abs((mu1+mu2+ele).M() - mZ) < 10.: channel = "ZGamma1E2Mu"
-                    else: return None
+            #if len(bjets) >= 1:
+            #    if len(jets) >= 2: channel = "SR1E2Mu"
+            #    else: return None
+            #else:
+            #    mZ = 91.2
+            #    isOnZ = abs(pair.M() - mZ) < 10.
+            #    if isOnZ: channel = "ZFake1E2Mu"
+            #    else:
+            #        if abs((mu1+mu2+ele).M() - mZ) < 10.: channel = "ZGamma1E2Mu"
+            #        else: return None
 
         ## 3Mu baseline
         ## 1. pass DblMuTriggers
@@ -97,11 +100,11 @@ class DefineTrainData(DataPreprocess):
         ## 3. Exist OS muon pair,
         ## 4. All OS muon pair mass > 12 GeV
         else:
-            if not ev.PassTrigger(super().DblMuTriggers): return None
+            #if not ev.PassTrigger(super().DblMuTriggers): return None
             mu1, mu2, mu3  = tuple(tightMuons)
-            if not mu1.Pt() > 20.: return None
-            if not mu2.Pt() > 10.: return None
-            if not mu3.Pt() > 10.: return None
+            #if not mu1.Pt() > 20.: return None
+            #if not mu2.Pt() > 10.: return None
+            #if not mu3.Pt() > 10.: return None
             if not abs(mu1.Charge()+mu2.Charge()+mu3.Charge()) == 1: return None
             if mu1.Charge() == mu2.Charge():
                 pair1 = mu1 + mu3
@@ -115,17 +118,20 @@ class DefineTrainData(DataPreprocess):
             if not pair1.M() > 12.: return None
             if not pair2.M() > 12.: return None
 
+            if not jets.size() >= 2: return None
+            if not bjets.size() >= 1: return None
+            channel = "SR3Mu"
             # orthogonality of SR and CR done by bjet multiplicity
-            if len(bjets) >= 1:
-                if len(jets) >= 2: channel = "SR3Mu"
-                else: return None
-            else:
-                mZ = 91.2
-                isOnZ = abs(pair1.M() - mZ) < 10. or abs(pair2.M() - mZ) < 10.
-                if isOnZ: channel = "ZFake3Mu"
-                else:
-                    if abs((mu1+mu2+mu3).M() - mZ) < 10.: channel = "ZGamma3Mu"
-                    else: return None
+            #if len(bjets) >= 1:
+            #    if len(jets) >= 2: channel = "SR3Mu"
+            #    else: return None
+            #else:
+            #    mZ = 91.2
+            #    isOnZ = abs(pair1.M() - mZ) < 10. or abs(pair2.M() - mZ) < 10.
+            #    if isOnZ: channel = "ZFake3Mu"
+            #    else:
+            #        if abs((mu1+mu2+mu3).M() - mZ) < 10.: channel = "ZGamma3Mu"
+            #        else: return None
 
         if not ("1E2Mu" in channel or "3Mu" in channel): return None
 
@@ -208,6 +214,8 @@ class DefineTrainData(DataPreprocess):
             for gen in chargedDecays:
                 if abs(gen.PID()) == 11: eleGen = gen
                 if abs(gen.PID()) == 12: nuGen = gen
+            if not eleGen.Pt() > 8.: return None
+            if not abs(eleGen.Eta()) < 2.6: return None
             ele = tightElectrons.at(0)
             WGen = eleGen + nuGen
             WCand = ele + METv
@@ -220,7 +228,7 @@ class DefineTrainData(DataPreprocess):
             super().FillHist("Aenu/NoCut/MT", WCand.Mt(), 1., 200, 0., 200.)
 
             if not super().GetLeptonType(ele, truth) > 0: return None
-            if ele.DeltaR(eleGen) > 0.1: return None
+            if not ele.DeltaR(eleGen) < 0.1: return None
             super().FillHist("Aenu/CutFlow", 2., 1., 10, 0., 10.)
             super().FillHist("Aenu/Final/dRele", ele.DeltaR(eleGen), 1., 500, 0., 500.)
             super().FillHist("Aenu/Final/mWgen", WGen.M(), 1., 200, 0., 200.)
@@ -228,17 +236,23 @@ class DefineTrainData(DataPreprocess):
             super().FillHist("Aenu/Final/mW", WCand.M(), 1., 200, 0., 200.)
             super().FillHist("Aenu/Final/MT", WCand.Mt(), 1., 200, 0., 200.)
             super().FillHist("Aenu/Final/mHc", ChargedHiggs.M(), 1., 500, 0., 500.)
+            super().FillHist("Aenu/Final/deta", ele.Eta() - nuGen.Eta(), 1., 2000, -10, 10)
+            super().FillHist("Aenu/Final/dphi", ele.Phi() - nuGen.Phi(), 1., 2000, -10, 10)
         elif 13 in [abs(gen.PID()) for gen in chargedDecays]:       # A mu nu
             super().FillHist("Amunu/CutFlow", 0., 1., 10, 0., 10.)
             if not "3Mu" in channel: return None
             super().FillHist("Amunu/CutFlow", 1., 1., 10, 0., 10.)
-
+            
             if not len(promptColl) == 1: return None
+            super().FillHist("Amunu/CutFlow", 2., 1., 10, 0., 10.)
             muGen = None
             nuGen = None
             for gen in chargedDecays:
                 if abs(gen.PID()) == 13: muGen = gen
                 if abs(gen.PID()) == 14: nuGen = gen
+            
+            if not muGen.Pt() > 8.: return None
+            if not abs(muGen.Eta()) < 2.5: return None
             promptMu = promptColl[0]
             WGen = muGen + nuGen
             WCand = promptMu + METv
@@ -248,14 +262,17 @@ class DefineTrainData(DataPreprocess):
             super().FillHist("Amunu/NoCut/mWgen", WGen.M(), 1., 200, 0., 200.)
             super().FillHist("Amunu/NoCut/MT", WCand.Mt(), 1., 200, 0., 200.)
             super().FillHist("Amunu/NoCut/mHc", ChargedHiggs.M(), 1., 500, 0., 500.)
+            super().FillHist("Amunu/NoCut/dR", promptMu.DeltaR(muGen), 1., 500, 0., 5)
 
-            if promptMu.DeltaR(muGen) > 0.1: return None
-            super().FillHist("Amunu/CutFlow", 2., 1., 10, 0., 10.)
+            if not promptMu.DeltaR(muGen) < 0.1: return None
+            super().FillHist("Amunu/CutFlow", 3., 1., 10, 0., 10.)
             super().FillHist("Amunu/Final/mA", ACand.M(), 1., 200, 0., 200.)
             super().FillHist("Amunu/Final/mW", WCand.M(), 1., 200, 0., 200.)
             super().FillHist("Amunu/Final/mWgen", WGen.M(), 1., 200, 0., 200.)
             super().FillHist("Amunu/Final/MT", WCand.Mt(), 1., 200, 0., 200.)
             super().FillHist("Amunu/Final/mHc", ChargedHiggs.M(), 1., 500, 0., 500.)
+            super().FillHist("Amunu/Final/deta", promptMu.Eta() - nuGen.Eta(), 1., 2000, -10, 10)
+            super().FillHist("Amunu/Final/dphi", promptMu.Phi() - nuGen.Phi(), 1., 2000, -10, 10)
         else:       # A tau nu case
             return None
         

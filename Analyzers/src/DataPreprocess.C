@@ -38,8 +38,8 @@ DataPreprocess::DataPreprocess() {
 }
 
 DataPreprocess::~DataPreprocess() {
-    outfile->cd();
-    Events->Write();
+    //outfile->cd();
+    //Events->Write();
 }
 
 void DataPreprocess::initializeAnalyzer() {
@@ -308,7 +308,7 @@ void DataPreprocess::executeEvent() {
 
             const Electron &ele = looseElectrons.at(0);
             if (! (GetLeptonType(ele, truth) > 0)) return;
-            if (! (ele.DeltaR(*eleGen) > 0.1)) return;
+            if (! (ele.DeltaR(*eleGen) < 0.1)) return;
 
             Particle WCand = ele + METv;
             Particle ChargedHiggs = WCand + ACand;
@@ -327,7 +327,7 @@ void DataPreprocess::executeEvent() {
             }
 
             const Muon &mu = promptColl.at(0);
-            if (! (mu.DeltaR(*muGen) > 0.1)) return;
+            if (! (mu.DeltaR(*muGen) < 0.1)) return;
             Particle WCand = mu + METv;
             Particle ChargedHiggs = WCand + ACand;
             for (unsigned int i = 0; i < nMuons; i++)
