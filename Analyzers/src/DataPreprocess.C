@@ -291,7 +291,9 @@ void DataPreprocess::executeEvent() {
             if (! (fabs(ChargedHiggs.M() - mHc) < 20.)) return;
             
             for (unsigned int i = 0; i < nMuons; i++) {
-                MuonLabelColl[i] = true;
+                const Muon &mu = looseMuons.at(i);
+                if (GetLeptonType(mu, truth) == 2)
+                    MuonLabelColl[i] = true;
             }
             for (unsigned int i = 0; i < nJets; i++) {
                 Jet *j = &(jets.at(i));
