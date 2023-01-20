@@ -1,4 +1,0 @@
-TTLL_powheg
-ttWToLNu
-ttZToLLNuNu
-ttHToNonbb

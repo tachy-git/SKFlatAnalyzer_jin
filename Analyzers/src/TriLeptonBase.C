@@ -196,7 +196,5 @@ double TriLeptonBase::getFakeWeight(const vector<Muon> &muons, const vector<Elec
         double fr = getElectronFakeProb(ele);
         weight *= -1.*(fr / (1.-fr));
     }
-
     return weight;
 }
-
