@@ -308,6 +308,8 @@ void DataPreprocess::executeEvent() {
             }
 
             const Electron &ele = looseElectrons.at(0);
+            if (! (eleGen.Pt() > 8.)) return;
+            if (! (fabs(eleGen.Eta()) < 2.6)) return;
             if (! (GetLeptonType(ele, truth) > 0)) return;
             if (! (ele.DeltaR(*eleGen) < 0.1)) return;
 
@@ -328,6 +330,8 @@ void DataPreprocess::executeEvent() {
             }
 
             const Muon &mu = promptColl.at(0);
+            if (! (muGen.Pt() > 8.)) return;
+            if (! (fabs(muGen.Eta()) < 2.5)) return;
             if (! (mu.DeltaR(*muGen) < 0.1)) return;
             Particle WCand = mu + METv;
             Particle ChargedHiggs = WCand + ACand;
