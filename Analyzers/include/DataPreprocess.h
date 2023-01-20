@@ -38,7 +38,7 @@ private:
     bool  JetLabelColl[20];
 
 public:
-    bool Skim1E2Mu, Skim3Mu;    // flags
+    bool MatchChargedHiggs;
     vector<TString> ElectronIDs, MuonIDs;
     vector<TString> DblMuTriggers, EMuTriggers;
 

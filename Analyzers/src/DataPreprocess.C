@@ -38,14 +38,13 @@ DataPreprocess::DataPreprocess() {
 }
 
 DataPreprocess::~DataPreprocess() {
-    //outfile->cd();
-    //Events->Write();
+    outfile->cd();
+    Events->Write();
 }
 
 void DataPreprocess::initializeAnalyzer() {
     // flags
-    Skim1E2Mu = HasFlag("Skim1E2Mu");
-    Skim3Mu = HasFlag("Skim3Mu");
+    MatchChargedHiggs = HasFlag("MatchChargedHiggs");
 
     // triggers & ID settings
     if (DataEra == "2016preVFP") {
@@ -232,7 +231,7 @@ void DataPreprocess::executeEvent() {
     }
 
     // start matching for signal sample
-    if (MCSample.Contains("MHc")) {
+    if (MatchChargedHiggs && MCSample.Contains("MHc")) {
         // Get charged Higgs mass point
         // e.g. TTToHcToWAToMuMu_MHc-130_MA-90 -> MHc-130 -> 130
         TObjArray *tokens;
@@ -339,7 +338,7 @@ void DataPreprocess::executeEvent() {
             return;
         }
     }
-    // backgrounds
+    
     Events->Fill();
     return;
 }
