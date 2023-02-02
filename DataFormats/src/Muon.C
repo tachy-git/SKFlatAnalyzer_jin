@@ -125,7 +125,7 @@ bool Muon::PassID(TString ID) const {
 
 
 
-  cout << "[Electron::PassID] No id : " << ID << endl;
+  cout << "[Muon::PassID] No id : " << ID << endl;
   exit(ENODATA);
 
   return false;

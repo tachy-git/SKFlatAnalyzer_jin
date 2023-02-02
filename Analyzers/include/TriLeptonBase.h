@@ -5,7 +5,8 @@
 
 class TriLeptonBase: public AnalyzerCore {
 public:
-    bool Skim1E2Mu, Skim3Mu;    // flags
+    bool Skim1E2Mu, Skim3Mu;    // channel flags 
+    bool DenseNet, GraphNet;    // network flags 
     vector<TString> ElectronIDs, MuonIDs;
     vector<TString> DblMuTriggers, EMuTriggers;
 
@@ -26,4 +27,3 @@ public:
 };
 
 #endif
-@

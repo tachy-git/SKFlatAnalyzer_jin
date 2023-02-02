@@ -15,6 +15,8 @@ void TriLeptonBase::initializeAnalyzer() {
     // flags
     Skim1E2Mu = HasFlag("Skim1E2Mu");
     Skim3Mu = HasFlag("Skim3Mu");
+    DenseNet = HasFlag("DenseNet");
+    GraphNet = HasFlag("GraphNet");
 
     // triggers & ID settings
     if (DataEra == "2016preVFP") {

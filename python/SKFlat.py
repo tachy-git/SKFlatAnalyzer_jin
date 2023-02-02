@@ -386,10 +386,9 @@ for inputSample in inputSampleList:
                     out.write(f"    m.IsFastSim = False\n")
             out.write(f'    m.SetEra("{args.Era}")\n')
             if Userflags:
-                out.write(f'    m.Userflags = [\n')
+                out.write(f'    m.Userflags = std.vector[TString]()\n')
                 for flag in Userflags:
-                    out.write(f'    "{flag}",\n')
-                out.write("    ]\n")
+                    out.write(f'    m.Userflags.emplace_back("{flag}"),\n')
             for it_file in fileRanges[it_job]:
                 thisFileName = totalFiles[it_file].strip("\n")
                 out.write(f'    if not m.AddFile("{thisFileName}"): exit(1)\n')
@@ -413,7 +412,7 @@ for inputSample in inputSampleList:
             if args.Reduction > 1:
                 out.write(f"    m.MaxEvent = int(m.fChain.GetEntries()/{args.Reduction})\n")
             out.write(f"    m.Init()\n")
-            out.write(f"    m.initializeAnalyzer()\n")
+            out.write(f"    m.initializePyAnalyzer()\n")
             out.write(f"    m.initializeAnalyzerTools()\n")
             out.write(f"    m.SwitchToTempDir()\n")
             out.write(f"    m.Loop()\n")
@@ -440,10 +439,8 @@ for inputSample in inputSampleList:
                     out.write(f"    m.IsFastSim = false;\n")
             out.write(f'    m.SetEra("{args.Era}");\n')
             if Userflags:
-                out.write("    m.Userflags = {\n")
                 for flag in Userflags:
-                    out.write(f'    "{flag}",\n')
-                out.write("    };\n")
+                    out.write(f'    m.Userflags.emplace_back("{flag}"),\n')
             for it_file in fileRanges[it_job]:
                 thisFileName = totalFiles[it_file].strip("\n")
                 out.write(f'    if(!m.AddFile("{thisFileName}")) exit(EIO);\n')
