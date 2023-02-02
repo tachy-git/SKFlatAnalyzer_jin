@@ -34,6 +34,7 @@ DataPreprocess::DataPreprocess() {
     Events->Branch("JetMassColl", JetMassColl, "JetMassColl[nJets]/F");
     Events->Branch("JetChargeColl", JetChargeColl, "JetChargeColl[nJets]/F");
     Events->Branch("JetBtagScoreColl", JetBtagScoreColl, "JetBtagScoreColl[nJets]/F");
+    Events->Branch("JetIsBtaggedColl", JetIsBtaggedColl, "JetIsBtaggedColl[nJets]/O");
     Events->Branch("JetLabelColl", JetLabelColl, "JetLabelColl[nJets]/O");
 }
 
@@ -45,60 +46,23 @@ DataPreprocess::~DataPreprocess() {
 void DataPreprocess::initializeAnalyzer() {
     // flags
     MatchChargedHiggs = HasFlag("MatchChargedHiggs");
+    Skim1E2Mu = HasFlag("Skim1E2Mu");
+    Skim3Mu = HasFlag("Skim3Mu");
 
     // triggers & ID settings
     if (DataEra == "2016preVFP") {
-        DblMuTriggers = {
-            "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v",
-            "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v",
-        };
-        EMuTriggers = {
-            "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v",
-            "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
-            "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v",
-            "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v"
-        };
         MuonIDs = {"HcToWATight", "HcToWALoose", "HcToWAVeto"};
         ElectronIDs = {"HcToWATight16a", "HcToWALoose16a", "HcToWAVeto16a"};
     }
     else if (DataEra == "2016postVFP") {
-        DblMuTriggers = {
-            "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v",
-            "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v",
-        };
-        EMuTriggers = {
-            "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v",
-            "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
-            "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v",
-            "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v"
-        };
         MuonIDs = {"HcToWATight", "HcToWALoose", "HcToWAVeto"};
         ElectronIDs = {"HcToWATight16b", "HcToWALoose16b", "HcToWAVeto16b"};
     }
     else if (DataEra == "2017") {
-        DblMuTriggers = {
-            "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v",
-            "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v",
-            "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v"
-        };
-        EMuTriggers = {
-            "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v",
-            "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v"
-        };
         MuonIDs = {"HcToWATight", "HcToWALoose", "HcToWAVeto"};
         ElectronIDs = {"HcToWATight17", "HcToWALoose17", "HcToWAVeto17"};
     }
     else if (DataEra == "2018") {
-        DblMuTriggers = {
-            "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v",
-            "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v",
-            "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v"
-        };
-        EMuTriggers = {
-            "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v",
-            "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
-            "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v"
-        };
         MuonIDs = {"HcToWATight", "HcToWALoose", "HcToWAVeto"};
         ElectronIDs = {"HcToWATight18", "HcToWALoose18", "HcToWAVeto18"};
     }
@@ -129,7 +93,7 @@ void DataPreprocess::executeEvent() {
     vector<Electron> vetoElectrons = SelectElectrons(rawElectrons, ElectronIDs.at(2), 10., 2.5);
     vector<Electron> looseElectrons = SelectElectrons(vetoElectrons, ElectronIDs.at(1), 10., 2.5);
     vector<Jet> jets = SelectJets(rawJets, "tight", 15., 2.4);
-    // jets = JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4);
+    jets = JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4);
     vector<Jet> bjets;
     for (const auto &jet: jets) {
         const double this_discr = jet.GetTaggerResult(JetTagging::DeepJet);
@@ -148,7 +112,7 @@ void DataPreprocess::executeEvent() {
     // event selection
     const bool is3Mu = looseMuons.size() == 3 && looseElectrons.size() == 0 && vetoMuons.size() == 3 && vetoElectrons.size() == 0;
     const bool is1E2Mu = looseMuons.size() == 2 && looseElectrons.size() == 1 && vetoMuons.size() == 2 && vetoElectrons.size() == 1;
-    if (! (is3Mu || is1E2Mu)) return;
+    if (! ((Skim1E2Mu && is1E2Mu) || (Skim3Mu && is3Mu))) return;
 
     TString channel = "";
     // Reduced baseline for 1E2Mu channel
@@ -161,7 +125,7 @@ void DataPreprocess::executeEvent() {
         Particle pair = mu1+mu2;
         if (! (pair.M() > 12.)) return;
         if (! (jets.size() >= 2)) return;
-        if (! (bjets.size() >= 1)) return;
+        // if (! (bjets.size() >= 1)) return;
         channel = "SR1E2Mu";
     }
     // Reduced baseline for 3Mu channel
@@ -190,11 +154,20 @@ void DataPreprocess::executeEvent() {
         if (! (pair1.M() > 12.)) return;
         if (! (pair2.M() > 12.)) return;
         if (! (jets.size() >= 2)) return;
-        if (! (bjets.size() >= 1)) return;
+        // if (! (bjets.size() >= 1)) return;
         channel = "SR3Mu";
     }
     // end event selection
     
+    // prompt matching for signal / tt+X events
+    vector<Gen> truth = GetGens();
+    if (! MCSample.Contains("TTLL")) {
+        for (const auto &mu: looseMuons)
+            if (! (GetLeptonType(mu, truth) > 0)) return;
+        for (const auto &ele: looseElectrons)
+            if (! (GetLeptonType(ele, truth) > 0)) return;
+    }
+        
     // store informations
     METvPt = METv.Pt();
     METvPhi = METv.Phi();
@@ -227,6 +200,7 @@ void DataPreprocess::executeEvent() {
         JetMassColl[i] = jet.M();
         JetChargeColl[i] = jet.Charge();
         JetBtagScoreColl[i] = jet.GetTaggerResult(JetTagging::DeepJet);
+        JetIsBtaggedColl[i] = jet.GetTaggerResult(JetTagging::DeepJet) > mcCorr->GetJetTaggingCutValue(JetTagging::DeepJet, JetTagging::Medium);
         JetLabelColl[i] = false;
     }
 
@@ -243,7 +217,6 @@ void DataPreprocess::executeEvent() {
         int mHc = token.Atoi();
 
         // Get Charged Higgs decays
-        vector<Gen> truth = GetGens();
         vector<Gen> chargedDecays = findChargedDecays(truth);
         if (! (chargedDecays.size() == 3)) return;
 

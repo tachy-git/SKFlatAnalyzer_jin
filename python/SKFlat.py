@@ -497,10 +497,10 @@ if not args.Outputdir:
     for flag in Userflags:
         finalOutputPath += f"{flag}__"
     if isDATA:
-        finalOutputPath += "/DATA/"
+        finalOutputPath += "/DATA"
     if isSkimTree:
         finalOutputPath = f"/gv0/DATA/SKFlat/{SKFlatV}/{args.Era}"
-if not os.path.exists(os.path.dirname(finalOutputPath)):
+if not os.path.exists(finalOutputPath):
     os.makedirs(finalOutputPath)
 
 print(f"#################################################")

@@ -35,9 +35,11 @@ private:
     float JetMassColl[20];
     float JetChargeColl[20];
     float JetBtagScoreColl[20];
+    bool  JetIsBtaggedColl[20];
     bool  JetLabelColl[20];
 
 public:
+    bool Skim1E2Mu, Skim3Mu;
     bool MatchChargedHiggs;
     vector<TString> ElectronIDs, MuonIDs;
     vector<TString> DblMuTriggers, EMuTriggers;

@@ -73,7 +73,7 @@ void TriLeptonBase::initializeAnalyzer() {
         ElectronIDs = {"HcToWATight18", "HcToWALoose18", "HcToWAVeto18"};
     }
     else {
-        cerr << "[diLepControlRegion::initializeAnalyzer] Wrong era " << DataEra << endl;
+        cerr << "[TriLeptonBase::initializeAnalyzer] Wrong era " << DataEra << endl;
         exit(EXIT_FAILURE);
     }
 
