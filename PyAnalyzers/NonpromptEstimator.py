@@ -1,6 +1,6 @@
 from ROOT import gSystem
 from ROOT import TriLeptonBase
-from ROOT import std
+from ROOT import std, TString
 from ROOT.JetTagging import Parameters as jParameters
 from ROOT import Lepton, Muon, Electron, Jet
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
@@ -131,7 +131,7 @@ class NonpromptEstimator(TriLeptonBase):
         sorted(looseMuons, key=lambda x: x.Pt(), reverse=True)
         sorted(tightMuons, key=lambda x: x.Pt(), reverse=True)
         sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True)
-        sorted(looseMuons, lambda x: x.Pt(), reverse=True)
+        sorted(looseMuons, key=lambda x: x.Pt(), reverse=True)
         sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True)
         sorted(jets, key=lambda x: x.Pt(), reverse=True)
         sorted(bjets, key=lambda x: x.Pt(), reverse=True) 
