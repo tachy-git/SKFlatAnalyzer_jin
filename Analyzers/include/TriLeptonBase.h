@@ -14,7 +14,8 @@ public:
     TH2D *hMuonIDSF;
     TH2D *hMu17Leg1_Data, *hMu17Leg1_MC;
     TH2D *hMu8Leg2_Data, *hMu8Leg2_MC;
-    TH2D *hMuonFR, *hElectronFR;
+    TH2D *hMuonFR, *hMuonFRUp, *hMuonFRDown;
+    TH2D *hElectronFR, *hElectronFRUp, *hElectronFRDown;
     TriLeptonBase();
     ~TriLeptonBase();
     void initializeAnalyzer();

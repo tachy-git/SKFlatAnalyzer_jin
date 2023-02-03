@@ -15,12 +15,11 @@ from MLTools.models import SNN, SNNLite, ParticleNet, ParticleNetLite
 from MLTools.helpers import evtToGraph
 from MLTools.formats import NodeParticle
 
-
-class PromptEstimator(TriLeptonBase):
+class NonpromptEstimator(TriLeptonBase):
     def __init__(self):
         super().__init__()
         # at this point, TriLeptonBase::initializeAnalyzer has not been activate
-
+        
     def initializePyAnalyzer(self):
         super().initializeAnalyzer()
         if super().Skim1E2Mu: 
@@ -37,35 +36,16 @@ class PromptEstimator(TriLeptonBase):
             print("Wrong network")
             exit(1)
             
-        self.weightVariations = ["Central"]
-        self.scaleVariations = []
-        if super().WeightVar:
-            self.weightVariations += ["L1PrefireUp", "L1PrefireDown",
-                                      "PileupReweightUp", "PileupReweightDown",
-                                      "MuonIDSFUp", "MuonIDSFDown",
-                                      #"ElectronIDSFUp", "ElectronIDSFDown",
-                                      "DblMuTrigSFUp", "DblMuTrigSFDown",
-                                      #"EMuTrigSFUp", "EMuTrigSFDown",
-                                      "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
-                                      "HeavyTagUpCorr", "HeavyTagDownCorr",
-                                      "LightTagUpUnCorr", "LightTagDownUnCorr",
-                                      "LightTagUpCorr", "LightTagDownCorr"]
-        if super().ScaleVar:
-            self.scaleVariations += ["JetResUp", "JetResDown", 
-                                     "JetEnUp", "JetEnDown",
-                                     "ElectronResUp", "ElectronResDown", 
-                                     "ElectronEnUp", "ElectronEnDown",
-                                     "MuonEnUp", "MuonEnDown"] 
-        self.systematics = self.weightVariations + self.scaleVariations        
+        self.systematics = ["Central", "NonpromptUp", "NonpromptDown"]     
         self.signalStrings = [
                 "MHc-70_MA-15", "MHc-70_MA-40", "MHc-70_MA-65",
                 "MHc-100_MA-15", "MHc-100_MA-60", "MHc-100_MA-95",
                 "MHc-130_MA-15", "MHc-130_MA-55", "MHc-130_MA-90", "MHc-130_MA-125",
                 "MHc-160_MA-15", "MHc-160_MA-85", "MHc-160_MA-120", "MHc-160_MA-155"]
         self.backgroundStrings = ["TTLL_powheg", "ttX"]
-        
+    
         self.__loadModels()
-
+        
     def __loadModels(self):
         self.models = {}
 
@@ -89,32 +69,7 @@ class PromptEstimator(TriLeptonBase):
             model.load_state_dict(torch.load(modelPath, map_location=torch.device("cpu")))
             model.eval()
             self.models[f"{sig}_vs_{bkg}"] = model
-
-    def __getDblMuTriggerEff(self, muons, isData, sys):
-        assert len(muons) == 3
-        mu1, mu2, mu3 = tuple(muons)
-
-        # data
-        case1 = super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
-        case1 *= super().getTriggerEff(mu2, "Mu8Leg2", isData, sys)
-        case2 = 1.-super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
-        case2 *= super().getTriggerEff(mu2, "Mu17Leg1", isData, sys)
-        case2 *= super().getTriggerEff(mu3, "Mu8Leg2", isData, sys)
-        case3 = super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
-        case3 *= 1.-super().getTriggerEff(mu2, "Mu8Leg2", isData, sys)
-        case3 *= super().getTriggerEff(mu3, "Mu8Leg2", isData, sys)
-
-        eff = case1+case2+case3
-        return eff
-
-    def getDblMuTriggerSF(self, muons, sys):
-        effData = self.__getDblMuTriggerEff(muons, True, sys)
-        effMC = self.__getDblMuTriggerEff(muons, False, sys)
-        if effMC == 0 or effData == 0:
-            return 1.
-
-        return effData / effMC
-
+            
     def executeEvent(self):
         if not super().PassMETFilter(): return None
         ev = super().GetEvent()
@@ -122,71 +77,48 @@ class PromptEstimator(TriLeptonBase):
         rawElectrons = super().GetAllElectrons()
         rawJets = super().GetAllJets()
         METv = ev.GetMETVector()
-        truth = super().GetGens() if not super().IsDATA else None
         
-        # Central scale
-        vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
-        channel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
-        
-        if not channel is None: 
-            pairs = self.makePair(tightMuons)
-            data, scores = self.evalScore(tightMuons, tightElectrons, jets, bjets, METv)
-            # make objects as a dictionary
-            objects = {"muons": tightMuons,
-                       "electrons": tightElectrons,
-                       "jets": jets,
-                       "bjets": bjets,
-                       "METv": METv,
-                       "pairs": pairs,
-                       "data": data,
-                       "scores": scores
-                       }
-            for syst in self.weightVariations:
-                weight = self.getWeight(channel, ev, tightMuons, tightElectrons, jets, syst)
-                self.FillObjects(channel, objects, weight, syst)
+        vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
+        channel = self.selectEvent(ev, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv)
 
-        for syst in self.scaleVariations:
-            vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets, syst)
-            channel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
-            if not channel is None:
-                pairs = self.makePair(tightMuons)
-                data, scores = self.evalScore(tightMuons, tightElectrons, jets, bjets, METv)
-                objects = {"muons": tightMuons,
-                           "electrons": tightElectrons,
-                           "jets": jets,
-                           "bjets": bjets,
-                           "METv": METv,
-                           "pairs": pairs,
-                           "data": data,
-                           "scores": scores
-                           }
-                weight = self.getWeight(channel, ev, tightMuons, tightElectrons, jets, syst)
-                self.FillObjects(channel, objects, weight, syst)
-    
+        if channel is None: return None
+        
+        pairs = self.makePair(looseMuons)
+        data, scores = self.evalScore(looseMuons, looseElectrons, jets, bjets, METv)
+        objects = {"muons": looseMuons,
+                   "electrons": looseElectrons,
+                   "jets": jets,
+                   "bjets": bjets,
+                   "METv": METv,
+                   "pairs": pairs,
+                   "data": data,
+                   "scores": scores
+                    }
+        for syst in self.systematics:
+            if syst == "Central":
+                weight = super().getFakeWeight(looseMuons, looseElectrons, 0)
+            elif syst == "NonpromptUp":
+                weight = super().getFakeWeight(looseMuons, looseElectrons, 1)
+            elif syst == "NonpromptDown":
+                weight = super().getFakeWeight(looseMuons, looseElectrons, -1)
+            else:
+                print(f"[NonpromptEstimator::executeEvent] Wrong systematics {syst}")
+                exit(1)
+            self.FillObjects(channel, objects, weight, syst)
+        
+        
     def defineObjects(self, rawMuons, rawElectrons, rawJets, syst="Central"):
         # first copy objects
         allMuons = rawMuons
         allElectrons = rawElectrons
         allJets = rawJets
         
-        # check the syst argument
-        if not syst in self.systematics:
-            print(f"[PromptEstimator::defineObjects] Wrong systematics {syst}")
-        if syst == "MuonEnUp":         allMuons = super().ScaleMuons(allMuons, +1)
-        if syst == "MuonEnDown":       allMuons = super().ScaleMuons(allMuons, -1)
-        if syst == "ElectronResUp":    allElectrons = super().SmearElectrons(allElectrons, +1)
-        if syst == "ElectronsResDown": allElectrons = super().SmearElectrons(allElectrons, -1)
-        if syst == "ElectronEnUp":     allElectrons = super().ScaleElectrons(allElectrons, +1)
-        if syst == "ElectronEnDown":   allElectrons = super().ScaleElectrons(allElectrons, -1)
-        if syst == "JetResUp":         allJets = super().SmearJets(allJets, +1)
-        if syst == "JetResDown":       allJets = super().SmearJets(allJets, -1)
-        if syst == "JetEnUp":          allJets = super().ScaleJets(allJets, +1)
-        if syst == "JetEnDown":        allJets = super().ScaleJets(allJets, -1)
-        
         vetoMuons = super().SelectMuons(allMuons, super().MuonIDs[2], 10., 2.4)
-        tightMuons = super().SelectMuons(vetoMuons, super().MuonIDs[0], 10., 2.4)
+        looseMuons = super().SelectMuons(vetoMuons, super().MuonIDs[1], 10., 2.4)
+        tightMuons = super().SelectMuons(looseMuons, super().MuonIDs[0], 10., 2.4)
         vetoElectrons = super().SelectElectrons(allElectrons, super().ElectronIDs[2], 10., 2.5)
-        tightElectrons = super().SelectElectrons(vetoElectrons, super().ElectronIDs[0], 10., 2.5)
+        looseElectrons = super().SelectElectrons(vetoElectrons, super().ElectronIDs[1], 10., 2.5)
+        tightElectrons = super().SelectElectrons(looseElectrons, super().ElectronIDs[0], 10., 2.5)
         jets = super().SelectJets(allJets, "tight", 20., 2.4)
         jets = super().JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4)
         bjets = std.vector[Jet]()
@@ -196,51 +128,31 @@ class PromptEstimator(TriLeptonBase):
             if btagScore > wp: bjets.emplace_back(jet)
             
         sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True)
+        sorted(looseMuons, key=lambda x: x.Pt(), reverse=True)
         sorted(tightMuons, key=lambda x: x.Pt(), reverse=True)
         sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True)
+        sorted(looseMuons, lambda x: x.Pt(), reverse=True)
         sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True)
         sorted(jets, key=lambda x: x.Pt(), reverse=True)
         sorted(bjets, key=lambda x: x.Pt(), reverse=True) 
         
-        return (vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets)
+        return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
+    
+    def selectEvent(self, event, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv):
+        is3Mu = (looseMuons.size() == 3 and len(vetoMuons) == 3 and \
+                len(looseElectrons) == 0 and len(vetoElectrons) == 0)
+        is1E2Mu = len(looseMuons) == 2 and len(vetoMuons) == 2 and \
+                  len(looseElectrons) == 1 and len(vetoElectrons) == 1
         
-    def selectEvent(self, event, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv):
-        is3Mu = (len(tightMuons) == 3 and len(vetoMuons) == 3 and \
-                len(tightElectrons) == 0 and len(vetoElectrons) == 0)
-        is1E2Mu = len(tightMuons) == 2 and len(vetoMuons) == 2 and \
-                  len(tightElectrons) == 1 and len(vetoElectrons) == 1
+        #### not all leptons tight
+        if len(tightMuons) == len(looseMuons): return None
+        if len(tightElectrons) == len(looseElectrons): return None
         
         if self.channel == "Skim1E2Mu":
             if not is1E2Mu: return None
         if self.channel == "Skim3Mu":
             if not is3Mu: return None
-
-        # prompt matching
-        if not super().IsDATA:
-            promptMuons = std.vector[Muon]()
-            promptElectrons = std.vector[Electron]()
-            for mu in tightMuons:
-                if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
-            for ele in tightElectrons:
-                if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
-
-            if promptMuons.size() != tightMuons.size(): return None
-            if promptElectrons.size() != tightElectrons.size(): return None
-
-        # for patching samples
-        if super().MCSample.Contains("DYJets"):
-            leptons = std.vector[Lepton]()
-            for mu in tightMuons: leptons.emplace_back(mu)
-            for ele in tightElectrons: leptons.emplace_back(ele)
-            if leptons.at(0).Pt() > 20. and leptons.at(1).Pt() > 20. and leptons.at(2).Pt() > 20.:
-                return None
-        if super().MCSample.Contains("ZGToLLG"):
-            leptons = std.vector[Lepton]()
-            for mu in tightMuons: leptons.emplace_back(mu)
-            for ele in tightElectrons: leptons.emplace_back(ele)
-            if leptons.at(0).Pt() < 20. or leptons.at(1).Pt() < 20. or leptons.at(2).Pt() < 20.:
-                return None
-
+            
         channel = ""
         ## 1E2Mu baseline
         ## 1. pass EMuTriggers
@@ -250,21 +162,21 @@ class PromptEstimator(TriLeptonBase):
         if self.channel == "Skim1E2Mu":
             if not event.PassTrigger(super().EMuTriggers): return None
             leptons = std.vector[Lepton]()
-            for mu in tightMuons: leptons.emplace_back(mu)
-            for ele in tightElectrons: leptons.emplace_back(ele)
+            for mu in looseMuons: leptons.emplace_back(mu)
+            for ele in looseElectrons: leptons.emplace_back(ele)
             mu1, mu2, ele = tuple(leptons)
             passLeadMu = mu1.Pt() > 25. and ele.Pt() > 15.
             passLeadEle = mu1.Pt() > 10. and ele.Pt() > 25.
             passSafeCut = passLeadMu or passLeadEle
             if not passSafeCut: return None
             if not mu1.Charge()+mu2.Charge() == 0: return None
-            pair = self.makePair(tightMuons)
+            pair = self.makePair(looseMuons)
             if not pair.M() > 12.: return None
             if not jets.size() >= 2: return None
 
             # orthogonality of SR and CR done by bjet multiplicity
-            if bjets.size() >= 1:
-                channel = "SR1E2Mu"
+            if len(bjets) >= 1:
+                channel == "SR1E2Mu"
             else:
                 mZ = 91.2
                 isOnZ = abs(pair.M() - mZ) < 10.
@@ -272,27 +184,27 @@ class PromptEstimator(TriLeptonBase):
                 else:
                     if abs((mu1+mu2+ele).M() - mZ) < 10.: channel = "ZGamma1E2Mu"
                     else: return None
-        
+
         ## 3Mu baseline
         ## 1. pass DblMuTriggers
         ## 2. Exact 3 tight muons, no additional leptons
         ## 3. Exist OS muon pair,
         ## 4. All OS muon pair mass > 12 GeV
         ## 5. At least two jets
-        elif self.channel == "Skim3Mu":
+        else:
             if not event.PassTrigger(super().DblMuTriggers): return None
-            mu1, mu2, mu3  = tuple(tightMuons)
+            mu1, mu2, mu3  = tuple(looseMuons)
             if not mu1.Pt() > 20.: return None
             if not mu2.Pt() > 10.: return None
             if not mu3.Pt() > 10.: return None
             if not abs(mu1.Charge()+mu2.Charge()+mu3.Charge()) == 1: return None
-            pair1, pair2 = self.makePair(tightMuons)
+            pair1, pair2 = self.makePair(looseMuons)
             if not pair1.M() > 12.: return None
             if not pair2.M() > 12.: return None
             if not jets.size() >= 2: return None
 
             # orthogonality of SR and CR done by bjet multiplicity
-            if bjets.size() >= 1:
+            if len(bjets) >= 1:
                 channel = "SR3Mu"
             else:
                 mZ = 91.2
@@ -302,7 +214,7 @@ class PromptEstimator(TriLeptonBase):
                     if abs((mu1+mu2+mu3).M() - mZ) < 10.: channel = "ZGamma3Mu"
                     else: return None
         return channel
-
+        
     def makePair(self, muons):
         if muons.size() == 2:
             return (muons[0] + muons[1])
@@ -334,57 +246,6 @@ class PromptEstimator(TriLeptonBase):
                 scores[f"{sig}_vs_{bkg}"] = self.getGraphScore(f"{sig}_vs_{bkg}", data)
         return data, scores
     
-    #### set weight
-    def getWeight(self, channel, event, muons, electrons, jets, syst="Central"):
-        weight = 1.
-        if not syst in self.systematics:
-            print(f"[PromptEstimator::getWeight] Wrong systematic {syst}")
-            exit(1)
-
-        if not super().IsDATA:
-            weight *= super().MCweight()
-            weight *= event.GetTriggerLumi("Full")
-            if syst == "L1PrefireUp":     w_prefire = super().GetPrefireWeight(1)
-            elif syst == "L1PrefireDown": w_prefire = super().GetPrefireWeight(-1)
-            else:                         w_prefire = super().GetPrefireWeight(0)
-            
-            if syst == "PileupReweightUp":     w_pileup = super().GetPileUpWeight(super().nPileUp, 1)
-            elif syst == "PileupReweightDown": w_pileup = super().GetPileUpWeight(super().nPileUp, -1)
-            else:                              w_pileup = super().GetPileUpWeight(super().nPileUp, 0)
-            
-            w_muonIDSF = 1.
-            w_dblMuTrigSF = 1.
-            for mu in muons:
-                if syst == "MuonIDSFUp":     w_muonIDSF *= super().getMuonIDSF(mu, 1)
-                elif syst == "MuonIDSFDown": w_muonIDSF *= super().getMuonIDSF(mu, -1)
-                else:                        w_muonIDSF *= super().getMuonIDSF(mu, 0)
-
-            if "3Mu" in channel:
-                if syst == "DblMuTrigSFUp":     w_dblMuTrigSF = self.getDblMuTriggerSF(muons, 1)
-                elif syst == "DblMuTrigSFDown": w_dblMuTrigSF = self.getDblMuTriggerSF(muons, -1)
-                else:                           w_dblMuTrigSF = self.getDblMuTriggerSF(muons, 0)
-            weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
-            weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
-            weight *= w_muonIDSF           # print(f"muonID: {w_muonIDSF}")
-            weight *= w_dblMuTrigSF        # print(f"muontrig: {w_dblMuTrigSF}")
-
-            # b-tagging
-            jtp = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
-            vjets = std.vector[Jet]()
-            for j in jets: vjets.emplace_back(j)
-            if syst == "HeavyTagUpUnCorr":     w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpHTag")
-            elif syst == "HeavyTagDownUnCorr": w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownHTag")
-            elif syst == "HeavyTagUpCorr":     w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpHTagCorr")
-            elif syst == "HeavyTagDownCorr":   w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownHTagCorr")
-            elif syst == "LightTagUpUnCorr":   w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpLTag")
-            elif syst == "LightTagDownUnCorr": w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownLTag")
-            elif syst == "LightTagUpCorr":     w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpLTagCorr")
-            elif syst == "LightTagDownCorr":   w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownLTagCorr")
-            else:                              w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp)
-            weight *= w_btag
-        
-        return weight
-
     def FillObjects(self, channel, objects, weight, syst):
         muons = objects["muons"]
         electrons = objects["electrons"]
@@ -596,8 +457,7 @@ class PromptEstimator(TriLeptonBase):
                              100, mA-5., mA+5.,
                              100, 0., 1.,
                              100, 0., 1.)
-
-
+    
     def getDenseInput(self, tightMuons, tightElectrons, jets, bjets, METv):
         inputs = []
         dRjets = []
