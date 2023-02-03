@@ -8,7 +8,11 @@ TriLeptonBase::~TriLeptonBase() {
     delete hMu8Leg2_Data;
     delete hMu8Leg2_MC;
     delete hMuonFR;
+    delete hMuonFRUp;
+    delete hMuonFRDown;
     delete hElectronFR;
+    delete hElectronFRUp;
+    delete hElectronFRDown;
 }
 
 void TriLeptonBase::initializeAnalyzer() {
@@ -107,11 +111,17 @@ void TriLeptonBase::initializeAnalyzer() {
     // muon fake rate
     TFile* fMuonFR = new TFile(muonIDpath+"/fakerate_TopHN.root");
     hMuonFR = (TH2D*)fMuonFR->Get("FR_cent_TopHNT_TopHNL");
+    hMuonFRUp = (TH2D*)fMuonFR->Get("FRErrUp_Tot_TopHNT_TopHNL");
+    hMuonFRDown = (TH2D*)fMuonFR->Get("FRErrDown_Tot_TopHNT_TopHNL");
     hMuonFR->SetDirectory(0);
+    hMuonFRUp->SetDirectory(0);
+    hMuonFRDown->SetDirectory(0);
     fMuonFR->Close();
 
     // electron fake rate
     hElectronFR = nullptr;
+    hElectronFRUp = nullptr;
+    hElectronFRDown = nullptr;
 
     // Jet tagger
     vector<JetTagging::Parameters> jtps;
@@ -180,9 +190,11 @@ double TriLeptonBase::getMuonFakeProb(const Muon &mu, int sys) {
     double ptCorr = mu.Pt()*(1.+max(0., mu.MiniRelIso()-0.1));
     int thisBin = hMuonFR->FindBin(ptCorr, fabs(mu.Eta()));
     double value = hMuonFR->GetBinContent(thisBin);
-    double error = hMuonFR->GetBinError(thisBin);
+    double error = 0.;
+    if (sys == 1) error = hMuonFRUp->GetBinContent(thisBin);
+    if (sys == -1) error = hMuonFRDown->GetBinContent(thisBin);
     
-    return value + sys*error;
+    return value + error;
 }
 
 double TriLeptonBase::getElectronFakeProb(const Electron &ele, int sys) {
@@ -191,9 +203,11 @@ double TriLeptonBase::getElectronFakeProb(const Electron &ele, int sys) {
     double ptCorr = ele.Pt()*(1.+max(0., ele.MiniRelIso()-0.1));
     int thisBin = hElectronFR->FindBin(ptCorr, fabs(ele.Eta()));
     double value = hElectronFR->GetBinContent(thisBin);
-    double error = hElectronFR->GetBinError(thisBin);
+    double error = 0.;
+    if (sys == 1) error = hElectronFRUp->GetBinError(thisBin);
+    if (sys == -1) error = hElectronFRDown->GetBinError(thisBin);
 
-    return value + sys*error;
+    return value + error;
 }
 
 double TriLeptonBase::getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons, int sys) {
