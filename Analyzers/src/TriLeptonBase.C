@@ -17,6 +17,8 @@ void TriLeptonBase::initializeAnalyzer() {
     Skim3Mu = HasFlag("Skim3Mu");
     DenseNet = HasFlag("DenseNet");
     GraphNet = HasFlag("GraphNet");
+    ScaleVar = HasFlag("ScaleVar");
+    WeightVar = HasFlag("WeightVar");
 
     // triggers & ID settings
     if (DataEra == "2016preVFP") {
@@ -172,30 +174,36 @@ double TriLeptonBase::getTriggerEff(Muon &mu, TString histkey, bool isDataEff, i
     return value + int(sys)*error;
 }
 
-double TriLeptonBase::getMuonFakeProb(const Muon &mu) {
+double TriLeptonBase::getMuonFakeProb(const Muon &mu, int sys) {
     if (mu.PassID(MuonIDs[0]))
         return 1.;
     double ptCorr = mu.Pt()*(1.+max(0., mu.MiniRelIso()-0.1));
     int thisBin = hMuonFR->FindBin(ptCorr, fabs(mu.Eta()));
-    return hMuonFR->GetBinContent(thisBin);
+    double value = hMuonFR->GetBinContent(thisBin);
+    double error = hMuonFR->GetBinError(thisBin);
+    
+    return value + sys*error;
 }
 
-double TriLeptonBase::getElectronFakeProb(const Electron &ele) {
+double TriLeptonBase::getElectronFakeProb(const Electron &ele, int sys) {
     if (ele.PassID(ElectronIDs[0]))
         return 1.;
     double ptCorr = ele.Pt()*(1.+max(0., ele.MiniRelIso()-0.1));
     int thisBin = hElectronFR->FindBin(ptCorr, fabs(ele.Eta()));
-    return hElectronFR->GetBinContent(thisBin);
+    double value = hElectronFR->GetBinContent(thisBin);
+    double error = hElectronFR->GetBinError(thisBin);
+
+    return value + sys*error;
 }
 
-double TriLeptonBase::getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons) {
+double TriLeptonBase::getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons, int sys) {
     double weight = -1.;
     for (const auto &mu: muons) {
-        double fr = getMuonFakeProb(mu);
+        double fr = getMuonFakeProb(mu, sys);
         weight *= -1.*(fr / (1.-fr));
     }
     for (const auto &ele: electrons) {
-        double fr = getElectronFakeProb(ele);
+        double fr = getElectronFakeProb(ele, sys);
         weight *= -1.*(fr / (1.-fr));
     }
     return weight;

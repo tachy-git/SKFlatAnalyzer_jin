@@ -7,6 +7,7 @@ class TriLeptonBase: public AnalyzerCore {
 public:
     bool Skim1E2Mu, Skim3Mu;    // channel flags 
     bool DenseNet, GraphNet;    // network flags 
+    bool ScaleVar, WeightVar;   // systematics falgs
     vector<TString> ElectronIDs, MuonIDs;
     vector<TString> DblMuTriggers, EMuTriggers;
 
@@ -21,9 +22,9 @@ public:
 
     double getMuonIDSF(Muon &mu, int sys);
     double getTriggerEff(Muon &mu, TString histkey, bool isDataEff, int sys);
-    double getMuonFakeProb(const Muon &mu);
-    double getElectronFakeProb(const Electron &ele);
-    double getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons);
+    double getMuonFakeProb(const Muon &mu, int sys);
+    double getElectronFakeProb(const Electron &ele, int sys);
+    double getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons, int sys);
 };
 
 #endif
