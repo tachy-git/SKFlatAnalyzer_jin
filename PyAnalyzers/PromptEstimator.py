@@ -228,13 +228,13 @@ class PromptEstimator(TriLeptonBase):
             if promptElectrons.size() != tightElectrons.size(): return None
 
         # for patching samples
-        if super().MCSample.Contains("DYJets"):
+        if "DYJets" in super().MCSample:
             leptons = std.vector[Lepton]()
             for mu in tightMuons: leptons.emplace_back(mu)
             for ele in tightElectrons: leptons.emplace_back(ele)
             if leptons.at(0).Pt() > 20. and leptons.at(1).Pt() > 20. and leptons.at(2).Pt() > 20.:
                 return None
-        if super().MCSample.Contains("ZGToLLG"):
+        if "ZGToLLG" in super().MCSample:
             leptons = std.vector[Lepton]()
             for mu in tightMuons: leptons.emplace_back(mu)
             for ele in tightElectrons: leptons.emplace_back(ele)
