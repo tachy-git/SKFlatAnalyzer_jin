@@ -139,14 +139,14 @@ class NonpromptEstimator(TriLeptonBase):
         return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
     
     def selectEvent(self, event, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv):
-        is3Mu = (looseMuons.size() == 3 and len(vetoMuons) == 3 and \
-                len(looseElectrons) == 0 and len(vetoElectrons) == 0)
-        is1E2Mu = len(looseMuons) == 2 and len(vetoMuons) == 2 and \
-                  len(looseElectrons) == 1 and len(vetoElectrons) == 1
+        is3Mu = (looseMuons.size() == 3 and vetoMuons.size() == 3 and \
+                 looseElectrons.size() == 0 and vetoElectrons.size() == 0)
+        is1E2Mu = (looseMuons.size() == 2 and vetoMuons.size() == 2 and \
+                   looseElectrons.size() == 1 and vetoElectrons.size() == 1)
         
         #### not all leptons tight
-        if len(tightMuons) == len(looseMuons): return None
-        if len(tightElectrons) == len(looseElectrons): return None
+        if tightMuons.size() == looseMuons.size(): return None
+        if tightElectrons.size() == looseElectrons.size(): return None
         
         if self.channel == "Skim1E2Mu":
             if not is1E2Mu: return None
@@ -175,7 +175,7 @@ class NonpromptEstimator(TriLeptonBase):
             if not jets.size() >= 2: return None
 
             # orthogonality of SR and CR done by bjet multiplicity
-            if len(bjets) >= 1:
+            if bjets.size() >= 1:
                 channel == "SR1E2Mu"
             else:
                 mZ = 91.2
@@ -204,7 +204,7 @@ class NonpromptEstimator(TriLeptonBase):
             if not jets.size() >= 2: return None
 
             # orthogonality of SR and CR done by bjet multiplicity
-            if len(bjets) >= 1:
+            if bjets.size() >= 1:
                 channel = "SR3Mu"
             else:
                 mZ = 91.2
