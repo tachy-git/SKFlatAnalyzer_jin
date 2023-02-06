@@ -80,7 +80,7 @@ class NonpromptEstimator(TriLeptonBase):
         
         vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
         channel = self.selectEvent(ev, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv)
-
+        
         if channel is None: return None
         
         pairs = self.makePair(looseMuons)
@@ -127,14 +127,15 @@ class NonpromptEstimator(TriLeptonBase):
             wp = super().mcCorr.GetJetTaggingCutValue(3, 1)     # DeepJet Medium
             if btagScore > wp: bjets.emplace_back(jet)
             
-        sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True)
-        sorted(looseMuons, key=lambda x: x.Pt(), reverse=True)
-        sorted(tightMuons, key=lambda x: x.Pt(), reverse=True)
-        sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True)
-        sorted(looseMuons, key=lambda x: x.Pt(), reverse=True)
-        sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True)
-        sorted(jets, key=lambda x: x.Pt(), reverse=True)
-        sorted(bjets, key=lambda x: x.Pt(), reverse=True) 
+        vetoMuons = std.vector[Muon](sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True))
+        looseMuons = std.vector[Muon](sorted(looseMuons, key=lambda x: x.Pt(), reverse=True))
+        tightMuons = std.vector[Muon](sorted(tightMuons, key=lambda x: x.Pt(), reverse=True))
+        vetoElectrons = std.vector[Electron](sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True))
+        looseElectrons = std.vector[Electron](sorted(looseElectrons, key=lambda x: x.Pt(), reverse=True))
+        tightElectrons = std.vector[Electron](sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True))
+        jets = std.vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
+        bjets = std.vector[Jet](sorted(bjets, key=lambda x: x.Pt(), reverse=True))
+
         
         return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
     
@@ -145,14 +146,15 @@ class NonpromptEstimator(TriLeptonBase):
                    looseElectrons.size() == 1 and vetoElectrons.size() == 1)
         
         #### not all leptons tight
-        if tightMuons.size() == looseMuons.size(): return None
-        if tightElectrons.size() == looseElectrons.size(): return None
-        
         if self.channel == "Skim1E2Mu":
             if not is1E2Mu: return None
+            if tightMuons.size() == looseMuons.size(): return None
+            if tightElectrons.size() == looseElectrons.size(): return None
+
         if self.channel == "Skim3Mu":
             if not is3Mu: return None
-            
+            if tightMuons.size() == looseMuons.size(): return None
+        
         channel = ""
         ## 1E2Mu baseline
         ## 1. pass EMuTriggers
@@ -202,7 +204,6 @@ class NonpromptEstimator(TriLeptonBase):
             if not pair1.M() > 12.: return None
             if not pair2.M() > 12.: return None
             if not jets.size() >= 2: return None
-
             # orthogonality of SR and CR done by bjet multiplicity
             if bjets.size() >= 1:
                 channel = "SR3Mu"
@@ -612,3 +613,22 @@ class NonpromptEstimator(TriLeptonBase):
         with torch.no_grad():
             out = self.models[modelKey](data.x, data.edge_index)
         return out.numpy()[0][1]
+
+if __name__ == "__main__":
+    m = NonpromptEstimator()
+    m.SetTreeName("recoTree/SKFlat")
+    m.IsDATA = True
+    m.DataStream = "DoubleMuon"
+    m.SetEra("2018")
+    m.Userflags = std.vector[TString]()
+    m.Userflags.emplace_back("Skim3Mu")
+    m.Userflags.emplace_back("DenseNet")
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2018/SKFlatNtuple_2018_DATA_4.root"): exit(1)
+    m.SetOutfilePath("hists.root")
+    m.MaxEvent = m.fChain.GetEntries()
+    m.Init()
+    m.initializePyAnalyzer()
+    m.initializeAnalyzerTools()
+    m.SwitchToTempDir()
+    m.Loop()
+    m.WriteHist()

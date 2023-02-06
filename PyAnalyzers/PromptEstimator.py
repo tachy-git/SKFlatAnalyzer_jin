@@ -195,12 +195,12 @@ class PromptEstimator(TriLeptonBase):
             wp = super().mcCorr.GetJetTaggingCutValue(3, 1)     # DeepJet Medium
             if btagScore > wp: bjets.emplace_back(jet)
             
-        sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True)
-        sorted(tightMuons, key=lambda x: x.Pt(), reverse=True)
-        sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True)
-        sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True)
-        sorted(jets, key=lambda x: x.Pt(), reverse=True)
-        sorted(bjets, key=lambda x: x.Pt(), reverse=True) 
+        vetoMuons = std.vector[Muon](sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True))
+        tightMuons = std.vector[Muon](sorted(tightMuons, key=lambda x: x.Pt(), reverse=True))
+        vetoElectrons = std.vector[Electron](sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True))
+        tightElectrons = std.vector[Electron](sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True))
+        jets = std.vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
+        bjets = std.vector[Jet](sorted(bjets, key=lambda x: x.Pt(), reverse=True))
         
         return (vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets)
         
