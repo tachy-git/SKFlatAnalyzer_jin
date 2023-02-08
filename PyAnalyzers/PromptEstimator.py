@@ -91,31 +91,6 @@ class PromptEstimator(TriLeptonBase):
             model.eval()
             self.models[f"{sig}_vs_{bkg}"] = model
 
-    def __getDblMuTriggerEff(self, muons, isData, sys):
-        assert len(muons) == 3
-        mu1, mu2, mu3 = tuple(muons)
-
-        # data
-        case1 = super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
-        case1 *= super().getTriggerEff(mu2, "Mu8Leg2", isData, sys)
-        case2 = 1.-super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
-        case2 *= super().getTriggerEff(mu2, "Mu17Leg1", isData, sys)
-        case2 *= super().getTriggerEff(mu3, "Mu8Leg2", isData, sys)
-        case3 = super().getTriggerEff(mu1, "Mu17Leg1", isData, sys)
-        case3 *= 1.-super().getTriggerEff(mu2, "Mu8Leg2", isData, sys)
-        case3 *= super().getTriggerEff(mu3, "Mu8Leg2", isData, sys)
-
-        eff = case1+case2+case3
-        return eff
-
-    def getDblMuTriggerSF(self, muons, sys):
-        effData = self.__getDblMuTriggerEff(muons, True, sys)
-        effMC = self.__getDblMuTriggerEff(muons, False, sys)
-        if effMC == 0 or effData == 0:
-            return 1.
-
-        return effData / effMC
-
     def executeEvent(self):
         if not super().PassMETFilter(): return None
         ev = super().GetEvent()

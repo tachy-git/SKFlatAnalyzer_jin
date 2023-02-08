@@ -130,7 +130,180 @@ void TriLeptonBase::initializeAnalyzer() {
 }
 
 void TriLeptonBase::executeEvent() {
-    double a;
+
+    if (! PassMETFilter()) return;
+    
+    // object definition
+    Event ev = GetEvent();
+    vector<Muon>     rawMuons = GetAllMuons();
+    vector<Electron> rawElectrons = GetAllElectrons();
+    vector<Jet>      rawJets = GetAllJets();
+    Particle         METv = ev.GetMETVector();
+    vector<Gen>      truth = GetGens();
+
+    vector<Muon> vetoMuons = SelectMuons(rawMuons, MuonIDs.at(2), 10., 2.4);
+    vector<Muon> tightMuons = SelectMuons(vetoMuons, MuonIDs.at(0), 10., 2.4);
+    vector<Electron> vetoElectrons = SelectElectrons(rawElectrons, ElectronIDs.at(2), 10., 2.5);
+    vector<Electron> tightElectrons = SelectElectrons(vetoElectrons, ElectronIDs.at(0), 10., 2.5);
+    vector<Jet> jets = SelectJets(rawJets, "tight", 20., 2.4);
+    jets = JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4);
+    vector<Jet> bjets;
+    for (const auto &j: jets) {
+        const double btagScore = j.GetTaggerResult(JetTagging::DeepJet);
+        const double wp = mcCorr->GetJetTaggingCutValue(JetTagging::DeepJet, JetTagging::Medium);
+        if (btagScore > wp) bjets.emplace_back(j);
+    }
+    
+    std::sort(vetoMuons.begin(), vetoMuons.end(), PtComparing);
+    std::sort(tightMuons.begin(), tightMuons.end(), PtComparing);
+    std::sort(vetoElectrons.begin(), vetoElectrons.end(), PtComparing);
+    std::sort(tightElectrons.begin(), tightElectrons.end(), PtComparing);
+    std::sort(jets.begin(), jets.end(), PtComparing);
+    std::sort(bjets.begin(), bjets.end(), PtComparing);
+
+    // baseline event selection
+    const bool is3Mu = (tightMuons.size() == 3 && vetoMuons.size() == 3 && tightElectrons.size() == 0 && vetoElectrons.size() == 0);
+    const bool is1E2Mu = (tightMuons.size() == 2 && vetoMuons.size() == 2 && tightElectrons.size() == 1 && vetoElectrons.size() == 1);
+
+    if (Skim1E2Mu && (! is1E2Mu)) return;
+    if (Skim3Mu && (! is3Mu)) return;
+
+    // prompt matching
+    vector<Muon> promptMuons;
+    vector<Electron> promptElectrons;
+    for (const auto &mu: tightMuons) 
+        if (GetLeptonType(mu, truth) > 0) promptMuons.emplace_back(mu);
+    for (const auto &ele: tightElectrons)
+        if (GetLeptonType(ele, truth) > 0)  promptElectrons.emplace_back(ele);
+
+    if (! (promptMuons.size() == tightMuons.size())) return;
+    if (! (promptElectrons.size() == tightElectrons.size())) return;
+
+    TString channel = "";
+    // 1E2Mu Baseline
+    // 1. pass EMuTriggers
+    // 2. Exact 2 tight muons and 1 tight electrons, no additional leptons
+    // 3. Exists OS muon pair wiht mass > 12 GeV
+    // 4. At least two jets, one bjet
+    if (Skim1E2Mu) {
+        if (! ev.PassTrigger(EMuTriggers)) return;
+        const bool passLeadMu = tightMuons.at(0).Pt() > 25. && tightElectrons.at(0).Pt() > 15.;
+        const bool passLeadEle = tightMuons.at(0).Pt() > 10. && tightElectrons.at(0).Pt() > 25.;
+        if (! (passLeadMu || passLeadEle)) return;
+        if (! (tightMuons.at(0).Charge() + tightMuons.at(1).Charge() == 0)) return;
+        Particle pair = tightMuons.at(0) + tightMuons.at(1);
+        if (! (pair.M() > 12.)) return;
+        if (! (jets.size() >= 2)) return;
+        if (! (bjets.size() >= 1)) return;
+        channel = "SR1E2Mu";
+    }
+    // 3Mu baseline
+    // 1. pass DblMuTriggers
+    // 2. Exact 3 tight muons, no additional leptons
+    // 3. Exist OS muon pair,
+    // 4. All OS muon pair mass > 12 GeV
+    // 5. At least two jets and one bjet
+    else if (Skim3Mu) {
+        if (! ev.PassTrigger(DblMuTriggers)) return;
+        const Muon &mu1 = tightMuons.at(0);
+        const Muon &mu2 = tightMuons.at(1);
+        const Muon &mu3 = tightMuons.at(2);
+        if (! (mu1.Pt() > 20.)) return;
+        if (! (fabs(mu1.Charge()+mu2.Charge()+mu3.Charge()) == 1)) return;
+        
+        Particle pair1, pair2;
+        if (mu1.Charge() == mu2.Charge()) {
+            pair1 = mu1 + mu3;
+            pair2 = mu2 + mu3;
+        }
+        else if (mu1.Charge() == mu3.Charge()) {
+            pair1 = mu1 + mu2;
+            pair2 = mu2 + mu3;
+        }
+        else {  // mu2.Charge() == mu3.Charge()
+            pair1 = mu1 + mu2;
+            pair2 = mu1 + mu3;
+        }
+        if (! (pair1.M() > 12.)) return;
+        if (! (pair2.M() > 12.)) return;
+        if (! (jets.size() >= 2)) return;
+        if (! (bjets.size() >= 1)) return;
+        channel = "SR3Mu";
+    }
+    else {
+        cerr << "[TriLeptonBase::ExecuteEvent] Please set flag for the channel" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+
+    // Now signal region distributions
+    double weight = 1.;
+    weight *= MCweight();
+    weight *= ev.GetTriggerLumi("Full");
+    weight *= GetPrefireWeight(0);
+    weight *= GetPileUpWeight(nPileUp, 0);
+
+    // Fill objects
+    for (unsigned int i = 0; i < tightMuons.size(); i++) {
+        TString histkey = channel+"/muons/"+TString::Itoa(i+1, 10);
+        Muon &mu = tightMuons.at(i);
+        FillHist(histkey+"/pt", mu.Pt(), weight, 300, 0., 300.);
+        FillHist(histkey+"/eta", mu.Eta(), weight, 48, -2.4, 2.4);
+        FillHist(histkey+"/phi", mu.Phi(), weight, 64, -3.2, 3.2);
+    }
+    for (unsigned int i = 0; i < tightElectrons.size(); i++) {
+        TString histkey = channel+"/electrons/"+TString::Itoa(i+1, 10);
+        Electron &ele = tightElectrons.at(i);
+        FillHist(histkey+"/pt", ele.Pt(), weight, 300, 0., 300.);
+        FillHist(histkey+"/eta", ele.Eta(), weight, 48, -2.4, 2.4);
+        FillHist(histkey+"/phi", ele.Phi(), weight, 64, -3.2, 3.2);
+    }
+    for (unsigned int i = 0; i < jets.size(); i++) {
+        TString histkey = channel+"/jets/"+TString::Itoa(i+1, 10);
+        Jet &jet = jets.at(i);
+        FillHist(histkey+"/pt", jet.Pt(), weight, 300, 0., 300.);
+        FillHist(histkey+"/eta", jet.Eta(), weight, 48, -2.4, 2.4);
+        FillHist(histkey+"/phi", jet.Phi(), weight, 64, -3.2, 3.2);
+    }
+    for (unsigned int i = 0; i < bjets.size(); i++) {
+        TString histkey = channel+"/bjets/"+TString::Itoa(i+1, 10);
+        Jet &bjet = bjets.at(i);
+        FillHist(histkey+"/pt", bjet.Pt(), weight, 300, 0., 300.);
+        FillHist(histkey+"/eta", bjet.Eta(), weight, 48, -2.4, 2.4);
+        FillHist(histkey+"/phi", bjet.Phi(), weight, 64, -3.2, 3.2);
+    }
+    FillHist(channel+"/jets/size", jets.size(), weight, 30, 0., 30.);
+    FillHist(channel+"/bjets/size", bjets.size(), weight, 20, 0., 20.);
+    FillHist(channel+"/MissingPT", METv.Pt(), weight, 300, 0., 300.);
+    FillHist(channel+"/MissingPhi", METv.Phi(), weight, 64, -3.2, 3.2);
+
+
+    // Now signal study
+    // First find two signal muons from A
+    vector<Muon> signalMuons, nonSignalMuons;
+
+    for (const auto &mu: tightMuons) {
+        if (GetLeptonType(mu, truth) == 2) signalMuons.emplace_back(mu);
+        else                               nonSignalMuons.emplace_back(mu);
+    }
+
+    if (! (signalMuons.size() == 2 && nonSignalMuons.size() == 1)) return;
+    Muon promptMu = nonSignalMuons.at(0);
+    Muon signalMu;
+    if (promptMu.Charge() == signalMuons.at(0).Charge())
+        signalMu = signalMuons.at(0);
+    else
+        signalMu = signalMuons.at(1);
+    
+    FillHist(channel+"/signalMu/pt", signalMu.Pt(), weight, 300, 0., 300.);
+    FillHist(channel+"/signalMu/eta", signalMu.Eta(), weight, 48, -2.4, 2.4);
+    FillHist(channel+"/signalMu/phi", signalMu.Phi(), weight, 64, -3.2, 3.2);
+    FillHist(channel+"/signalMu/MT", (signalMu+METv).Mt(), weight, 300, 0., 300.);
+    FillHist(channel+"/promptMu/pt", promptMu.Pt(), weight, 300, 0., 300.);
+    FillHist(channel+"/promptMu/eta", promptMu.Eta(), weight, 48, -2.4, 2.4);
+    FillHist(channel+"/promptMu/phi", promptMu.Phi(), weight, 64, -3.2, 3.2); 
+    FillHist(channel+"/promptMu/MT", (promptMu+METv).Mt(), weight, 300, 0., 300.);
+
 }
 
 double TriLeptonBase::getMuonIDSF(Muon &mu, int sys) {
@@ -182,6 +355,38 @@ double TriLeptonBase::getTriggerEff(Muon &mu, TString histkey, bool isDataEff, i
     double error = h->GetBinError(thisBin);
 
     return value + int(sys)*error;
+}
+
+double TriLeptonBase::getDblMuTriggerEff(vector<Muon> &muons, bool isDATA, int sys) {
+    // check no. of muons
+    if (! (muons.size() == 3)) {
+        cerr << "[TriLeptonBase::getDblMuTriggerEff] Wrong no. of muons " << muons.size() << endl;
+        exit(EXIT_FAILURE);
+    }
+    
+    Muon &mu1 = muons.at(0);
+    Muon &mu2 = muons.at(1);
+    Muon &mu3 = muons.at(2);
+
+
+    double case1 = getTriggerEff(mu1, "Mu17Leg1", isDATA, sys);
+           case1 *= getTriggerEff(mu2, "Mu8Leg2", isDATA, sys);
+    double case2 = 1. - getTriggerEff(mu1, "Mu17Leg1", isDATA, sys);
+           case2 *= getTriggerEff(mu2, "Mu17Leg1", isDATA, sys);
+           case2 *= getTriggerEff(mu3, "Mu8Leg2", isDATA, sys);
+    double case3 = getTriggerEff(mu1, "Mu17Leg1", isDATA, sys);
+           case3 *= 1. - getTriggerEff(mu2, "Mu8Leg2", isDATA, sys);
+           case3 *= getTriggerEff(mu3, "Mu8Leg2", isDATA, sys);
+    return case1 + case2 + case3;
+}
+
+double TriLeptonBase::getDblMuTriggerSF(vector<Muon> &muons, int sys) {
+   double effData = getDblMuTriggerEff(muons, true, sys); 
+   double effMC   = getDblMuTriggerEff(muons, false, sys);
+   if (effMC == 0 || effData == 0)
+       return 1.;
+
+   return effData / effMC;
 }
 
 double TriLeptonBase::getMuonFakeProb(const Muon &mu, int sys) {

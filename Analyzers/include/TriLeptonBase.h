@@ -23,6 +23,8 @@ public:
 
     double getMuonIDSF(Muon &mu, int sys);
     double getTriggerEff(Muon &mu, TString histkey, bool isDataEff, int sys);
+    double getDblMuTriggerEff(vector<Muon> &muons, bool isDATA, int sys);
+    double getDblMuTriggerSF(vector<Muon> &muons, int sys);
     double getMuonFakeProb(const Muon &mu, int sys);
     double getElectronFakeProb(const Electron &ele, int sys);
     double getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons, int sys);
