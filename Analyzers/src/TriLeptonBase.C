@@ -185,10 +185,13 @@ double TriLeptonBase::getTriggerEff(Muon &mu, TString histkey, bool isDataEff, i
 }
 
 double TriLeptonBase::getMuonFakeProb(const Muon &mu, int sys) {
-    if (mu.PassID(MuonIDs[0]))
-        return 1.;
     double ptCorr = mu.Pt()*(1.+max(0., mu.MiniRelIso()-0.1));
-    int thisBin = hMuonFR->FindBin(ptCorr, fabs(mu.Eta()));
+    double absEta = fabs(mu.Eta());
+    if (ptCorr < 10.) ptCorr = 10.;
+    if (ptCorr > 50.) ptCorr = 49.9;
+    if (absEta > 2.4) absEta = 2.399;
+
+    int thisBin = hMuonFR->FindBin(ptCorr, absEta);
     double value = hMuonFR->GetBinContent(thisBin);
     double error = 0.;
     if (sys == 1) error = hMuonFRUp->GetBinContent(thisBin);
@@ -198,8 +201,6 @@ double TriLeptonBase::getMuonFakeProb(const Muon &mu, int sys) {
 }
 
 double TriLeptonBase::getElectronFakeProb(const Electron &ele, int sys) {
-    if (ele.PassID(ElectronIDs[0]))
-        return 1.;
     double ptCorr = ele.Pt()*(1.+max(0., ele.MiniRelIso()-0.1));
     int thisBin = hElectronFR->FindBin(ptCorr, fabs(ele.Eta()));
     double value = hElectronFR->GetBinContent(thisBin);
@@ -213,10 +214,12 @@ double TriLeptonBase::getElectronFakeProb(const Electron &ele, int sys) {
 double TriLeptonBase::getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons, int sys) {
     double weight = -1.;
     for (const auto &mu: muons) {
+        if (mu.PassID(MuonIDs.at(0))) continue;
         double fr = getMuonFakeProb(mu, sys);
         weight *= -1.*(fr / (1.-fr));
     }
     for (const auto &ele: electrons) {
+        if (ele.PassID(ElectronIDs.at(0))) continue;
         double fr = getElectronFakeProb(ele, sys);
         weight *= -1.*(fr / (1.-fr));
     }
