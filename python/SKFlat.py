@@ -438,7 +438,7 @@ for inputSample in inputSampleList:
                     out.write(f"    m.IsFastSim = false;\n")
             out.write(f'    m.SetEra("{args.Era}");\n')
             if Userflags:
-                for flag in Userflags: out.write(f'    m.Userflags.emplace_back("{flag}")\n')
+                for flag in Userflags: out.write(f'    m.Userflags.emplace_back("{flag}");\n')
             for it_file in fileRanges[it_job]:
                 thisFileName = totalFiles[it_file].strip("\n")
                 out.write(f'    if(!m.AddFile("{thisFileName}")) exit(EIO);\n')

@@ -280,29 +280,40 @@ void TriLeptonBase::executeEvent() {
 
     // Now signal study
     // First find two signal muons from A
-    vector<Muon> signalMuons, nonSignalMuons;
+    if (Skim3Mu) {
+        vector<Muon> signalMuons, nonSignalMuons;
 
-    for (const auto &mu: tightMuons) {
-        if (GetLeptonType(mu, truth) == 2) signalMuons.emplace_back(mu);
-        else                               nonSignalMuons.emplace_back(mu);
-    }
+        for (const auto &mu: tightMuons) {
+            if (GetLeptonType(mu, truth) == 2) signalMuons.emplace_back(mu);
+            else                               nonSignalMuons.emplace_back(mu);
+        }
 
-    if (! (signalMuons.size() == 2 && nonSignalMuons.size() == 1)) return;
-    Muon promptMu = nonSignalMuons.at(0);
-    Muon signalMu;
-    if (promptMu.Charge() == signalMuons.at(0).Charge())
-        signalMu = signalMuons.at(0);
-    else
-        signalMu = signalMuons.at(1);
+        if (! (signalMuons.size() == 2 && nonSignalMuons.size() == 1)) return;
+        Muon promptMu = nonSignalMuons.at(0);
+        Muon signalMuSS, signalMuOS;
+        if (promptMu.Charge() == signalMuons.at(0).Charge()) {
+            signalMuSS = signalMuons.at(0);
+            signalMuOS = signalMuons.at(1);
+        }
+        else {
+            signalMuSS = signalMuons.at(1);
+            signalMuOS = signalMuons.at(0);
+        }
     
-    FillHist(channel+"/signalMu/pt", signalMu.Pt(), weight, 300, 0., 300.);
-    FillHist(channel+"/signalMu/eta", signalMu.Eta(), weight, 48, -2.4, 2.4);
-    FillHist(channel+"/signalMu/phi", signalMu.Phi(), weight, 64, -3.2, 3.2);
-    FillHist(channel+"/signalMu/MT", (signalMu+METv).Mt(), weight, 300, 0., 300.);
-    FillHist(channel+"/promptMu/pt", promptMu.Pt(), weight, 300, 0., 300.);
-    FillHist(channel+"/promptMu/eta", promptMu.Eta(), weight, 48, -2.4, 2.4);
-    FillHist(channel+"/promptMu/phi", promptMu.Phi(), weight, 64, -3.2, 3.2); 
-    FillHist(channel+"/promptMu/MT", (promptMu+METv).Mt(), weight, 300, 0., 300.);
+        FillHist(channel+"/signalMuSS/pt", signalMuSS.Pt(), weight, 300, 0., 300.);
+        FillHist(channel+"/signalMuSS/eta", signalMuSS.Eta(), weight, 48, -2.4, 2.4);
+        FillHist(channel+"/signalMuSS/phi", signalMuSS.Phi(), weight, 64, -3.2, 3.2);
+        FillHist(channel+"/signalMuSS/MT", (signalMuSS+METv).Mt(), weight, 300, 0., 300.);
+        FillHist(channel+"/signalMuOS/pt", signalMuOS.Pt(), weight, 300, 0., 300.);
+        FillHist(channel+"/signalMuOS/eta", signalMuOS.Eta(), weight, 48, -2.4, 2.4);
+        FillHist(channel+"/signalMuOS/phi", signalMuOS.Phi(), weight, 64, -3.2, 3.2);
+        FillHist(channel+"/promptMu/pt", promptMu.Pt(), weight, 300, 0., 300.);
+        FillHist(channel+"/promptMu/eta", promptMu.Eta(), weight, 48, -2.4, 2.4);
+        FillHist(channel+"/promptMu/phi", promptMu.Phi(), weight, 64, -3.2, 3.2); 
+        FillHist(channel+"/promptMu/MT", (promptMu+METv).Mt(), weight, 300, 0., 300.);
+        FillHist(channel+"/deltaR/promptPair", signalMuOS.DeltaR(promptMu), weight, 100, 0., 5.);
+        FillHist(channel+"/deltaR/signalPair", signalMuOS.DeltaR(signalMuSS), weight, 100, 0., 5.);
+    }
 
 }
 
