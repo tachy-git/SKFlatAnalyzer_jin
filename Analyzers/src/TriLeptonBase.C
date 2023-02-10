@@ -299,22 +299,140 @@ void TriLeptonBase::executeEvent() {
             signalMuSS = signalMuons.at(1);
             signalMuOS = signalMuons.at(0);
         }
-    
+        double signalMT = (signalMuSS+METv).Mt();
+        double promptMT = (promptMu+METv).Mt();
         FillHist(channel+"/signalMuSS/pt", signalMuSS.Pt(), weight, 300, 0., 300.);
         FillHist(channel+"/signalMuSS/eta", signalMuSS.Eta(), weight, 48, -2.4, 2.4);
         FillHist(channel+"/signalMuSS/phi", signalMuSS.Phi(), weight, 64, -3.2, 3.2);
-        FillHist(channel+"/signalMuSS/MT", (signalMuSS+METv).Mt(), weight, 300, 0., 300.);
+        FillHist(channel+"/signalMuSS/MT", signalMT, weight, 300, 0., 300.);
+        FillHist(channel+"/signalMuSS/PtBalance", fabs(signalMuSS.Pt() - signalMuOS.Pt()), weight, 200, 0., 200.);
         FillHist(channel+"/signalMuOS/pt", signalMuOS.Pt(), weight, 300, 0., 300.);
         FillHist(channel+"/signalMuOS/eta", signalMuOS.Eta(), weight, 48, -2.4, 2.4);
         FillHist(channel+"/signalMuOS/phi", signalMuOS.Phi(), weight, 64, -3.2, 3.2);
         FillHist(channel+"/promptMu/pt", promptMu.Pt(), weight, 300, 0., 300.);
         FillHist(channel+"/promptMu/eta", promptMu.Eta(), weight, 48, -2.4, 2.4);
         FillHist(channel+"/promptMu/phi", promptMu.Phi(), weight, 64, -3.2, 3.2); 
-        FillHist(channel+"/promptMu/MT", (promptMu+METv).Mt(), weight, 300, 0., 300.);
-        FillHist(channel+"/deltaR/promptPair", signalMuOS.DeltaR(promptMu), weight, 100, 0., 5.);
-        FillHist(channel+"/deltaR/signalPair", signalMuOS.DeltaR(signalMuSS), weight, 100, 0., 5.);
-    }
+        FillHist(channel+"/promptMu/MT", promptMT, weight, 300, 0., 300.);
+        FillHist(channel+"/promptMu/PtBalance", fabs(promptMu.Pt() - signalMuSS.Pt()), weight, 200, 0., 200.);
+        FillHist(channel+"/dR/promptPair", signalMuOS.DeltaR(promptMu), weight, 100, 0., 5.);
+        FillHist(channel+"/dR/signalPair", signalMuOS.DeltaR(signalMuSS), weight, 100, 0., 5.);
+        FillHist(channel+"/dPhi/promptPair", signalMuOS.DeltaPhi(promptMu), weight, 100, 0., 10.);
+        FillHist(channel+"/dPhi/signalPair", signalMuOS.DeltaPhi(signalMuSS), weight, 100, 0., 10.);
+        
+        // devide regions
+        Muon signalMuCand, promptMuCand;
+        bool isCorrectAssignment;
+        const bool isSignaldRLarge = signalMuOS.DeltaR(signalMuSS) > 2.;
+        const bool isPromptdRLarge = signalMuOS.DeltaR(promptMu) > 2.;
+        const bool isPTComparable = fabs(promptMu.Pt() - signalMuSS.Pt()) < 15.;
+        const bool isSignalMTComparable = (50. < signalMT && signalMT < 120.);
+        const bool isPromptMTComparable = (50. < promptMT && promptMT < 120.);
+        const bool isOnlyOnedRLarge = (isSignaldRLarge + isPromptdRLarge) % 2; // XOR condition
+        const bool isOnlyOneMTComparable = (isSignalMTComparable + isPromptMTComparable) % 2; // XOR condition
+        
+        channel = "SR3MuLowAMass";
+        if (isOnlyOnedRLarge) {
+            signalMuCand = isPromptdRLarge ? signalMuSS: promptMu;
+            promptMuCand = isSignaldRLarge ? signalMuSS: promptMu;
+            isCorrectAssignment = isPromptdRLarge;
+        }
+        else if (isPTComparable && isOnlyOneMTComparable) {
+            // assign muon with comparable MT as W
+            signalMuCand = isSignalMTComparable ? promptMu: signalMuSS;
+            promptMuCand = isSignalMTComparable ? signalMuSS: promptMu;
+            isCorrectAssignment = isPromptMTComparable;
+        }
+        else {
+             // assign with pt comparing
+            signalMuCand = (promptMu.Pt() < signalMuSS.Pt()) ? promptMu: signalMuSS;
+            promptMuCand = (promptMu.Pt() > signalMuSS.Pt()) ? promptMu: signalMuSS;
+            isCorrectAssignment = signalMuSS.Pt() < promptMu.Pt();
+        }
 
+        // Fill objects
+        for (unsigned int i = 0; i < tightMuons.size(); i++) {
+            TString histkey = channel+"/muons/"+TString::Itoa(i+1, 10);
+            Muon &mu = tightMuons.at(i);
+            FillHist(histkey+"/pt", mu.Pt(), weight, 300, 0., 300.);
+            FillHist(histkey+"/eta", mu.Eta(), weight, 48, -2.4, 2.4);
+            FillHist(histkey+"/phi", mu.Phi(), weight, 64, -3.2, 3.2);
+        }
+        for (unsigned int i = 0; i < tightElectrons.size(); i++) {
+            TString histkey = channel+"/electrons/"+TString::Itoa(i+1, 10);
+            Electron &ele = tightElectrons.at(i);
+            FillHist(histkey+"/pt", ele.Pt(), weight, 300, 0., 300.);
+            FillHist(histkey+"/eta", ele.Eta(), weight, 48, -2.4, 2.4);
+            FillHist(histkey+"/phi", ele.Phi(), weight, 64, -3.2, 3.2);
+        }
+        for (unsigned int i = 0; i < jets.size(); i++) {
+            TString histkey = channel+"/jets/"+TString::Itoa(i+1, 10);
+            Jet &jet = jets.at(i);
+            FillHist(histkey+"/pt", jet.Pt(), weight, 300, 0., 300.);
+            FillHist(histkey+"/eta", jet.Eta(), weight, 48, -2.4, 2.4);
+            FillHist(histkey+"/phi", jet.Phi(), weight, 64, -3.2, 3.2);
+        }
+        for (unsigned int i = 0; i < bjets.size(); i++) {
+            TString histkey = channel+"/bjets/"+TString::Itoa(i+1, 10);
+            Jet &bjet = bjets.at(i);
+            FillHist(histkey+"/pt", bjet.Pt(), weight, 300, 0., 300.);
+            FillHist(histkey+"/eta", bjet.Eta(), weight, 48, -2.4, 2.4);
+            FillHist(histkey+"/phi", bjet.Phi(), weight, 64, -3.2, 3.2);
+        }
+        FillHist(channel+"/jets/size", jets.size(), weight, 30, 0., 30.);
+        FillHist(channel+"/bjets/size", bjets.size(), weight, 20, 0., 20.);
+        FillHist(channel+"/MissingPT", METv.Pt(), weight, 300, 0., 300.);
+        FillHist(channel+"/MissingPhi", METv.Phi(), weight, 64, -3.2, 3.2);
+        FillHist(channel+"/correctness", isCorrectAssignment, weight, 2, 0., 2.);
+            
+        channel = "SR3MuHighAMass";
+        if (isPTComparable && isOnlyOneMTComparable) {
+            // assign muon with comparable MT as W
+            signalMuCand = isSignalMTComparable ? promptMu: signalMuSS;
+            promptMuCand = isSignalMTComparable ? signalMuSS: promptMu;
+            isCorrectAssignment = isPromptMTComparable;
+        }
+        else {
+            // assign with pt comparing
+            signalMuCand = (promptMu.Pt() > signalMuSS.Pt()) ? promptMu: signalMuSS;
+            promptMuCand = (promptMu.Pt() < signalMuSS.Pt()) ? promptMu: signalMuSS;
+            isCorrectAssignment = signalMuSS.Pt() > promptMu.Pt();
+        }
+
+        // Fill objects
+        for (unsigned int i = 0; i < tightMuons.size(); i++) {
+            TString histkey = channel+"/muons/"+TString::Itoa(i+1, 10);
+            Muon &mu = tightMuons.at(i);
+            FillHist(histkey+"/pt", mu.Pt(), weight, 300, 0., 300.);
+            FillHist(histkey+"/eta", mu.Eta(), weight, 48, -2.4, 2.4);
+            FillHist(histkey+"/phi", mu.Phi(), weight, 64, -3.2, 3.2);
+        }
+        for (unsigned int i = 0; i < tightElectrons.size(); i++) {
+            TString histkey = channel+"/electrons/"+TString::Itoa(i+1, 10);
+            Electron &ele = tightElectrons.at(i);
+            FillHist(histkey+"/pt", ele.Pt(), weight, 300, 0., 300.);
+            FillHist(histkey+"/eta", ele.Eta(), weight, 48, -2.4, 2.4);
+            FillHist(histkey+"/phi", ele.Phi(), weight, 64, -3.2, 3.2);
+        }
+        for (unsigned int i = 0; i < jets.size(); i++) {
+            TString histkey = channel+"/jets/"+TString::Itoa(i+1, 10);
+            Jet &jet = jets.at(i);
+            FillHist(histkey+"/pt", jet.Pt(), weight, 300, 0., 300.);
+            FillHist(histkey+"/eta", jet.Eta(), weight, 48, -2.4, 2.4);
+            FillHist(histkey+"/phi", jet.Phi(), weight, 64, -3.2, 3.2);
+        }
+        for (unsigned int i = 0; i < bjets.size(); i++) {
+            TString histkey = channel+"/bjets/"+TString::Itoa(i+1, 10);
+            Jet &bjet = bjets.at(i);
+            FillHist(histkey+"/pt", bjet.Pt(), weight, 300, 0., 300.);
+            FillHist(histkey+"/eta", bjet.Eta(), weight, 48, -2.4, 2.4);
+            FillHist(histkey+"/phi", bjet.Phi(), weight, 64, -3.2, 3.2);
+        }
+        FillHist(channel+"/jets/size", jets.size(), weight, 30, 0., 30.);
+        FillHist(channel+"/bjets/size", bjets.size(), weight, 20, 0., 20.);
+        FillHist(channel+"/MissingPT", METv.Pt(), weight, 300, 0., 300.);
+        FillHist(channel+"/MissingPhi", METv.Phi(), weight, 64, -3.2, 3.2);
+        FillHist(channel+"/correctness", isCorrectAssignment, weight, 2, 0., 2.);
+    }
 }
 
 double TriLeptonBase::getMuonIDSF(Muon &mu, int sys) {
