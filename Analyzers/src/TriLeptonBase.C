@@ -85,6 +85,11 @@ void TriLeptonBase::initializeAnalyzer() {
         exit(EXIT_FAILURE);
     }
 
+    MASSPOINTs = {"MHc-70_MA-15", "MHc-70_MA-40", "MHc-70_MA-65",
+                  "MHc-100_MA-15", "MHc-100_MA-60", "MHc-100_MA-95",
+                  "MHc-130_MA-15", "MHc-130_MA-55", "MHc-130_MA-90", "MHc-130_MA-125",
+                  "MHc-160_MA-15", "MHc-160_MA-85", "MHc-160_MA-120", "MHc-160_MA-155"};
+
     TString datapath = getenv("DATA_DIR");
     // muonID
     TString muonIDpath = datapath + "/" + GetEra() + "/ID/Muon";
@@ -277,12 +282,10 @@ void TriLeptonBase::executeEvent() {
     FillHist(channel+"/MissingPT", METv.Pt(), weight, 300, 0., 300.);
     FillHist(channel+"/MissingPhi", METv.Phi(), weight, 64, -3.2, 3.2);
 
-
     // Now signal study
     // First find two signal muons from A
     if (Skim3Mu) {
         vector<Muon> signalMuons, nonSignalMuons;
-
         for (const auto &mu: tightMuons) {
             if (GetLeptonType(mu, truth) == 2) signalMuons.emplace_back(mu);
             else                               nonSignalMuons.emplace_back(mu);
@@ -299,6 +302,11 @@ void TriLeptonBase::executeEvent() {
             signalMuSS = signalMuons.at(1);
             signalMuOS = signalMuons.at(0);
         }
+        Particle sigPair = signalMuOS + signalMuSS;
+        Particle bkgPair = signalMuOS + promptMu;
+        Muon signalMuCand, promptMuCand;
+        bool isCorrectAssignment = false;
+
         double signalMT = (signalMuSS+METv).Mt();
         double promptMT = (promptMu+METv).Mt();
         FillHist(channel+"/signalMuSS/pt", signalMuSS.Pt(), weight, 300, 0., 300.);
@@ -319,9 +327,31 @@ void TriLeptonBase::executeEvent() {
         FillHist(channel+"/dPhi/promptPair", signalMuOS.DeltaPhi(promptMu), weight, 100, 0., 10.);
         FillHist(channel+"/dPhi/signalPair", signalMuOS.DeltaPhi(signalMuSS), weight, 100, 0., 10.);
         
+        // A mass dependence study
+        TObjArray* tokens = MCSample.Tokenize("_");
+        auto MAString = ((TObjString*) tokens->At(2))->GetString();
+        tokens = MAString.Tokenize("-");
+        MAString = ((TObjString*) tokens->At(1))->GetString();
+        auto MA = MAString.Atoi();
+            
+        isCorrectAssignment = fabs(sigPair.M() - MA) < fabs(bkgPair.M() - MA);
+        signalMuCand = isCorrectAssignment ? signalMuSS : promptMu;
+        promptMuCand = isCorrectAssignment ? promptMu : signalMuSS;
+        Particle sigPairCand = signalMuCand + signalMuOS;
+        Particle bkgPairCand = promptMuCand + signalMuOS;
+            
+        FillHist(channel+"/signalPairCand/pt", sigPairCand.Pt(), weight, 300, 0., 300.);
+        FillHist(channel+"/signalPairCand/eta", sigPairCand.Eta(), weight, 100, -5., 5.);
+        FillHist(channel+"/signalPairCand/phi", sigPairCand.Phi(), weight, 64, -3.2, 3.2);
+        FillHist(channel+"/signalPairCand/mass", sigPairCand.M(), weight, 2000, 0., 200.);
+        FillHist(channel+"/promptPairCand/pt", bkgPairCand.Pt(), weight, 300, 0., 300.);
+        FillHist(channel+"/promptPairCand/eta", bkgPairCand.Eta(), weight, 100, -5., 5.);
+        FillHist(channel+"/promptPairCand/phi", bkgPairCand.Phi(), weight, 64, -3.2, 3.2);
+        FillHist(channel+"/promptPairCand/mass", bkgPairCand.M(), weight, 2000, 0., 200.);
+        FillHist(channel+"/correctness", isCorrectAssignment, weight, 2, 0., 2.);
+
+
         // devide regions
-        Muon signalMuCand, promptMuCand;
-        bool isCorrectAssignment;
         const bool isSignaldRLarge = signalMuOS.DeltaR(signalMuSS) > 2.;
         const bool isPromptdRLarge = signalMuOS.DeltaR(promptMu) > 2.;
         const bool isPTComparable = fabs(promptMu.Pt() - signalMuSS.Pt()) < 15.;

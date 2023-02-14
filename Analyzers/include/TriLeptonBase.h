@@ -10,6 +10,7 @@ public:
     bool ScaleVar, WeightVar;   // systematics falgs
     vector<TString> ElectronIDs, MuonIDs;
     vector<TString> DblMuTriggers, EMuTriggers;
+    vector<TString> MASSPOINTs;
 
     TH2D *hMuonIDSF;
     TH2D *hMu17Leg1_Data, *hMu17Leg1_MC;
