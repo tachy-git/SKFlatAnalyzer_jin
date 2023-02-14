@@ -75,7 +75,7 @@ class PromptEstimator(TriLeptonBase):
                               sep=",\s", 
                               engine="python", 
                               header=None).transpose()
-            modelArch = csv[0][4]
+            modelArch, dropout_p, readout = csv[0][3:6]
             modelPath = f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/models/{sig}_vs_{bkg}.pt"
             if self.network == "DenseNeuralNet":
                 if self.channel == "Skim1E2Mu": 
@@ -85,8 +85,8 @@ class PromptEstimator(TriLeptonBase):
                     if modelArch == "SNN": model = SNN(47, 2)
                     else:                  model = SNNLite(47, 2)
             else:               # GraphNeuralNet
-                if modelArch == "ParticleNet": model = ParticleNet(9, 2)
-                else:                          model = ParticleNetLite(9, 2)
+                if modelArch == "ParticleNet": model = ParticleNet(9, 2, dropout_p, readout)
+                else:                          model = ParticleNetLite(9, 2, dropout_p, readout)
             model.load_state_dict(torch.load(modelPath, map_location=torch.device("cpu")))
             model.eval()
             self.models[f"{sig}_vs_{bkg}"] = model
@@ -728,3 +728,4 @@ class PromptEstimator(TriLeptonBase):
         with torch.no_grad():
             out = self.models[modelKey](data.x, data.edge_index)
         return out.numpy()[0][1]
+
