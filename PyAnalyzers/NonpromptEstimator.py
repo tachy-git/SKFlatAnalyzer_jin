@@ -604,8 +604,8 @@ class NonpromptEstimator(TriLeptonBase):
         nodeList = []
         for particle in particles:
             nodeList.append([particle.E(), particle.Px(), particle.Py(), particle.Pz(),
-                             particle.Charge(), particle.IsMuon(), particle.IsElectron(),
-                             particle.IsJet(), particle.BtagScore()])
+                             particle.Charge(), particle.BtagScore(), 
+                             particle.IsMuon(), particle.IsElectron(), particle.IsJet()])
         data = evtToGraph(nodeList, y=None, k=4)
         return data
 
@@ -613,4 +613,3 @@ class NonpromptEstimator(TriLeptonBase):
         with torch.no_grad():
             out = self.models[modelKey](data.x, data.edge_index)
         return out.numpy()[0][1]
-
