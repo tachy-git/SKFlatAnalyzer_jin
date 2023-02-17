@@ -465,9 +465,12 @@ void TriLeptonBase::executeEvent() {
     }
 }
 
-double TriLeptonBase::getMuonIDSF(Muon &mu, int sys) {
-    double pt = max(mu.Pt(), 10.);
-    double eta = min(fabs(mu.Eta()), 2.4);
+double TriLeptonBase::getMuonIDSF(const Muon &mu, int sys) {
+    double pt = mu.Pt();
+    double eta = fabs(mu.Eta());
+    if (pt < 10.) pt = 10;
+    if (pt > 200) pt = 199.;
+    if (eta > 2.4) eta = 2.39;
     int thisBin = hMuonIDSF->FindBin(eta, pt);
     double value = hMuonIDSF->GetBinContent(thisBin);
     double error = hMuonIDSF->GetBinError(thisBin);
@@ -475,7 +478,7 @@ double TriLeptonBase::getMuonIDSF(Muon &mu, int sys) {
     return value + int(sys)*error;
 }
 
-double TriLeptonBase::getTriggerEff(Muon &mu, TString histkey, bool isDataEff, int sys) {
+double TriLeptonBase::getTriggerEff(const Muon &mu, TString histkey, bool isDataEff, int sys) {
     TH2D *h = nullptr;
     double pt = mu.Pt();
     double eta = fabs(mu.Eta());

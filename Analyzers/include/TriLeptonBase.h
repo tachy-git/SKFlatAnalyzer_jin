@@ -22,8 +22,8 @@ public:
     void initializeAnalyzer();
     void executeEvent();
 
-    double getMuonIDSF(Muon &mu, int sys);
-    double getTriggerEff(Muon &mu, TString histkey, bool isDataEff, int sys);
+    double getMuonIDSF(const Muon &mu, int sys);
+    double getTriggerEff(const Muon &mu, TString histkey, bool isDataEff, int sys);
     double getDblMuTriggerEff(vector<Muon> &muons, bool isDATA, int sys);
     double getDblMuTriggerSF(vector<Muon> &muons, int sys);
     double getMuonFakeProb(const Muon &mu, int sys);
