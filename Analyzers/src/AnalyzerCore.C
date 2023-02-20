@@ -102,7 +102,8 @@ Event AnalyzerCore::GetEvent(){
 
   Event ev;
   ev.SetTrigger(*HLT_TriggerName);
-  ev.SetMET(pfMET_Type1_pt,pfMET_Type1_phi);
+  //ev.SetMET(pfMET_Type1_pt,pfMET_Type1_phi);
+  ev.SetMET(PuppiMET_Type1_PhiCor_pt, PuppiMET_Type1_PhiCor_phi);
   ev.SetnPV(nPV);
   ev.SetEra(GetEra());
 
