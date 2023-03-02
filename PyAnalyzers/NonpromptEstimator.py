@@ -136,7 +136,6 @@ class NonpromptEstimator(TriLeptonBase):
         tightElectrons = std.vector[Electron](sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True))
         jets = std.vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
         bjets = std.vector[Jet](sorted(bjets, key=lambda x: x.Pt(), reverse=True))
-
         
         return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
     
