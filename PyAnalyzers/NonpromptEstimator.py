@@ -456,7 +456,7 @@ class NonpromptEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/{syst}/{signal}/score_TTX", score_TTX, weight, 100, 0., 1.)
             super().FillHist(f"{channel}/{syst}/{signal}/3D", ACand.M(), 
                              score_TTFake, score_TTX, weight,
-                             100, mA-5., mA+5.,
+                             60, mA-3., mA+3.,
                              100, 0., 1.,
                              100, 0., 1.)
     

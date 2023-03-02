@@ -253,33 +253,12 @@ class MeasConvMatrix(TriLeptonBase):
             else:
                 ZCand = muons.at(0) + muons.at(1) + muons.at(2)
                 nZCand = NodeParticle()
-            super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
-            super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
-            super().FillHist(f"{channel}/{syst}/nZCand/pt", nZCand.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/nZCand/eta", nZCand.Eta(), weight, 100, -5., 5.)
-            super().FillHist(f"{channel}/{syst}/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/nZCand/mass", nZCand.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/{self.measure}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{self.measure}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/{self.measure}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{self.measure}/{syst}/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/{self.measure}/{syst}/nZCand/pt", nZCand.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{self.measure}/{syst}/nZCand/eta", nZCand.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/{self.measure}/{syst}/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{self.measure}/{syst}/nZCand/mass", nZCand.M(), weight, 200, 0., 200.)
 
-
-if __name__ == "__main__":
-    m = MeasConvMatrix()
-    m.SetTreeName("recoTree/SKFlat")
-    m.IsDATA = True
-    m.DataStream = "DoubleMuon"
-    m.SetEra("2018")
-    m.Userflags = std.vector[TString]()
-    m.Userflags.emplace_back("Skim3Mu")
-    m.Userflags.emplace_back("MeasConvLowPT")
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2018/SKFlatNtuple_2018_DATA_4.root"): exit(1)
-    m.SetOutfilePath("hists.root")
-    m.MaxEvent = m.fChain.GetEntries()
-    m.Init()
-    m.initializePyAnalyzer()
-    m.initializeAnalyzerTools()
-    m.SwitchToTempDir()
-    m.Loop()
-    m.WriteHist()
-         
-    

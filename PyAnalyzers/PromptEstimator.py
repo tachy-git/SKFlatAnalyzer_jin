@@ -46,10 +46,10 @@ class PromptEstimator(TriLeptonBase):
                                       #"ElectronIDSFUp", "ElectronIDSFDown",
                                       "DblMuTrigSFUp", "DblMuTrigSFDown",
                                       #"EMuTrigSFUp", "EMuTrigSFDown",
-                                      #"HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
-                                      #"HeavyTagUpCorr", "HeavyTagDownCorr",
-                                      #"LightTagUpUnCorr", "LightTagDownUnCorr",
-                                      #"LightTagUpCorr", "LightTagDownCorr"
+                                      "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
+                                      "HeavyTagUpCorr", "HeavyTagDownCorr",
+                                      "LightTagUpUnCorr", "LightTagDownUnCorr",
+                                      "LightTagUpCorr", "LightTagDownCorr"
                                       ]
         if super().ScaleVar:
             self.scaleVariations += ["JetResUp", "JetResDown", 
@@ -570,7 +570,7 @@ class PromptEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/{syst}/{signal}/score_TTX", score_TTX, weight, 100, 0., 1.)
             super().FillHist(f"{channel}/{syst}/{signal}/3D", ACand.M(), 
                              score_TTFake, score_TTX, weight,
-                             100, mA-5., mA+5.,
+                             60, mA-3., mA+3.,
                              100, 0., 1.,
                              100, 0., 1.)
 
