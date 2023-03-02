@@ -46,10 +46,10 @@ class PromptEstimator(TriLeptonBase):
                                       #"ElectronIDSFUp", "ElectronIDSFDown",
                                       "DblMuTrigSFUp", "DblMuTrigSFDown",
                                       #"EMuTrigSFUp", "EMuTrigSFDown",
-                                      #"HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
-                                      #"HeavyTagUpCorr", "HeavyTagDownCorr",
-                                      #"LightTagUpUnCorr", "LightTagDownUnCorr",
-                                      #"LightTagUpCorr", "LightTagDownCorr"
+                                      "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
+                                      "HeavyTagUpCorr", "HeavyTagDownCorr",
+                                      "LightTagUpUnCorr", "LightTagDownUnCorr",
+                                      "LightTagUpCorr", "LightTagDownCorr"
                                       ]
         if super().ScaleVar:
             self.scaleVariations += ["JetResUp", "JetResDown", 
