@@ -422,7 +422,7 @@ class PromptEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/{syst}/nZCand/pt", nZCand.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/nZCand/eta", nZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/nZCand/mass", nZCand.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/{syst}/nZCand/mass", nZCand.M(), weight, 300, 0., 300.)
          
         # Fill inputs for the network
         if self.network == "DenseNeuralNet":
@@ -570,7 +570,7 @@ class PromptEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/{syst}/{signal}/score_TTX", score_TTX, weight, 100, 0., 1.)
             super().FillHist(f"{channel}/{syst}/{signal}/3D", ACand.M(), 
                              score_TTFake, score_TTX, weight,
-                             100, mA-5., mA+5.,
+                             60, mA-3., mA+3.,
                              100, 0., 1.,
                              100, 0., 1.)
 
@@ -729,3 +729,27 @@ class PromptEstimator(TriLeptonBase):
         with torch.no_grad():
             out = self.models[modelKey](data.x, data.edge_index)
         return out.numpy()[0][1]
+
+if __name__ == "__main__":
+    m = PromptEstimator()
+    m.SetTreeName("recoTree/SKFlat")
+    m.IsDATA = False
+    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
+    m.xsec = 0.015
+    m.sumSign = 599702.0
+    m.sumW = 3270.46
+    m.IsFastSim = False
+    m.SetEra("2017")
+    m.Userflags = std.vector[TString]()
+    m.Userflags.emplace_back("Skim3Mu")
+    m.Userflags.emplace_back("GraphNet")
+    m.Userflags.emplace_back("WeightVar")
+    m.Userflags.emplace_back("ScaleVar")
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_10.root"): exit(1)
+    m.SetOutfilePath("hists.root")
+    m.Init()
+    m.initializePyAnalyzer()
+    m.initializeAnalyzerTools()
+    m.SwitchToTempDir()
+    m.Loop()
+    m.WriteHist()
