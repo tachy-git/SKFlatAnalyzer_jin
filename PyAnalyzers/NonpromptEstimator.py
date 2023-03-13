@@ -453,11 +453,6 @@ class NonpromptEstimator(TriLeptonBase):
             score_TTX    = scores[f"{signal}_vs_ttX"]
             super().FillHist(f"{channel}/{syst}/{signal}/score_TTFake", score_TTFake, weight, 100, 0., 1.)
             super().FillHist(f"{channel}/{syst}/{signal}/score_TTX", score_TTX, weight, 100, 0., 1.)
-            super().FillHist(f"{channel}/{syst}/{signal}/3D", ACand.M(), 
-                             score_TTFake, score_TTX, weight,
-                             60, mA-3., mA+3.,
-                             100, 0., 1.,
-                             100, 0., 1.)
     
     def getDenseInput(self, tightMuons, tightElectrons, jets, bjets, METv):
         inputs = []
@@ -613,3 +608,23 @@ class NonpromptEstimator(TriLeptonBase):
         with torch.no_grad():
             out = self.models[modelKey](data.x, data.edge_index)
         return out.numpy()[0][1]
+
+if __name__ == "__main__":
+    m = NonpromptEstimator()
+    m.SetTreeName("recoTree/SKFlat")
+    m.IsDATA = True
+    m.DataStream = "DoubleMuon"
+    m.SetEra("2018")
+    m.Userflags = std.vector[TString]()
+    m.Userflags.emplace_back("Skim3Mu")
+    m.Userflags.emplace_back("DenseNet")
+    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2018/SKFlatNtuple_2018_DATA_4.root"): exit(1)
+    m.SetOutfilePath("hists.root")
+    m.MaxEvent = m.fChain.GetEntries()
+    m.Init()
+    m.initializePyAnalyzer()
+    m.initializeAnalyzerTools()
+    m.SwitchToTempDir()
+    m.Loop()
+    m.WriteHist()
+
