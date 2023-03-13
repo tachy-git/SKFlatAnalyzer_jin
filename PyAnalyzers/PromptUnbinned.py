@@ -18,7 +18,7 @@ from MLTools.helpers import evtToGraph
 from MLTools.formats import NodeParticle
 
 
-class SkimPromptTree(TriLeptonBase):
+class PromptUnbinned(TriLeptonBase):
     def __init__(self):
         super().__init__()
         # at this point, TriLeptonBase::initializeAnalyzer has not been activate
@@ -129,13 +129,13 @@ class SkimPromptTree(TriLeptonBase):
         self.models = {}
 
         for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-            csv = pd.read_csv(f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/summary/summary_{sig}_vs_{bkg}.txt", 
+            csv = pd.read_csv(f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/results/summary_{sig}_vs_{bkg}.txt", 
                               sep=",\s", 
                               engine="python", 
                               header=None).transpose()
             modelPath = f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/models/{sig}_vs_{bkg}.pt"
             if self.network == "DenseNeuralNet":
-                modelArch = csv[0][4]
+                modelArch = csv[0][3]
                 if self.channel == "Skim1E2Mu":
                     if modelArch == "SNN": model = SNN(41, 2)
                     else:                  model = SNNLite(41, 2)
@@ -267,7 +267,7 @@ class SkimPromptTree(TriLeptonBase):
         
         # check the syst argument
         if not syst in self.scaleVariations:
-            print(f"[SkimPromptTree::defineObjects] Wrong scale {syst}")
+            print(f"[PromptUnbinned::defineObjects] Wrong scale {syst}")
             exit(1)
         if syst == "MuonEnUp":         allMuons = super().ScaleMuons(allMuons, +1)
         if syst == "MuonEnDown":       allMuons = super().ScaleMuons(allMuons, -1)

@@ -18,7 +18,7 @@ from MLTools.helpers import evtToGraph
 from MLTools.formats import NodeParticle
 
 
-class SkimNonpromptTree(TriLeptonBase):
+class MatrixUnbinned(TriLeptonBase):
     def __init__(self):
         super().__init__()
         # at this point, TriLeptonBase::initializeAnalyzer has not been activate

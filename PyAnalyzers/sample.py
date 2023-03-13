@@ -1,5 +1,5 @@
 if __name__ == "__main__":
-    m = NonpromptEstimator()
+    m = MatrixEstimator()
     m.SetTreeName("recoTree/SKFlat")
     m.IsDATA = True
     m.DataStream = "DoubleMuon"
