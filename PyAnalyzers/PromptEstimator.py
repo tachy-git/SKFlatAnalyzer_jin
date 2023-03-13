@@ -71,13 +71,13 @@ class PromptEstimator(TriLeptonBase):
         self.models = {}
 
         for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-            csv = pd.read_csv(f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/summary/summary_{sig}_vs_{bkg}.txt", 
+            csv = pd.read_csv(f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/results/summary_{sig}_vs_{bkg}.txt", 
                               sep=",\s", 
                               engine="python", 
                               header=None).transpose()
             modelPath = f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/models/{sig}_vs_{bkg}.pt"
             if self.network == "DenseNeuralNet":
-                modelArch = csv[0][4]
+                modelArch = csv[0][3]
                 if self.channel == "Skim1E2Mu":
                     if modelArch == "SNN": model = SNN(41, 2)
                     else:                  model = SNNLite(41, 2)
@@ -568,11 +568,6 @@ class PromptEstimator(TriLeptonBase):
             score_TTX    = scores[f"{signal}_vs_ttX"]
             super().FillHist(f"{channel}/{syst}/{signal}/score_TTFake", score_TTFake, weight, 100, 0., 1.)
             super().FillHist(f"{channel}/{syst}/{signal}/score_TTX", score_TTX, weight, 100, 0., 1.)
-            super().FillHist(f"{channel}/{syst}/{signal}/3D", ACand.M(), 
-                             score_TTFake, score_TTX, weight,
-                             60, mA-3., mA+3.,
-                             100, 0., 1.,
-                             100, 0., 1.)
 
 
     def getDenseInput(self, tightMuons, tightElectrons, jets, bjets, METv):
@@ -742,7 +737,7 @@ if __name__ == "__main__":
     m.SetEra("2017")
     m.Userflags = std.vector[TString]()
     m.Userflags.emplace_back("Skim3Mu")
-    m.Userflags.emplace_back("GraphNet")
+    m.Userflags.emplace_back("DenseNet")
     m.Userflags.emplace_back("WeightVar")
     m.Userflags.emplace_back("ScaleVar")
     if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_10.root"): exit(1)
