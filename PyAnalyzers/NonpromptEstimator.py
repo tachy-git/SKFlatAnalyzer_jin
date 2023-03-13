@@ -453,11 +453,6 @@ class NonpromptEstimator(TriLeptonBase):
             score_TTX    = scores[f"{signal}_vs_ttX"]
             super().FillHist(f"{channel}/{syst}/{signal}/score_TTFake", score_TTFake, weight, 100, 0., 1.)
             super().FillHist(f"{channel}/{syst}/{signal}/score_TTX", score_TTX, weight, 100, 0., 1.)
-            super().FillHist(f"{channel}/{syst}/{signal}/3D", ACand.M(), 
-                             score_TTFake, score_TTX, weight,
-                             60, mA-3., mA+3.,
-                             100, 0., 1.,
-                             100, 0., 1.)
     
     def getDenseInput(self, tightMuons, tightElectrons, jets, bjets, METv):
         inputs = []
