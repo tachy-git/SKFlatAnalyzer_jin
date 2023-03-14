@@ -93,13 +93,13 @@ class MatrixUnbinned(TriLeptonBase):
         self.models = {}
 
         for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-            csv = pd.read_csv(f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/summary/summary_{sig}_vs_{bkg}.txt", 
+            csv = pd.read_csv(f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/results/summary_{sig}_vs_{bkg}.txt", 
                               sep=",\s", 
                               engine="python", 
                               header=None).transpose()
             modelPath = f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/models/{sig}_vs_{bkg}.pt"
             if self.network == "DenseNeuralNet":
-                modelArch = csv[0][4]
+                modelArch = csv[0][3]
                 if self.channel == "Skim1E2Mu":
                     if modelArch == "SNN": model = SNN(41, 2)
                     else:                  model = SNNLite(41, 2)

@@ -6,7 +6,7 @@ SYS=$4
 MEMORY=$5
 
 SKFlat.py -a PromptEstimator -i DoubleMuon --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
-SKFlat.py -a NonpromptEstimator -i DoubleMuon --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
+SKFlat.py -a MatrixEstimator -i DoubleMuon --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
 SKFlat.py -a PromptEstimator -i TTLL_powheg --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python & 
 SKFlat.py -a PromptEstimator -i DYJets --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python &
 SKFlat.py -a PromptEstimator -i DYJets10to50_MG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python & 

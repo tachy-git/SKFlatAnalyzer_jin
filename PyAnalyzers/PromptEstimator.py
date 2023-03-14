@@ -193,6 +193,7 @@ class PromptEstimator(TriLeptonBase):
             if not is3Mu: return None
 
         # prompt matching
+        # not for data / nonprompt / conversion
         if not super().IsDATA:
             promptMuons = std.vector[Muon]()
             promptElectrons = std.vector[Electron]()

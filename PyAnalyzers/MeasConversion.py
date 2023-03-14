@@ -41,10 +41,10 @@ class MeasConversion(TriLeptonBase):
                                       #"ElectronIDSFUp", "ElectronIDSFDown",
                                       "DblMuTrigSFUp", "DblMuTrigSFDown",
                                       #"EMuTrigSFUp", "EMuTrigSFDown",
-                                      #"HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
-                                      #"HeavyTagUpCorr", "HeavyTagDownCorr",
-                                      #"LightTagUpUnCorr", "LightTagDownUnCorr",
-                                      #"LightTagUpCorr", "LightTagDownCorr"
+                                      "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
+                                      "HeavyTagUpCorr", "HeavyTagDownCorr",
+                                      "LightTagUpUnCorr", "LightTagDownUnCorr",
+                                      "LightTagUpCorr", "LightTagDownCorr"
                                       ]
         if super().ScaleVar:
             self.scaleVariations += ["JetResUp", "JetResDown", 
@@ -149,6 +149,7 @@ class MeasConversion(TriLeptonBase):
             if not is3Mu: return None
 
         # prompt matching
+        # no matching for data / nonprompt
         if not super().IsDATA:
             promptMuons = std.vector[Muon]()
             promptElectrons = std.vector[Electron]()
