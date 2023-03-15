@@ -209,7 +209,7 @@ class PromptUnbinned(TriLeptonBase):
         self.tree.Branch("w_pileup_down", self.w_pileup_down, "w_pileup_down/F") 
         for syst in self.scaleVariations:    
             self.tree.Branch(f"{syst}_mass1", self.dict_mass1[syst], f"{syst}_mass1/F")
-            self.tree.Branch(f"{syst}_mass2", self.dict_mass1[syst], f"{syst}_mass1/F")
+            self.tree.Branch(f"{syst}_mass2", self.dict_mass2[syst], f"{syst}_mass2/F")
             for SIG, BKG in product(self.signalStrings, self.backgroundStrings): 
                 self.tree.Branch(f"{syst}_score_{SIG}_vs_{BKG}",
                                  self.dict_score[f"{syst}/score_{SIG}_vs_{BKG}"],

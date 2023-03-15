@@ -127,7 +127,7 @@ class MatrixUnbinned(TriLeptonBase):
             self.dict_score[f"score_{SIG}_vs_{BKG}"] = array("f", [0.])
         
         self.tree.Branch("Central_mass1", self.mass1, "mass1/F")
-        self.tree.Branch("Central_mass2", self.mass2, "mass1/F")
+        self.tree.Branch("Central_mass2", self.mass2, "mass2/F")
         for SIG, BKG in product(self.signalStrings, self.backgroundStrings): 
             self.tree.Branch(f"Central_score_{SIG}_vs_{BKG}",
                              self.dict_score[f"score_{SIG}_vs_{BKG}"],
