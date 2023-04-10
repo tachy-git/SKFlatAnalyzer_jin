@@ -338,7 +338,7 @@ for inputSample in inputSampleList:
     submitCommands.write(f"universe                = vanilla\n")
     submitCommands.write(f"executable              = {commandsFileName}.sh\n")
     submitCommands.write(f"jobbatchname            = {commandsFileName}\n")
-    submitCommands.write(f'+singularityimage       = "/data6/Users/choij/Singularity/SKFlat"\n')
+    submitCommands.write(f'+singularityimage       = "/data6/Users/choij/Singularity/torch200"\n')
     submitCommands.write(f'+singularitybind        = "/cvmfs, /cms, /share"\n')
     submitCommands.write(f"requirements            = HasSingularity\n")
     submitCommands.write(f"arguments               = $(Process)\n")
