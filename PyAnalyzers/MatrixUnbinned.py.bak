@@ -1,7 +1,7 @@
 from ROOT import gSystem
 from ROOT import TriLeptonBase
-from ROOT import TTree, TString
-from ROOT.std import vector
+from ROOT import std, TString
+from ROOT import TTree
 from ROOT.JetTagging import Parameters as jParameters
 from ROOT import Lepton, Muon, Electron, Jet
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
@@ -21,12 +21,15 @@ from MLTools.formats import NodeParticle
 class MatrixUnbinned(TriLeptonBase):
     def __init__(self):
         super().__init__()
-
+        # at this point, TriLeptonBase::initializeAnalyzer has not been activate
+                
     def initializePyAnalyzer(self):
         super().initializeAnalyzer()
-
-        if super().Skim1E2Mu: self.channel = "Skim1E2Mu"
-        elif super().Skim3Mu: self.channel = "Skim3Mu"
+        
+        if super().Skim1E2Mu: 
+            self.channel = "Skim1E2Mu"
+        elif super().Skim3Mu: 
+            self.channel = "Skim3Mu"
         else:
             print("Wrong channel")
             exit(1)
@@ -36,19 +39,21 @@ class MatrixUnbinned(TriLeptonBase):
         else:
             print("Wrong network")
             exit(1)
-
-        self.systematics = ["Central", "NonpromptUp", "NonpromptDown"]
-
-        self.signalStrings = ["MHc-70_MA-65",
-                              "MHc-160_MA-85",
-                              "MHc-130_MA-90",
-                              "MHc-100_MA-95",
-                              "MHc-160_MA-120"]
+        
+        self.systematics = ["Central",
+                            "NonpromptUp",
+                            "NonpromptDown"]
+        
+        self.signalStrings = [
+                "MHc-70_MA-15", "MHc-70_MA-40", "MHc-70_MA-65",
+                "MHc-100_MA-15", "MHc-100_MA-60", "MHc-100_MA-95",
+                "MHc-130_MA-15", "MHc-130_MA-55", "MHc-130_MA-90", "MHc-130_MA-125",
+                "MHc-160_MA-15", "MHc-160_MA-85", "MHc-160_MA-120", "MHc-160_MA-155"]
         self.backgroundStrings = ["TTLL_powheg", "ttX"]
-
+        
         self.__loadModels()
         self.__prepareTTree()
-
+        
     def executeEvent(self):
         if not super().PassMETFilter(): return None
         ev = super().GetEvent()
@@ -56,10 +61,10 @@ class MatrixUnbinned(TriLeptonBase):
         rawElectrons = super().GetAllElectrons()
         rawJets = super().GetAllJets()
         METv = ev.GetMETVector()
-
+        
         # initialize contents
         self.__initTreeContents()
-
+        
         # fill contents
         vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
         channel = self.selectEvent(ev, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv)
@@ -68,35 +73,29 @@ class MatrixUnbinned(TriLeptonBase):
 
         pairs = self.makePair(looseMuons)
         data, scores = self.evalScore(looseMuons, looseElectrons, jets, bjets, METv)
-
-        if channel == "SR1E2Mu":
-            for syst in self.systematics:
-                self.mass1[syst][0] = pairs[0].M()
-                self.mass2[syst][0] = 0.
+            
+        if channel == "SR1E2Mu": 
+            self.mass1[0] = pairs.M()
+            self.mass2[0] = 0
         else:
-            for syst in self.systematics:
-                self.mass1[syst][0] = pairs[0].M()
-                self.mass2[syst][0] = pairs[1].M()
-
-        for SIG in self.signalStrings:
-            for syst in self.systematics:
-                self.scoreX[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_TTLL_powheg"]
-                self.scoreY[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_ttX"]
-
-        self.weight["Central"][0] = super().getFakeWeight(looseMuons, looseElectrons, 0)
-        self.weight["NonpromptUp"][0] = super().getFakeWeight(looseMuons, looseElectrons, 1)
-        self.weight["NonpromptDown"][0] = super().getFakeWeight(looseMuons, looseElectrons, -1)
+            self.mass1[0] = pairs[0].M()
+            self.mass2[0] = pairs[1].M()
         
-        for syst in self.systematics:
-            self.tree[syst].Fill()
+        for SIG, BKG in product(self.signalStrings, self.backgroundStrings):
+            self.dict_score[f"score_{SIG}_vs_{BKG}"][0] = scores[f"{SIG}_vs_{BKG}"]
+        
+        self.w_nonprompt[0] = super().getFakeWeight(looseMuons, looseElectrons, 0)
+        self.w_nonprompt_up[0] = super().getFakeWeight(looseMuons, looseElectrons, 1)
+        self.w_nonprompt_down[0] = super().getFakeWeight(looseMuons, looseElectrons, -1)
+        self.tree.Fill()
 
     def __loadModels(self):
         self.models = {}
 
         for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-            csv = pd.read_csv(f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/results/summary_{sig}_vs_{bkg}.txt",
-                              sep=",\s",
-                              engine="python",
+            csv = pd.read_csv(f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/results/summary_{sig}_vs_{bkg}.txt", 
+                              sep=",\s", 
+                              engine="python", 
                               header=None).transpose()
             modelPath = f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/models/{sig}_vs_{bkg}.pt"
             if self.network == "DenseNeuralNet":
@@ -114,38 +113,37 @@ class MatrixUnbinned(TriLeptonBase):
             model.load_state_dict(torch.load(modelPath, map_location=torch.device("cpu")))
             model.eval()
             self.models[f"{sig}_vs_{bkg}"] = model
-
+            
     def __prepareTTree(self):
-        self.tree = {}
-        self.mass1 = {}
-        self.mass2 = {}
-        self.scoreX = {}
-        self.scoreY = {}
-        self.weight = {}
-
-        for syst in self.systematics:
-            thisTree = TTree(f"Events_{syst}", "")
-            self.mass1[syst] = array("d", [0.]); thisTree.Branch("mass1", self.mass1[syst], "mass1/D")
-            self.mass2[syst] = array("d", [0.]); thisTree.Branch("mass2", self.mass2[syst], "mass2/D")
-            for SIG in self.signalStrings:
-                # vs tt+Fake
-                self.scoreX[f"{SIG}_{syst}"] = array("d", [0.])
-                thisTree.Branch(f"score_{SIG}_vs_ttFake", self.scoreX[f"{SIG}_{syst}"], f"score_{SIG}_vs_ttFake/D")
-                # vs tt+X
-                self.scoreY[f"{SIG}_{syst}"] = array("d", [0.])
-                thisTree.Branch(f"score_{SIG}_vs_ttX", self.scoreY[f"{SIG}_{syst}"], f"score_{SIG}_vs_ttX/D")
-            self.weight[syst] = array("d", [0.]); thisTree.Branch("weight", self.weight[syst], "weight/D")
-            thisTree.SetDirectory(0)
-            self.tree[syst] = thisTree
+        self.tree = TTree("Events", "")
+        self.mass1 = array("f", [0.])
+        self.mass2 = array("f", [0.])
+        self.dict_score = {}
+        self.w_nonprompt = array("f", [0.])
+        self.w_nonprompt_up = array("f", [0.])
+        self.w_nonprompt_down = array("f", [0.])
+ 
+        for SIG, BKG in product(self.signalStrings, self.backgroundStrings):
+            self.dict_score[f"score_{SIG}_vs_{BKG}"] = array("f", [0.])
+        
+        self.tree.Branch("Central_mass1", self.mass1, "mass1/F")
+        self.tree.Branch("Central_mass2", self.mass2, "mass2/F")
+        for SIG, BKG in product(self.signalStrings, self.backgroundStrings): 
+            self.tree.Branch(f"Central_score_{SIG}_vs_{BKG}",
+                             self.dict_score[f"score_{SIG}_vs_{BKG}"],
+                             f"Central_score_{SIG}_vs_{BKG}/F") 
+        self.tree.Branch("w_nonprompt", self.w_nonprompt, "w_nonprompt/F")
+        self.tree.Branch("w_nonprompt_up", self.w_nonprompt_up, "w_nonprompt_up/F")
+        self.tree.Branch("w_nonprompt_down", self.w_nonprompt_down, "w_nonprompt_down/F")
 
     def __initTreeContents(self):
-        for syst in self.systematics:
-            self.mass1[syst][0] = -999.
-            self.mass2[syst][0] = -999.
-            for SIG in self.signalStrings:
-                self.scoreX[f"{SIG}_{syst}"][0] = -999.
-                self.scoreY[f"{SIG}_{syst}"][0] = -999.
-            self.weight[syst][0] = -999.
+        self.mass1[0] = -999.
+        self.mass2[0] = -999.
+        self.w_nonprompt[0] = -999.
+        self.w_nonprompt_up[0] = -999.
+        self.w_nonprompt_down[0] = -999.
+        for SIG, BKG in product(self.signalStrings, self.backgroundStrings):
+            self.dict_score[f"score_{SIG}_vs_{BKG}"][0] = -999.
 
     def defineObjects(self, rawMuons, rawElectrons, rawJets, syst="Central"):
         # first copy objects
@@ -161,20 +159,20 @@ class MatrixUnbinned(TriLeptonBase):
         tightElectrons = super().SelectElectrons(looseElectrons, super().ElectronIDs[0], 10., 2.5)
         jets = super().SelectJets(allJets, "tight", 20., 2.4)
         jets = super().JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4)
-        bjets = vector[Jet]()
+        bjets = std.vector[Jet]()
         for jet in jets:
             btagScore = jet.GetTaggerResult(3)                  # DeepJet score
             wp = super().mcCorr.GetJetTaggingCutValue(3, 1)     # DeepJet Medium
             if btagScore > wp: bjets.emplace_back(jet)
 
-        vetoMuons = vector[Muon](sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True))
-        looseMuons = vector[Muon](sorted(looseMuons, key=lambda x: x.Pt(), reverse=True))
-        tightMuons = vector[Muon](sorted(tightMuons, key=lambda x: x.Pt(), reverse=True))
-        vetoElectrons = vector[Electron](sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True))
-        looseElectrons = vector[Electron](sorted(looseElectrons, key=lambda x: x.Pt(), reverse=True))
-        tightElectrons = vector[Electron](sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True))
-        jets = vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
-        bjets = vector[Jet](sorted(bjets, key=lambda x: x.Pt(), reverse=True))
+        vetoMuons = std.vector[Muon](sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True))
+        looseMuons = std.vector[Muon](sorted(looseMuons, key=lambda x: x.Pt(), reverse=True))
+        tightMuons = std.vector[Muon](sorted(tightMuons, key=lambda x: x.Pt(), reverse=True))
+        vetoElectrons = std.vector[Electron](sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True))
+        looseElectrons = std.vector[Electron](sorted(looseElectrons, key=lambda x: x.Pt(), reverse=True))
+        tightElectrons = std.vector[Electron](sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True))
+        jets = std.vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
+        bjets = std.vector[Jet](sorted(bjets, key=lambda x: x.Pt(), reverse=True))
 
         return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
 
@@ -202,7 +200,7 @@ class MatrixUnbinned(TriLeptonBase):
         ## 4. At least two jets
         if self.channel == "Skim1E2Mu":
             if not event.PassTrigger(super().EMuTriggers): return None
-            leptons = vector[Lepton]()
+            leptons = std.vector[Lepton]()
             for mu in looseMuons: leptons.emplace_back(mu)
             for ele in looseElectrons: leptons.emplace_back(ele)
             mu1, mu2, ele = tuple(leptons)
@@ -237,6 +235,8 @@ class MatrixUnbinned(TriLeptonBase):
             # orthogonality of SR and CR done by bjet multiplicity
             if not bjets.size() >= 1: return None
             return "SR3Mu"
+        else:
+            return None
 
     def makePair(self, muons):
         if muons.size() == 2:
@@ -255,20 +255,20 @@ class MatrixUnbinned(TriLeptonBase):
             return (pair1, pair2)
         else:
             print(f"[PromptEstimator::makePair] wrong no. of muons {muons.size}")
-
+    
     #### Get scores for each event
     def evalScore(self, muons, electrons, jets, bjets, METv):
         scores = {}
-        if self.network == "DenseNeuralNet":
+        if self.network == "DenseNeuralNet": 
             data = self.getDenseInput(muons, electrons, jets, bjets, METv)
             for sig, bkg in product(self.signalStrings, self.backgroundStrings):
                 scores[f"{sig}_vs_{bkg}"] = self.getDenseScore(f"{sig}_vs_{bkg}", data)
-        else:
+        else:                                
             data = self.getGraphInput(muons, electrons, jets, METv)
             for sig, bkg in product(self.signalStrings, self.backgroundStrings):
                 scores[f"{sig}_vs_{bkg}"] = self.getGraphScore(f"{sig}_vs_{bkg}", data)
         return data, scores
-
+    
     def getDenseInput(self, tightMuons, tightElectrons, jets, bjets, METv):
         inputs = []
         dRjets = []
@@ -283,7 +283,7 @@ class MatrixUnbinned(TriLeptonBase):
             j1 = jets.at(0)
             j2 = jets.at(1)
             MT = (ele+METv).Mt()
-
+            
             inputs.append(mu1.E())
             inputs.append(mu1.Px())
             inputs.append(mu1.Py())
@@ -323,7 +323,6 @@ class MatrixUnbinned(TriLeptonBase):
             inputs.append(bjets.size())
             inputs.append(dRjets)
             inputs.append(sum([j.GetTaggerResult(3) for j in jets]) / jets.size())
-
         elif self.channel == "Skim3Mu":
             mu1 = tightMuons.at(0)
             mu2 = tightMuons.at(1)
@@ -382,7 +381,7 @@ class MatrixUnbinned(TriLeptonBase):
             inputs.append(dRjets)
             inputs.append(sum([j.GetTaggerResult(3) for j in jets])/jets.size())
         return torch.FloatTensor([inputs])
-
+        
     def getDenseScore(self, modelKey, data):
         with torch.no_grad():
             out = self.models[modelKey](data)
@@ -415,7 +414,7 @@ class MatrixUnbinned(TriLeptonBase):
         nodeList = []
         for particle in particles:
             nodeList.append([particle.E(), particle.Px(), particle.Py(), particle.Pz(),
-                             particle.Charge(), particle.BtagScore(),
+                             particle.Charge(), particle.BtagScore(), 
                              particle.IsMuon(), particle.IsElectron(), particle.IsJet()])
         data = evtToGraph(nodeList, y=None, k=4)
         return data
@@ -424,8 +423,7 @@ class MatrixUnbinned(TriLeptonBase):
         with torch.no_grad():
             out = self.models[modelKey](data.x, data.edge_index)
         return out.numpy()[0][1]
-
+    
     def WriteHist(self):
         super().outfile.cd()
-        for syst in self.systematics:
-            self.tree[syst].Write()
+        self.tree.Write()

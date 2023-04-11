@@ -38,7 +38,7 @@ class AnalyzerCore: public SKFlatNtuple {
 public:
 
   AnalyzerCore();
-  ~AnalyzerCore();
+  virtual ~AnalyzerCore();
 
   virtual void initializeAnalyzer(){
 

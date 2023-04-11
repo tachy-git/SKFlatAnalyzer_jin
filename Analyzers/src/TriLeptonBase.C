@@ -10,9 +10,10 @@ TriLeptonBase::~TriLeptonBase() {
     delete hMuonFR;
     delete hMuonFRUp;
     delete hMuonFRDown;
-    delete hElectronFR;
-    delete hElectronFRUp;
-    delete hElectronFRDown;
+    //delete hElectronFR;
+    //delete hElectronFRUp;
+    //delete hElectronFRDown;
+    
 }
 
 void TriLeptonBase::initializeAnalyzer() {
