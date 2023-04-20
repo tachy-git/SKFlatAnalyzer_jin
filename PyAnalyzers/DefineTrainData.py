@@ -1,7 +1,7 @@
 import pandas as pd
 from ROOT import gSystem
 from ROOT import DataPreprocess
-from ROOT import std
+from ROOT.std import vector
 from ROOT.JetTagging import Parameters as jParameters
 from ROOT import Lepton, Muon, Electron, Jet
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
@@ -26,7 +26,7 @@ class DefineTrainData(DataPreprocess):
         tightElectrons = super().SelectElectrons(vetoElectrons, super().ElectronIDs[0], 10., 2.5)
         jets = super().SelectJets(rawJets, "tight", 15., 2.4)
         # jets = super().JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4)
-        bjets = std.vector[Jet]()
+        bjets = vector[Jet]()
         for jet in jets:
             score = jet.GetTaggerResult(3)                      # DeepJet
             wp = super().mcCorr.GetJetTaggingCutValue(3, 1)     # DeepJet Medium
@@ -50,8 +50,8 @@ class DefineTrainData(DataPreprocess):
         # prompt matching
         if not super().IsDATA:
             truth = super().GetGens()
-            promptMuons = std.vector[Muon]()
-            promptElectrons = std.vector[Electron]()
+            promptMuons = vector[Muon]()
+            promptElectrons = vector[Electron]()
             for mu in tightMuons:
                 if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
             for ele in tightElectrons:
@@ -67,7 +67,7 @@ class DefineTrainData(DataPreprocess):
         ## 3. Exists OS muon pair with mass > 12 GeV
         if is1E2Mu:
             #if not ev.PassTrigger(super().EMuTriggers): return None
-            leptons = std.vector[Lepton]()
+            leptons = vector[Lepton]()
             for mu in tightMuons: leptons.emplace_back(mu)
             for ele in tightElectrons: leptons.emplace_back(ele)
             mu1, mu2, ele = tuple(leptons)
