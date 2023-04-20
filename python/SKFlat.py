@@ -386,7 +386,7 @@ for inputSample in inputSampleList:
                     out.write(f"    m.IsFastSim = False\n")
             out.write(f'    m.SetEra("{args.Era}")\n')
             if Userflags:
-                out.write(f'    m.Userflags = std.vector[TString]()\n')
+                out.write(f'    m.Userflags = vector[TString]()\n')
                 for flag in Userflags: out.write(f'    m.Userflags.emplace_back("{flag}")\n')
             for it_file in fileRanges[it_job]:
                 thisFileName = totalFiles[it_file].strip("\n")

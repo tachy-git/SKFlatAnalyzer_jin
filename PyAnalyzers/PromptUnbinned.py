@@ -53,7 +53,9 @@ class PromptUnbinned(TriLeptonBase):
                                "ElectronResUp", "ElectronResDown",
                                "ElectronEnUp", "ElectronEnDown",
                                "MuonEnUp", "MuonEnDown"]
-        self.systematics = ["Central"] + self.weightVariations + self.scaleVariations
+        self.systematics = ["Central"]
+        if not super().IsDATA:
+            self.systematics += self.weightVariations + self.scaleVariations
         self.signalStrings = ["MHc-70_MA-65",
                               "MHc-160_MA-85",
                               "MHc-130_MA-90",
@@ -77,7 +79,6 @@ class PromptUnbinned(TriLeptonBase):
         self.__initTreeContents()
 
         #### fill contents
-        ## for central and weight variation
         vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
         channel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
         if not channel is None:
@@ -99,6 +100,12 @@ class PromptUnbinned(TriLeptonBase):
                 self.scoreX[f"{SIG}_Central"][0] = scores[f"{SIG}_vs_TTLL_powheg"]
                 self.scoreY[f"{SIG}_Central"][0] = scores[f"{SIG}_vs_ttX"]
 
+            self.weight["Central"][0] = 1.
+            if super().IsDATA:
+                self.tree["Central"].Fill()
+                return None
+
+            # weight / scale variations for MC
             w_norm = super().MCweight() * ev.GetTriggerLumi("Full")
             w_l1prefire = super().GetPrefireWeight(0)
             w_l1prefire_up = super().GetPrefireWeight(1)
@@ -107,21 +114,18 @@ class PromptUnbinned(TriLeptonBase):
             w_pileup_up = super().GetPileUpWeight(super().nPileUp, 1)
             w_pileup_down = super().GetPileUpWeight(super().nPileUp, -1)
             sf_muonid = 1.
-            for mu in tightMuons:
-                sf_muonid *= self.getMuonIDSF(mu, 0)
+            for mu in tightMuons:   sf_muonid *= self.getMuonIDSF(mu, 0)
             sf_muonid_up = 1.
-            for mu in tightMuons:
-                sf_muonid_up *= self.getMuonIDSF(mu, 1)
+            for mu in tightMuons:   sf_muonid_up *= self.getMuonIDSF(mu, 1)
             sf_muonid_down = 1.
-            for mu in tightMuons:
-                sf_muonid_down *= self.getMuonIDSF(mu, -1)
+            for mu in tightMuons:   sf_muonid_down *= self.getMuonIDSF(mu, -1)
             sf_dblmutrig = self.getDblMuTriggerSF(tightMuons, 0)
             sf_dblmutrig_up = self.getDblMuTriggerSF(tightMuons, 1)
             sf_dblmutrig_down = self.getDblMuTriggerSF(tightMuons, -1)
             sf_btag = self.mcCorr.GetBTaggingReweight_1a(vjets, jtp)
             self.weight["Central"][0] = w_norm * w_l1prefire * w_pileup * sf_muonid * sf_dblmutrig * sf_btag
             self.tree["Central"].Fill()
-
+            
             self.weight["L1PrefireUp"][0] = w_norm * w_l1prefire_up * w_pileup * sf_muonid * sf_dblmutrig * sf_btag
             self.weight["L1PrefireDown"][0] = w_norm * w_l1prefire_down * w_pileup * sf_muonid * sf_dblmutrig * sf_btag
             self.weight["PileupReweightUp"][0] = w_norm * w_l1prefire * w_pileup_up * sf_muonid * sf_dblmutrig * sf_btag
@@ -137,7 +141,12 @@ class PromptUnbinned(TriLeptonBase):
                     self.scoreX[f"{SIG}_{syst}"][0] = self.scoreX[f"{SIG}_Central"][0]
                     self.scoreY[f"{SIG}_{syst}"][0] = self.scoreY[f"{SIG}_Central"][0]
                 self.tree[syst].Fill()
-
+        
+        # No need scale variation for data
+        if super().IsDATA:
+            return None
+        
+        # scale variation
         for syst in self.scaleVariations:
             vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets, syst)
             channel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
