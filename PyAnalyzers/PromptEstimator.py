@@ -167,18 +167,18 @@ class PromptEstimator(TriLeptonBase):
         tightElectrons = super().SelectElectrons(vetoElectrons, super().ElectronIDs[0], 10., 2.5)
         jets = super().SelectJets(allJets, "tight", 20., 2.4)
         jets = super().JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4)
-        bjets = std.vector[Jet]()
+        bjets = vector[Jet]()
         for jet in jets:
             btagScore = jet.GetTaggerResult(3)                  # DeepJet score
             wp = super().mcCorr.GetJetTaggingCutValue(3, 1)     # DeepJet Medium
             if btagScore > wp: bjets.emplace_back(jet)
             
-        vetoMuons = std.vector[Muon](sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True))
-        tightMuons = std.vector[Muon](sorted(tightMuons, key=lambda x: x.Pt(), reverse=True))
-        vetoElectrons = std.vector[Electron](sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True))
-        tightElectrons = std.vector[Electron](sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True))
-        jets = std.vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
-        bjets = std.vector[Jet](sorted(bjets, key=lambda x: x.Pt(), reverse=True))
+        vetoMuons = vector[Muon](sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True))
+        tightMuons = vector[Muon](sorted(tightMuons, key=lambda x: x.Pt(), reverse=True))
+        vetoElectrons = vector[Electron](sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True))
+        tightElectrons = vector[Electron](sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True))
+        jets = vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
+        bjets = vector[Jet](sorted(bjets, key=lambda x: x.Pt(), reverse=True))
         
         return (vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets)
         
@@ -196,8 +196,8 @@ class PromptEstimator(TriLeptonBase):
         # prompt matching
         # not for data / nonprompt / conversion
         if not super().IsDATA:
-            promptMuons = std.vector[Muon]()
-            promptElectrons = std.vector[Electron]()
+            promptMuons = vector[Muon]()
+            promptElectrons = vector[Electron]()
             for mu in tightMuons:
                 if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
             for ele in tightElectrons:
@@ -208,13 +208,13 @@ class PromptEstimator(TriLeptonBase):
 
         # for patching samples
         if "DYJets" in super().MCSample:
-            leptons = std.vector[Lepton]()
+            leptons = vector[Lepton]()
             for mu in tightMuons: leptons.emplace_back(mu)
             for ele in tightElectrons: leptons.emplace_back(ele)
             if leptons.at(0).Pt() > 20. and leptons.at(1).Pt() > 20. and leptons.at(2).Pt() > 20.:
                 return None
         if "ZGToLLG" in super().MCSample:
-            leptons = std.vector[Lepton]()
+            leptons = vector[Lepton]()
             for mu in tightMuons: leptons.emplace_back(mu)
             for ele in tightElectrons: leptons.emplace_back(ele)
             if leptons.at(0).Pt() < 20. or leptons.at(1).Pt() < 20. or leptons.at(2).Pt() < 20.:
@@ -228,7 +228,7 @@ class PromptEstimator(TriLeptonBase):
         ## 4. At least two jets
         if self.channel == "Skim1E2Mu":
             if not event.PassTrigger(super().EMuTriggers): return None
-            leptons = std.vector[Lepton]()
+            leptons = vector[Lepton]()
             for mu in tightMuons: leptons.emplace_back(mu)
             for ele in tightElectrons: leptons.emplace_back(ele)
             mu1, mu2, ele = tuple(leptons)
@@ -349,7 +349,7 @@ class PromptEstimator(TriLeptonBase):
 
             # b-tagging
             jtp = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
-            vjets = std.vector[Jet]()
+            vjets = vector[Jet]()
             for j in jets: vjets.emplace_back(j)
             if syst == "HeavyTagUpUnCorr":     w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpHTag")
             elif syst == "HeavyTagDownUnCorr": w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownHTag")
@@ -726,26 +726,3 @@ class PromptEstimator(TriLeptonBase):
         with torch.no_grad():
             out = self.models[modelKey](data.x, data.edge_index)
         return out.numpy()[0][1]
-
-if __name__ == "__main__":
-    m = PromptEstimator()
-    m.SetTreeName("recoTree/SKFlat")
-    m.IsDATA = False
-    m.MCSample = "TTToHcToWAToMuMu_MHc-130_MA-90"
-    m.xsec = 0.015
-    m.sumSign = 599702.0
-    m.sumW = 3270.46
-    m.IsFastSim = False
-    m.SetEra("2017")
-    m.Userflags = std.vector[TString]()
-    m.Userflags.emplace_back("Skim3Mu")
-    m.Userflags.emplace_back("GraphNet")
-    m.Userflags.emplace_back("WeightVar")
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2017/TTToHcToWAToMuMu_MHc-130_MA-90_MultiLepFilter_TuneCP5_13TeV-madgraph-pythia8/SKFlat_Run2UltraLegacy_v3/220714_084244/0000/SKFlatNtuple_2017_MC_10.root"): exit(1)
-    m.SetOutfilePath("hists.root")
-    m.Init()
-    m.initializePyAnalyzer()
-    m.initializeAnalyzerTools()
-    m.SwitchToTempDir()
-    m.Loop()
-    m.WriteHist()

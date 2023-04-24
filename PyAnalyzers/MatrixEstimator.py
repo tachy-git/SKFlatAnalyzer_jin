@@ -123,20 +123,20 @@ class MatrixEstimator(TriLeptonBase):
         tightElectrons = super().SelectElectrons(looseElectrons, super().ElectronIDs[0], 10., 2.5)
         jets = super().SelectJets(allJets, "tight", 20., 2.4)
         jets = super().JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4)
-        bjets = std.vector[Jet]()
+        bjets = vector[Jet]()
         for jet in jets:
             btagScore = jet.GetTaggerResult(3)                  # DeepJet score
             wp = super().mcCorr.GetJetTaggingCutValue(3, 1)     # DeepJet Medium
             if btagScore > wp: bjets.emplace_back(jet)
             
-        vetoMuons = std.vector[Muon](sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True))
-        looseMuons = std.vector[Muon](sorted(looseMuons, key=lambda x: x.Pt(), reverse=True))
-        tightMuons = std.vector[Muon](sorted(tightMuons, key=lambda x: x.Pt(), reverse=True))
-        vetoElectrons = std.vector[Electron](sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True))
-        looseElectrons = std.vector[Electron](sorted(looseElectrons, key=lambda x: x.Pt(), reverse=True))
-        tightElectrons = std.vector[Electron](sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True))
-        jets = std.vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
-        bjets = std.vector[Jet](sorted(bjets, key=lambda x: x.Pt(), reverse=True))
+        vetoMuons = vector[Muon](sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True))
+        looseMuons = vector[Muon](sorted(looseMuons, key=lambda x: x.Pt(), reverse=True))
+        tightMuons = vector[Muon](sorted(tightMuons, key=lambda x: x.Pt(), reverse=True))
+        vetoElectrons = vector[Electron](sorted(vetoElectrons, key=lambda x: x.Pt(), reverse=True))
+        looseElectrons = vector[Electron](sorted(looseElectrons, key=lambda x: x.Pt(), reverse=True))
+        tightElectrons = vector[Electron](sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True))
+        jets = vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
+        bjets = vector[Jet](sorted(bjets, key=lambda x: x.Pt(), reverse=True))
         
         return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
     
@@ -164,7 +164,7 @@ class MatrixEstimator(TriLeptonBase):
         ## 4. At least two jets
         if self.channel == "Skim1E2Mu":
             if not event.PassTrigger(super().EMuTriggers): return None
-            leptons = std.vector[Lepton]()
+            leptons = vector[Lepton]()
             for mu in looseMuons: leptons.emplace_back(mu)
             for ele in looseElectrons: leptons.emplace_back(ele)
             mu1, mu2, ele = tuple(leptons)
