@@ -13,7 +13,7 @@ import torch
 
 from array import array
 from itertools import product, combinations
-from MLTools.models import SNN, SNNLite, ParticleNet, ParticleNetLite
+from MLTools.models import SNN, ParticleNet
 from MLTools.helpers import evtToGraph
 from MLTools.formats import NodeParticle
 
@@ -39,12 +39,8 @@ class MatrixUnbinned(TriLeptonBase):
 
         self.systematics = ["Central", "NonpromptUp", "NonpromptDown"]
 
-        self.signalStrings = ["MHc-70_MA-65",
-                              "MHc-160_MA-85",
-                              "MHc-130_MA-90",
-                              "MHc-100_MA-95",
-                              "MHc-160_MA-120"]
-        self.backgroundStrings = ["TTLL_powheg", "ttX"]
+        self.signalStrings = ["MHc-70_MA-65", "MHc-160_MA-85", "MHc-130_MA-90", "MHc-100_MA-95", "MHc-160_MA-120"]
+        self.backgroundStrings = ["nonprompt", "diboson", "ttZ"]
 
         self.__loadModels()
         self.__prepareTTree()
@@ -80,8 +76,9 @@ class MatrixUnbinned(TriLeptonBase):
 
         for SIG in self.signalStrings:
             for syst in self.systematics:
-                self.scoreX[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_TTLL_powheg"]
-                self.scoreY[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_ttX"]
+                self.scoreX[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_nonprompt"]
+                self.scoreY[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_diboson"]
+                self.scoreZ[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_ttZ"]
 
         self.weight["Central"][0] = super().getFakeWeight(looseMuons, looseElectrons, 0)
         self.weight["NonpromptUp"][0] = super().getFakeWeight(looseMuons, looseElectrons, 1)
@@ -94,23 +91,23 @@ class MatrixUnbinned(TriLeptonBase):
         self.models = {}
 
         for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-            csv = pd.read_csv(f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/results/summary_{sig}_vs_{bkg}.txt",
+            csv = pd.read_csv(f"{os.environ['DATA_DIR']}/Classifiers/{self.network}/{self.channel}/summary/info-{sig}_vs_{bkg}.txt",
                               sep=",\s",
                               engine="python",
                               header=None).transpose()
-            modelPath = f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/models/{sig}_vs_{bkg}.pt"
+            modelPath = f"{os.environ['DATA_DIR']}/Classifiers/{self.network}/{self.channel}/models/{sig}_vs_{bkg}.pt"
+            # note: dropout will not work in model.eval()
+            # so in principal, it should have no effect for inference
             if self.network == "DenseNeuralNet":
-                modelArch = csv[0][3]
-                if self.channel == "Skim1E2Mu":
-                    if modelArch == "SNN": model = SNN(41, 2)
-                    else:                  model = SNNLite(41, 2)
-                if self.channel == "Skim3Mu" :
-                    if modelArch == "SNN": model = SNN(47, 2)
-                    else:                  model = SNNLite(47, 2)
+                num_nodes = int(csv[0][3])
+                if self.channel == "Skim1E2Mu": model = SNN(41, 2, num_nodes=num_nodes, dropout_p=0.4)
+                elif self.channel == "Skim3Mu": model = SNN(47, 2, num_nodes=num_nodes, dropout_p=0.4)
+                else:
+                    print(f"Wrong channel {self.channel}")
+                    exit(1)
             else:               # GraphNeuralNet
-                modelArch, dropout_p, readout = csv[0][3:6]
-                if modelArch == "ParticleNet": model = ParticleNet(9, 2, dropout_p, readout)
-                else:                          model = ParticleNetLite(9, 2, dropout_p, readout)
+                num_nodes = int(csv[0][3])
+                model = ParticleNet(9, 2, num_nodes=num_nodes, dropout_p=0.4)
             model.load_state_dict(torch.load(modelPath, map_location=torch.device("cpu")))
             model.eval()
             self.models[f"{sig}_vs_{bkg}"] = model
@@ -121,6 +118,7 @@ class MatrixUnbinned(TriLeptonBase):
         self.mass2 = {}
         self.scoreX = {}
         self.scoreY = {}
+        self.scoreZ = {}
         self.weight = {}
 
         for syst in self.systematics:
@@ -128,12 +126,15 @@ class MatrixUnbinned(TriLeptonBase):
             self.mass1[syst] = array("d", [0.]); thisTree.Branch("mass1", self.mass1[syst], "mass1/D")
             self.mass2[syst] = array("d", [0.]); thisTree.Branch("mass2", self.mass2[syst], "mass2/D")
             for SIG in self.signalStrings:
-                # vs tt+Fake
+                # vs nonprompt
                 self.scoreX[f"{SIG}_{syst}"] = array("d", [0.])
-                thisTree.Branch(f"score_{SIG}_vs_ttFake", self.scoreX[f"{SIG}_{syst}"], f"score_{SIG}_vs_ttFake/D")
-                # vs tt+X
+                thisTree.Branch(f"score_{SIG}_vs_nonprompt", self.scoreX[f"{SIG}_{syst}"], f"score_{SIG}_vs_nonprompt/D")
+                # vs diboson
                 self.scoreY[f"{SIG}_{syst}"] = array("d", [0.])
-                thisTree.Branch(f"score_{SIG}_vs_ttX", self.scoreY[f"{SIG}_{syst}"], f"score_{SIG}_vs_ttX/D")
+                thisTree.Branch(f"score_{SIG}_vs_diboson", self.scoreY[f"{SIG}_{syst}"], f"score_{SIG}_vs_diboson/D")
+                # vs ttZ
+                self.scoreZ[f"{SIG}_{syst}"] = array("d", [0.])
+                thisTree.Branch(f"score_{SIG}_vs_ttZ", self.scoreZ[f"{SIG}_{syst}"], f"score_{SIG}_vs_ttZ/D")
             self.weight[syst] = array("d", [0.]); thisTree.Branch("weight", self.weight[syst], "weight/D")
             thisTree.SetDirectory(0)
             self.tree[syst] = thisTree
@@ -145,6 +146,7 @@ class MatrixUnbinned(TriLeptonBase):
             for SIG in self.signalStrings:
                 self.scoreX[f"{SIG}_{syst}"][0] = -999.
                 self.scoreY[f"{SIG}_{syst}"][0] = -999.
+                self.scoreZ[f"{SIG}_{syst}"][0] = -999.
             self.weight[syst][0] = -999.
 
     def defineObjects(self, rawMuons, rawElectrons, rawJets, syst="Central"):

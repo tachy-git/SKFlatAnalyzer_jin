@@ -4,7 +4,7 @@ if __name__ == "__main__":
     m.IsDATA = True
     m.DataStream = "DoubleMuon"
     m.SetEra("2018")
-    m.Userflags = std.vector[TString]()
+    m.Userflags = vector[TString]()
     m.Userflags.emplace_back("Skim3Mu")
     m.Userflags.emplace_back("DenseNet")
     if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2018/SKFlatNtuple_2018_DATA_4.root"): exit(1)
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     m.sumW = 3270.46
     m.IsFastSim = False
     m.SetEra("2017")
-    m.Userflags = std.vector[TString]()
+    m.Userflags = vector[TString]()
     m.Userflags.emplace_back("Skim3Mu")
     m.Userflags.emplace_back("GraphNet")
     m.Userflags.emplace_back("WeightVar")
