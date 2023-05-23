@@ -117,20 +117,23 @@ void DataPreprocess::executeEvent() {
     TString channel = "";
     // Reduced baseline for 1E2Mu channel
     // only require OS muon pair mass > 12 GeV
-    // at least two jets, one bjet
+    // 60 < pair mass < 120 GeV
+    // at least two jets
     if (is1E2Mu) {
         Muon &mu1 = looseMuons.at(0);
         Muon &mu2 = looseMuons.at(1);
         if (! (mu1.Charge() + mu2.Charge() == 0)) return;
         Particle pair = mu1+mu2;
         if (! (pair.M() > 12.)) return;
+        if (! (60 < pair.M() && pair.M() < 120)) return;
         if (! (jets.size() >= 2)) return;
-        // if (! (bjets.size() >= 1)) return;
         channel = "SR1E2Mu";
     }
     // Reduced baseline for 3Mu channel
-    // Exist OS pair and all OS pair mass > 12 GeV
-    // at least two jets, one bjet
+    // Exist OS pairs
+    // all OS pairs mass > 12 GeV
+    // at least one 60 < OS pair mass < 120 GeV
+    // at least two jets
     else {      // is3Mu
         Muon &mu1 = looseMuons.at(0);
         Muon &mu2 = looseMuons.at(1);
@@ -153,15 +156,15 @@ void DataPreprocess::executeEvent() {
         }
         if (! (pair1.M() > 12.)) return;
         if (! (pair2.M() > 12.)) return;
+        if (! ((60 < pair1.M() && pair1.M() < 120) || (60 < pair2.M() && pair2.M() < 120))) return;
         if (! (jets.size() >= 2)) return;
-        // if (! (bjets.size() >= 1)) return;
         channel = "SR3Mu";
     }
     // end event selection
     
     // prompt matching for signal / tt+X events
     vector<Gen> truth = GetGens();
-    if (! MCSample.Contains("TTLL")) {
+    if (! (MCSample.Contains("TTLL") || MCSample.Contains("DYJets"))) {
         for (const auto &mu: looseMuons)
             if (! (GetLeptonType(mu, truth) > 0)) return;
         for (const auto &ele: looseElectrons)
