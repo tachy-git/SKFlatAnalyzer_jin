@@ -38,10 +38,10 @@ class AcceptanceStudy(TriLeptonBase):
         weight = super().MCweight() * ev.GetTriggerLumi("Full") 
         weight *= super().GetPrefireWeight(0)
         weight *= super().GetPileUpWeight(super().nPileUp, 0)
-        jtp = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
-        vjets = vector[Jet]()
-        for j in jets: vjets.emplace_back(j)
-        weight *= super().mcCorr.GetBTaggingReweight_1a(vjets, jtp)
+        # jtp = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
+        # vjets = vector[Jet]()
+        # for j in jets: vjets.emplace_back(j)
+        # weight *= super().mcCorr.GetBTaggingReweight_1a(vjets, jtp)
 
         ## Event Selection
         super().FillHist("cutflow", 0., weight, 10, 0., 10.)
@@ -69,16 +69,19 @@ class AcceptanceStudy(TriLeptonBase):
         for ele in tightElectrons:
             if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
 
-        if promptMuons.size() != tightMuons.size(): return None
-        if promptElectrons.size() != tightElectrons.size(): return None
+        isPromptMatched = promptMuons.size() == tightMuons.size() and promptElectrons.size() == tightElectrons.size()
+        if super().FakeStudy:
+            if isPromptMatched: return None
+        else:
+            if not isPromptMatched: return None
         super().FillHist("cutflow", 3., weight, 10, 0., 10.)
 
         # set lepton multiplicity based weights
         # electron ID SF & EMu Trigger SF not applied yet
-        for mu in tightMuons:
-            weight *= self.getMuonIDSF(mu, 0)
-        if self.channel == "Skim3Mu":
-            weight *= self.getDblMuTriggerSF(tightMuons, 0)
+        # for mu in tightMuons:
+        #    weight *= self.getMuonIDSF(mu, 0)
+        # if self.channel == "Skim3Mu":
+        #    weight *= self.getDblMuTriggerSF(tightMuons, 0)
 
         ## 1E2Mu Baseline
         ## 1. pass EMuTriggers
@@ -114,6 +117,10 @@ class AcceptanceStudy(TriLeptonBase):
             if not bjets.size() >= 1: return None
             super().FillHist("cutflow", 8., weight, 10, 0., 10.)
 
+            # Intermediate mass region
+            if not (60. < pair.M() and pairM() < 120.): return None
+            super().FillHist("cutflow", 9., weight, 10, 0., 10.)
+
         ## 3Mu baseline
         ## 1. pass DblMuTriggers
         ## 2. Exact 3 tight muons, no additional leptons
@@ -145,6 +152,10 @@ class AcceptanceStudy(TriLeptonBase):
             
             if not bjets.size() >= 1: return None
             super().FillHist("cutflow", 8., weight, 10, 0., 10)
+
+            # Intermediate mass region
+            if not ((60. < pair1.M() and pair1.M() < 120.) or (60. < pair2.M() and pair2.M() < 120.)): return None
+            super().FillHist("cutflow", 9., weight, 10, 0., 10.)
         
     def defineObjects(self, rawMuons, rawElectrons, rawJets):
         # first copy objects

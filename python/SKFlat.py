@@ -330,7 +330,7 @@ for inputSample in inputSampleList:
     
     concurencyLimit = ""
     if args.NMax:
-        concurrencyLimits = f"concurrencyLimits = n{args.NMax}.{os.genenv('USER')}"
+        concurrencyLimits = f"concurrencyLimits = n{args.NMax}.{os.getenv('USER')}"
     request_memory = ""
     if args.Memory:
         request_memory = f"request_memory = {args.Memory}"
@@ -403,9 +403,9 @@ for inputSample in inputSampleList:
                 else:
                     skimOutDir = f"{skimOutDir}/MC_{args.Analyzer}/{thisDasName}"
                     skimOutFileName = f"SKFlatNtuple_{args.Era}_MC_{it_job}.root"
-                skimOutDir += f"{skimOutDir}/{timestamp}/"
+                skimOutDir = f"{skimOutDir}/{timestamp}"
                 os.makedirs(skimOutDir)
-                out.write(f'    m.SetOutfilePath("{skimOutDir+skimOutFileName}")\n')
+                out.write(f'    m.SetOutfilePath("{skimOutDir}/{skimOutFileName}")\n')
             else:
                 out.write(f'    m.SetOutfilePath("hists.root")\n')
             if args.Reduction > 1:
@@ -454,9 +454,9 @@ for inputSample in inputSampleList:
                 else:
                     skimOutDir = f"{skimOutDir}/MC_{args.Analyzer}/{thisDasName}"
                     skimOutFileName = f"SKFlatNtuple_{args.Era}_MC_{it_job}.root"
-                skimOutDir += f"{skimOutDir}/{timestamp}/"
-                os.makedirs(skimOutDir)
-                out.write(f'    m.SetOutfilePath("{skimOutDir+skimOutFileName}");\n')
+                skimOutDir = f"{skimOutDir}/{timestamp}"
+                os.makedirs(skimOutDir, exist_ok=True)
+                out.write(f'    m.SetOutfilePath("{skimOutDir}/{skimOutFileName}");\n')
             else:
                 out.write(f'    m.SetOutfilePath("hists.root");\n')
             if args.Reduction > 1:

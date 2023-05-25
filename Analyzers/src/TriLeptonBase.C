@@ -24,6 +24,7 @@ void TriLeptonBase::initializeAnalyzer() {
     GraphNet = HasFlag("GraphNet");
     ScaleVar = HasFlag("ScaleVar");
     WeightVar = HasFlag("WeightVar");
+    FakeStudy = HasFlag("FakeStudy");
 
     // triggers & ID settings
     if (DataEra == "2016preVFP") {
