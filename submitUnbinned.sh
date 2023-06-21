@@ -6,17 +6,17 @@ MEMORY=$4
 
 SKFlat.py -a PromptUnbinned -i DoubleMuon --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
 SKFlat.py -a MatrixUnbinned -i DoubleMuon --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
-SKFlat.py -a PromptUnbinned -i TTLL_powheg --skim SkimTree_SS2lOR3l -n 20 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python & 
+SKFlat.py -a PromptUnbinned -i TTLL_powheg --skim SkimTree_SS2lOR3l -n 30 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python & 
 SKFlat.py -a PromptUnbinned -i DYJets --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
 SKFlat.py -a PromptUnbinned -i DYJets10to50_MG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python & 
 SKFlat.py -a PromptUnbinned -i WZTo3LNu_amcatnlo --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
 SKFlat.py -a PromptUnbinned -i ZZTo4L_powheg --skim SkimTree_SS2lOR3l -n 30 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
 SKFlat.py -a PromptUnbinned -i ZGToLLG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
 SKFlat.py -a PromptUnbinned -i ttWToLNu --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
-SKFlat.py -a PromptUnbinned -i ttZToLLNuNu --skim SkimTree_SS2lOR3l -n 20 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
+SKFlat.py -a PromptUnbinned -i ttZToLLNuNu --skim SkimTree_SS2lOR3l -n 30 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
 SKFlat.py -a PromptUnbinned -i ttHToNonbb --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
-SKFlat.py -a PromptUnbinned -i tZq --skim SkimTree_SS2lOR3l -n 20 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
-SKFlat.py -a PromptUnbinned -i tHq --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
+SKFlat.py -a PromptUnbinned -i tZq --skim SkimTree_SS2lOR3l -n 30 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
+SKFlat.py -a PromptUnbinned -i tHq --skim SkimTree_SS2lOR3l -n 30 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
 SKFlat.py -a PromptUnbinned -i WWW --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
 SKFlat.py -a PromptUnbinned -i WWZ --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
 SKFlat.py -a PromptUnbinned -i WZZ --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python & 

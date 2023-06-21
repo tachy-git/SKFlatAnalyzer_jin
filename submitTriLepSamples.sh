@@ -7,7 +7,7 @@ MEMORY=$5
 
 SKFlat.py -a PromptEstimator -i DoubleMuon --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
 SKFlat.py -a MatrixEstimator -i DoubleMuon --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTLL_powheg --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python & 
+SKFlat.py -a PromptEstimator -i TTLL_powheg --skim SkimTree_SS2lOR3l -n 30 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python & 
 SKFlat.py -a PromptEstimator -i DYJets --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python &
 SKFlat.py -a PromptEstimator -i DYJets10to50_MG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python & 
 SKFlat.py -a PromptEstimator -i WZTo3LNu_amcatnlo --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python &
@@ -16,7 +16,7 @@ SKFlat.py -a PromptEstimator -i ZGToLLG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA}
 SKFlat.py -a PromptEstimator -i ttWToLNu --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python &
 SKFlat.py -a PromptEstimator -i ttZToLLNuNu --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python &
 SKFlat.py -a PromptEstimator -i ttHToNonbb --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i tZq --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python &
+SKFlat.py -a PromptEstimator -i tZq --skim SkimTree_SS2lOR3l -n 20 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python &
 SKFlat.py -a PromptEstimator -i tHq -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python &
 SKFlat.py -a PromptEstimator -i WWW --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python &
 SKFlat.py -a PromptEstimator -i WWZ --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,$NETWORK,$SYS --memory $MEMORY --python &
