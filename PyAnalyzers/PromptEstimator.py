@@ -3,18 +3,13 @@ from ROOT import TriLeptonBase
 from ROOT import TString
 from ROOT.std import vector
 from ROOT.JetTagging import Parameters as jParameters
-from ROOT import Lepton, Muon, Electron, Jet
+from ROOT import Lepton, Muon, Electron, Jet, Particle
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
 
-import os
-import numpy as np
-import pandas as pd
-import torch
-
-from itertools import product, combinations
-from MLTools.models import SNN, SNNLite, ParticleNet, ParticleNetLite
-from MLTools.helpers import evtToGraph
-from MLTools.formats import NodeParticle
+from itertools import product
+from MLTools.helpers import loadModels
+from MLTools.helpers import getDenseInput, getDenseScore
+from MLTools.helpers import getGraphInput, getGraphScore
 
 
 class PromptEstimator(TriLeptonBase):
@@ -59,39 +54,10 @@ class PromptEstimator(TriLeptonBase):
                                      "ElectronEnUp", "ElectronEnDown",
                                      "MuonEnUp", "MuonEnDown"] 
         self.systematics = self.weightVariations + self.scaleVariations        
-        self.signalStrings = [
-                "MHc-70_MA-15", "MHc-70_MA-40", "MHc-70_MA-65",
-                "MHc-100_MA-15", "MHc-100_MA-60", "MHc-100_MA-95",
-                "MHc-130_MA-15", "MHc-130_MA-55", "MHc-130_MA-90", "MHc-130_MA-125",
-                "MHc-160_MA-15", "MHc-160_MA-85", "MHc-160_MA-120", "MHc-160_MA-155"]
-        self.backgroundStrings = ["TTLL_powheg", "ttX"]
+        self.signalStrings = ["MHc-70_MA-65", "MHc-100_MA-95", "MHc-130_MA-90", "MHc-160_MA-85", "MHc-160_MA-120"]
+        self.backgroundStrings = ["nonprompt", "diboson", "ttZ"]
         
-        self.__loadModels()
-
-    def __loadModels(self):
-        self.models = {}
-
-        for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-            csv = pd.read_csv(f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/results/summary_{sig}_vs_{bkg}.txt", 
-                              sep=",\s", 
-                              engine="python", 
-                              header=None).transpose()
-            modelPath = f"{os.environ['DATA_DIR']}/FullRun2/{self.network}/{self.channel}/models/{sig}_vs_{bkg}.pt"
-            if self.network == "DenseNeuralNet":
-                modelArch = csv[0][3]
-                if self.channel == "Skim1E2Mu":
-                    if modelArch == "SNN": model = SNN(41, 2)
-                    else:                  model = SNNLite(41, 2)
-                if self.channel == "Skim3Mu" :
-                    if modelArch == "SNN": model = SNN(47, 2)
-                    else:                  model = SNNLite(47, 2)
-            else:               # GraphNeuralNet
-                modelArch, dropout_p, readout = csv[0][3:6]
-                if modelArch == "ParticleNet": model = ParticleNet(9, 2, dropout_p, readout)
-                else:                          model = ParticleNetLite(9, 2, dropout_p, readout)
-            model.load_state_dict(torch.load(modelPath, map_location=torch.device("cpu")))
-            model.eval()
-            self.models[f"{sig}_vs_{bkg}"] = model
+        self.models = loadModels(self.network, self.channel, self.signalStrings, self.backgroundStrings)
 
     def executeEvent(self):
         if not super().PassMETFilter(): return None
@@ -106,7 +72,7 @@ class PromptEstimator(TriLeptonBase):
         vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
         channel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
         
-        if not channel is None: 
+        if not channel is None:
             pairs = self.makePair(tightMuons)
             data, scores = self.evalScore(tightMuons, tightElectrons, jets, bjets, METv)
             # make objects as a dictionary
@@ -122,7 +88,7 @@ class PromptEstimator(TriLeptonBase):
             for syst in self.weightVariations:
                 weight = self.getWeight(channel, ev, tightMuons, tightElectrons, jets, syst)
                 self.FillObjects(channel, objects, weight, syst)
-
+                
         for syst in self.scaleVariations:
             vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets, syst)
             channel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
@@ -304,13 +270,13 @@ class PromptEstimator(TriLeptonBase):
     def evalScore(self, muons, electrons, jets, bjets, METv):
         scores = {}
         if self.network == "DenseNeuralNet": 
-            data = self.getDenseInput(muons, electrons, jets, bjets, METv)
+            data = getDenseInput(muons, electrons, jets, bjets, METv)
             for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-                scores[f"{sig}_vs_{bkg}"] = self.getDenseScore(f"{sig}_vs_{bkg}", data)
-        else:                                
-            data = self.getGraphInput(muons, electrons, jets, METv)
+                scores[f"{sig}_vs_{bkg}"] = getDenseScore(self.models[f"{sig}_vs_{bkg}"], data)
+        else:   # GraphNeuralNet                             
+            data = getGraphInput(muons, electrons, jets, bjets, METv)
             for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-                scores[f"{sig}_vs_{bkg}"] = self.getGraphScore(f"{sig}_vs_{bkg}", data)
+                scores[f"{sig}_vs_{bkg}"] = getGraphScore(self.models[f"{sig}_vs_{bkg}"], data)
         return data, scores
     
     #### set weight
@@ -374,7 +340,7 @@ class PromptEstimator(TriLeptonBase):
         data = objects["data"]
         scores = objects["scores"]
         
-        ## fill input observables
+        ## fill base observables
         for idx, mu in enumerate(muons, start=1):
             super().FillHist(f"{channel}/{syst}/muons/{idx}/pt", mu.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/muons/{idx}/eta", mu.Eta(), weight, 48, -2.4, 2.4)
@@ -399,6 +365,23 @@ class PromptEstimator(TriLeptonBase):
         super().FillHist(f"{channel}/{syst}/bjets/size", bjets.size(), weight, 15, 0., 15.)
         super().FillHist(f"{channel}/{syst}/METv/pt", METv.Pt(), weight, 300, 0., 300.)
         super().FillHist(f"{channel}/{syst}/METv/phi", METv.Phi(), weight, 64, -3.2, 3.2)
+        
+        if "1E2Mu" in channel:
+            pair = pairs
+            super().FillHist(f"{channel}/{syst}/pair/pt", pair.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/pair/eta", pair.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/{syst}/pair/phi", pair.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{syst}/pair/mass", pair.M(), weight, 200, 0., 200.)
+        else:
+            pair1, pair2 = pairs
+            super().FillHist(f"{channel}/{syst}/stack/pt", pair1.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/stack/eta", pair1.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/{syst}/stack/phi", pair1.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{syst}/stack/mass", pair1.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/{syst}/stack/pt", pair2.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/stack/eta", pair2.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/{syst}/stack/phi", pair2.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{syst}/stack/mass", pair2.M(), weight, 200, 0., 200.)
 
         # Fill ZCands
         if "1E2Mu" in channel:
@@ -416,7 +399,7 @@ class PromptEstimator(TriLeptonBase):
                 else:                                         ZCand, nZCand = pair2, pair1
             else:
                 ZCand = muons.at(0) + muons.at(1) + muons.at(2)
-                nZCand = NodeParticle()
+                nZCand = Particle(0., 0., 0., 0.)
             super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
@@ -426,7 +409,7 @@ class PromptEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/{syst}/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/nZCand/mass", nZCand.M(), weight, 300, 0., 300.)
          
-        # Fill inputs for the network
+        # Fill inputs for the networks
         if self.network == "DenseNeuralNet":
             data = data[0].numpy()
             if self.channel == "Skim1E2Mu":
@@ -539,10 +522,15 @@ class PromptEstimator(TriLeptonBase):
                 super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/pz", jet.Pz(), weight, 500, -250., 250.)
                 super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/charge", jet.Charge(), weight, 200, -1, 1)
                 super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/btagScore", jet.GetTaggerResult(3), weight, 100, 0., 1.)
-            super().FillHist(f"{channel}/{syst}/inputs/METv/energay", METv.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/inputs/METv/energy", METv.E(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/inputs/METv/px", METv.Px(), weight, 500, -250, 250)
             super().FillHist(f"{channel}/{syst}/inputs/METv/py", METv.Py(), weight, 500, -250, 250)
-            super().FillHist(f"{channel}/{syst}/inputs/METv/pz", METv.Pz(), weight, 500, -250, 250) 
+            super().FillHist(f"{channel}/{syst}/inputs/METv/pz", METv.Pz(), weight, 500, -250, 250)
+            super().FillHist(f"{channel}/{syst}/inputs/Nj", jets.size(), weight, 20, 0., 20.)
+            super().FillHist(f"{channel}/{syst}/inputs/Nb", bjets.size(), weight, 20, 0., 20.)
+            super().FillHist(f"{channel}/{syst}/inputs/MET", METv.Pt(), weight, 300, 0., 300.)
+            for idx, lep in enumerate(list(muons)+list(electrons), start=1):
+                super().FillHist(f"{channel}/{syst}/inputs/MT{idx}", (lep+METv).Mt(), weight, 300, 0., 300.) 
         
         # Fill signal dependent distributions 
         for signal in self.signalStrings:
@@ -566,163 +554,9 @@ class PromptEstimator(TriLeptonBase):
                 super().FillHist(f"{channel}/{syst}/{signal}/nACand/phi", nACand.Phi(), weight, 64, -3.2, 3.2)
                 super().FillHist(f"{channel}/{syst}/{signal}/nACand/mass", nACand.M(), weight, 300, 0., 300.)
                 
-            score_TTFake = scores[f"{signal}_vs_TTLL_powheg"]
-            score_TTX    = scores[f"{signal}_vs_ttX"]
-            super().FillHist(f"{channel}/{syst}/{signal}/score_TTFake", score_TTFake, weight, 100, 0., 1.)
-            super().FillHist(f"{channel}/{syst}/{signal}/score_TTX", score_TTX, weight, 100, 0., 1.)
-
-
-    def getDenseInput(self, tightMuons, tightElectrons, jets, bjets, METv):
-        inputs = []
-        dRjets = []
-        for idx1, idx2 in combinations(range(jets.size()), 2):
-            dRjets.append(jets[idx1].DeltaR(jets[idx2]))
-        dRjets = sum(dRjets) / len(dRjets)
-
-        if self.channel == "Skim1E2Mu":
-            mu1 = tightMuons.at(0)
-            mu2 = tightMuons.at(1)
-            ele = tightElectrons.at(0)
-            j1 = jets.at(0)
-            j2 = jets.at(1)
-            MT = (ele+METv).Mt()
-            
-            inputs.append(mu1.E())
-            inputs.append(mu1.Px())
-            inputs.append(mu1.Py())
-            inputs.append(mu1.Pz())
-            inputs.append(mu1.Charge())
-            inputs.append(mu2.E())
-            inputs.append(mu2.Px())
-            inputs.append(mu2.Py())
-            inputs.append(mu2.Pz())
-            inputs.append(mu2.Charge())
-            inputs.append(ele.E())
-            inputs.append(ele.Px())
-            inputs.append(ele.Py())
-            inputs.append(ele.Pz())
-            inputs.append(ele.Charge())
-            inputs.append(j1.E())
-            inputs.append(j1.Px())
-            inputs.append(j1.Py())
-            inputs.append(j1.Pz())
-            inputs.append(j1.Charge())
-            inputs.append(j1.GetTaggerResult(3))
-            inputs.append(j2.E())
-            inputs.append(j2.Px())
-            inputs.append(j2.Py())
-            inputs.append(j2.Pz())
-            inputs.append(j2.Charge())
-            inputs.append(j2.GetTaggerResult(3))
-            inputs.append(mu1.DeltaR(mu2))
-            inputs.append(mu1.DeltaR(ele))
-            inputs.append(mu2.DeltaR(ele))
-            inputs.append(j1.DeltaR(j2))
-            inputs.append(sum([j.Pt() for j in jets]))
-            inputs.append(sum([l.Pt() for l in tightElectrons+tightMuons]))
-            inputs.append(MT)
-            inputs.append(METv.Pt())
-            inputs.append(jets.size())
-            inputs.append(bjets.size())
-            inputs.append(dRjets)
-            inputs.append(sum([j.GetTaggerResult(3) for j in jets]) / jets.size())
-        elif self.channel == "Skim3Mu":
-            mu1 = tightMuons.at(0)
-            mu2 = tightMuons.at(1)
-            mu3 = tightMuons.at(2)
-            j1 = jets.at(0)
-            j2 = jets.at(1)
-            MT1 = (mu1+METv).Mt()
-            MT2 = (mu2+METv).Mt()
-            MT3 = (mu3+METv).Mt()
-
-            inputs.append(mu1.E())
-            inputs.append(mu1.Px())
-            inputs.append(mu1.Py())
-            inputs.append(mu1.Pz())
-            inputs.append(mu1.Charge())
-            inputs.append(mu2.E())
-            inputs.append(mu2.Px())
-            inputs.append(mu2.Py())
-            inputs.append(mu2.Pz())
-            inputs.append(mu2.Charge())
-            inputs.append(mu3.E())
-            inputs.append(mu3.Px())
-            inputs.append(mu3.Py())
-            inputs.append(mu3.Pz())
-            inputs.append(mu3.Charge())
-            inputs.append(j1.E())
-            inputs.append(j1.Px())
-            inputs.append(j1.Py())
-            inputs.append(j1.Pz())
-            inputs.append(j1.Charge())
-            inputs.append(j1.GetTaggerResult(3))
-            inputs.append(j2.E())
-            inputs.append(j2.Px())
-            inputs.append(j2.Py())
-            inputs.append(j2.Pz())
-            inputs.append(j2.Charge())
-            inputs.append(j2.GetTaggerResult(3))
-            inputs.append(mu1.DeltaR(mu2))
-            inputs.append(mu1.DeltaR(mu3))
-            inputs.append(mu2.DeltaR(mu3))
-            inputs.append(j1.DeltaR(mu1))
-            inputs.append(j1.DeltaR(mu2))
-            inputs.append(j1.DeltaR(mu3))
-            inputs.append(j2.DeltaR(mu1))
-            inputs.append(j2.DeltaR(mu2))
-            inputs.append(j2.DeltaR(mu3))
-            inputs.append(j1.DeltaR(j2))
-            inputs.append(sum([j.Pt() for j in jets]))
-            inputs.append(sum([l.Pt() for l in tightMuons]))
-            inputs.append(MT1)
-            inputs.append(MT2)
-            inputs.append(MT3)
-            inputs.append(METv.Pt())
-            inputs.append(jets.size())
-            inputs.append(bjets.size())
-            inputs.append(dRjets)
-            inputs.append(sum([j.GetTaggerResult(3) for j in jets])/jets.size())
-        return torch.FloatTensor([inputs])
-        
-    def getDenseScore(self, modelKey, data):
-        with torch.no_grad():
-            out = self.models[modelKey](data)
-        return out.numpy()[0][1]
-
-    def getGraphInput(self, tightMuons, tightElectrons, jets, METv):
-        particles = []
-        for muon in tightMuons:
-            node = NodeParticle()
-            node.isMuon = True
-            node.SetPtEtaPhiM(muon.Pt(), muon.Eta(), muon.Phi(), muon.M())
-            node.charge = muon.Charge()
-            particles.append(node)
-        for ele in tightElectrons:
-            node = NodeParticle()
-            node.isElectron = True
-            node.SetPtEtaPhiM(ele.Pt(), ele.Eta(), ele.Phi(), ele.M())
-            node.charge = ele.Charge()
-            particles.append(node)
-        for jet in jets:
-            node = NodeParticle()
-            node.isJet = True
-            node.SetPtEtaPhiM(jet.Pt(), jet.Eta(), jet.Phi(), jet.M())
-            node.charge = jet.Charge()
-            node.btagScore = jet.GetTaggerResult(3)
-            particles.append(node)
-        missing = NodeParticle()
-        missing.SetPtEtaPhiM(METv.Pt(), 0., METv.Phi(), 0.)
-        particles.append(missing)
-        nodeList = []
-        for particle in particles:
-            nodeList.append([particle.E(), particle.Px(), particle.Py(), particle.Pz(),
-                             particle.Charge(), particle.BtagScore(), 
-                             particle.IsMuon(), particle.IsElectron(), particle.IsJet()])
-        data = evtToGraph(nodeList, y=None, k=4)
-        return data
-
-    def getGraphScore(self, modelKey, data):
-        with torch.no_grad():
-            out = self.models[modelKey](data.x, data.edge_index)
-        return out.numpy()[0][1]
+            score_nonprompt = scores[f"{signal}_vs_nonprompt"]
+            score_diboson = scores[f"{signal}_vs_diboson"]
+            score_ttZ    = scores[f"{signal}_vs_ttZ"]
+            super().FillHist(f"{channel}/{syst}/{signal}/score_nonprompt", score_nonprompt, weight, 100, 0., 1.)
+            super().FillHist(f"{channel}/{syst}/{signal}/score_diboson", score_diboson, weight, 100, 0., 1.)
+            super().FillHist(f"{channel}/{syst}/{signal}/score_ttZ", score_ttZ, weight, 100, 0., 1.)
