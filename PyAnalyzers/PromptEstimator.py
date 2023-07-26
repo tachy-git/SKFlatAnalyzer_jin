@@ -15,7 +15,7 @@ from MLTools.helpers import getGraphInput, getGraphScore
 class PromptEstimator(TriLeptonBase):
     def __init__(self):
         super().__init__()
-        # at this point, TriLeptonBase::initializeAnalyzer has not been activate
+        # at this point, TriLeptonBase::initializeAnalyzer has not been called
 
     def initializePyAnalyzer(self):
         super().initializeAnalyzer()

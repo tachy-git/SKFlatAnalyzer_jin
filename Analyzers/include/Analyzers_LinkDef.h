@@ -18,6 +18,7 @@
 #pragma link C++ class SkimTree_HNMultiLep+;
 #pragma link C++ class MeasureJetTaggingEfficiency+;
 #pragma link C++ class SkimTree_Dilepton+;
+#pragma link C++ class DiLeptonBase+;
 #pragma link C++ class TriLeptonBase+;
 #pragma link C++ class DataPreprocess+;
 #pragma link C++ class TutorialBase+;
