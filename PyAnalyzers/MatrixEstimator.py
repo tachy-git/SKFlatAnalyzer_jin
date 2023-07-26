@@ -3,7 +3,7 @@ from ROOT import TriLeptonBase
 from ROOT import TString
 from ROOT.std import vector
 from ROOT.JetTagging import Parameters as jParameters
-from ROOT import Lepton, Muon, Electron, Jet
+from ROOT import Lepton, Muon, Electron, Jet, Particle
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
 
 from itertools import product
@@ -284,7 +284,7 @@ class MatrixEstimator(TriLeptonBase):
                 else:                                         ZCand, nZCand = pair2, pair1
             else:
                 ZCand = muons.at(0) + muons.at(1) + muons.at(2)
-                nZCand = NodeParticle()
+                nZCand = Particle(0., 0., 0., 0.)
             super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
