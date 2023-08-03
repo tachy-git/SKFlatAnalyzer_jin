@@ -78,7 +78,7 @@ void DiLeptonBase::initializeAnalyzer() {
     hMu17Leg1_MC->SetDirectory(0);
     fMu17Leg1->Close();
 
-    TFile* fMu8Leg2 = new TFile(muonIDpath+"/efficiency_Mu8Leg2_DoubleMuonTriggers.root");
+    TFile* fMu8Leg2 = new TFile(muonIDpath+"/efficiency_Mu8Leg2.root");
     hMu8Leg2_Data = (TH2D*)fMu8Leg2->Get("data");
     hMu8Leg2_MC = (TH2D*)fMu8Leg2->Get("sim");
     hMu8Leg2_Data->SetDirectory(0);
@@ -126,6 +126,96 @@ double DiLeptonBase::getMuonRecoSF(const Muon &mu, int sys) {
             exit(EXIT_FAILURE); 
         }
     }
+    else if (DataEra == "2016postVFP") {
+        if (abseta < 0.9) {
+            const double value = 1.0000406419782646;
+            const double stat = 0.00010260291858070426;
+            const double syst = 0.0014366927652431664;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 1.2) {
+            const double value = 0.9997959311146515;
+            const double stat = 0.00019912837537507789;
+            const double syst = 0.0010917857343065423;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.1) {
+            const double value = 0.9994928400570587;
+            const double stat = 0.00012513847429973846;
+            const double syst = 0.0014814654032937547;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.4) {
+            const double value = 0.9990728619505579;
+            const double stat = 0.0002754474704705526;
+            const double syst = 0.0017364778744567663;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else {
+            cerr << "[DiLeptonBase::getMuonRecoSF] wrong muon eta value " << abseta << endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    else if (DataEra == "2017") {
+        if (abseta < 0.9) {
+            const double value = 0.9996742562806361;
+            const double stat = 7.650191371261136e-05;
+            const double syst = 0.0006514874387277825;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 1.2) {
+            const double value = 0.9997813602035737;
+            const double stat = 0.00014496238686164667;
+            const double syst = 0.0004372795928526685;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.1) {
+            const double value = 0.9994674742459532;
+            const double stat = 7.739510750489317e-05;
+            const double syst = 0.0010650515080936618;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.4) {
+            const double value = 0.9993566412630517;
+            const double stat = 0.00022835790507860388;
+            const double syst = 0.0011810962222705494;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else {
+            cerr << "[DiLeptonBase::getMuonRecoSF] wrong muon eta value " << abseta << endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    else if (DataEra == "2018") {
+        if (abseta < 0.9) {
+            const double value = 0.9998088006315689;
+            const double stat = 6.498845788247257e-05;
+            const double syst = 0.0003823987368622994;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 1.2) {
+            const double value = 0.999754701980269;
+            const double stat = 0.00011054079511271507;
+            const double syst = 0.0005221124230931915;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.1) {
+            const double value = 0.9995842791862117;
+            const double stat = 7.574443994874554e-05;
+            const double syst = 0.0008314416275765346;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.4) {
+            const double value = 0.9990341741614288;
+            const double stat = 0.00019911479235592246;
+            const double syst = 0.0017237408292350668;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else {
+            cerr << "[DiLeptonBase::getMuonRecoSF] wrong muon eta value " << abseta << endl;
+            exit(EXIT_FAILURE);
+        }
+    }
     else {
         cerr << "[DiLeptonBase::getMuonRecoSF] not implemented era" << DataEra << endl;
         exit(EXIT_FAILURE);
@@ -146,7 +236,7 @@ double DiLeptonBase::getMuonIDSF(const Muon &mu, int sys) {
     double value = hMuonIDSF->GetBinContent(thisBin);
     double error = hMuonIDSF->GetBinError(thisBin);
     
-    return value + sys*error;
+    return value + float(sys)*error;
 }
 
 double DiLeptonBase::getTriggerEff(const Muon &mu, TString histkey, bool isDATA, int sys) {
@@ -155,7 +245,7 @@ double DiLeptonBase::getTriggerEff(const Muon &mu, TString histkey, bool isDATA,
     double eta = fabs(mu.Eta());
     if (histkey == "Mu17Leg1" && isDATA) {
         h = hMu17Leg1_Data;
-        if (pt < 16.) pt = 16.;
+        if (pt < 20.) pt = 20.;
         if (pt >= 200.) pt = 199.;
         if (eta > 2.4) eta = 2.39;
     }
@@ -187,7 +277,7 @@ double DiLeptonBase::getTriggerEff(const Muon &mu, TString histkey, bool isDATA,
     double value = h->GetBinContent(thisBin);
     double error = h->GetBinError(thisBin);
 
-    return value + int(sys)*error;
+    return value + float(sys)*error;
 }
 
 double DiLeptonBase::getDblMuTriggerEff(vector<Muon> &muons, bool isDATA, int sys) {
@@ -201,6 +291,30 @@ double DiLeptonBase::getDblMuTriggerEff(vector<Muon> &muons, bool isDATA, int sy
     Muon &mu2 = muons.at(1);
 
     return getTriggerEff(mu1, "Mu17Leg1", isDATA, sys) * getTriggerEff(mu2, "Mu8Leg2", isDATA, sys);
+}
+
+double DiLeptonBase::getDZEfficiency(TString SFKey, bool isDATA) {
+    double eff = 0.;
+    if (SFKey.Contains("DiMu")) {
+        if (DataEra == "2016postVFP") eff = isDATA ? 0.9798 : 0.9969;
+        else if (DataEra == "2017")   eff = 0.9958;
+        else                          eff = 1.;
+    }
+    else if (SFKey.Contains("DiElIso")) {
+        if (DataEra=="2016preVFP")       eff = 0.986;
+        else if (DataEra=="2016postVFP") eff = 0.980;
+        else                             eff = 1.;
+    }
+    else if (SFKey.Contains("EMuIso")){
+        if(DataEra=="2016postVFP") eff = isDATA ? 0.9648:0.9882;
+        //else if(DataEra=="2017"  ) Eff = 0.9951; //for now included in muleg
+        else                       eff = 1.;
+    }
+    else {
+        eff = 1.;
+    }
+
+    return eff;
 }
 
 double DiLeptonBase::getDblMuTriggerSF(vector<Muon> &muons, int sys) {

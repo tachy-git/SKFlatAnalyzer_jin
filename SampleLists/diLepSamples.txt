@@ -1,6 +1,6 @@
 # prompt + fake
-# WJets_MG
-# TTLJ_powheg
+WJets_MG
+TTLJ_powheg
 # ST
 SingleTop_sch_Lep
 SingleTop_tch_top_Incl

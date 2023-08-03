@@ -24,6 +24,7 @@ public:
     double getTriggerEff(const Muon &mu, TString histkey, bool isDATA, int sys);
     double getDblMuTriggerEff(vector<Muon> &muons, bool isDATA, int sys);
     double getDblMuTriggerSF(vector<Muon> &muons, int sys);
+    double getDZEfficiency(TString SFkey, bool isDATA);
 };
 
 #endif
