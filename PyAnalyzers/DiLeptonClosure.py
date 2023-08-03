@@ -6,7 +6,7 @@ from ROOT.JetTagging import Parameters as jParameters
 from ROOT import Muon, Electron, Jet
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
 
-class DiLeptonValidation(DiLeptonBase):
+class DiLeptonClosure(DiLeptonBase):
     def __init__(self):
         super().__init__()
         # at this point, DiLeptonBase::initializeAnalyzer has not been called
@@ -32,7 +32,7 @@ class DiLeptonValidation(DiLeptonBase):
                                       #"ElectronIDSFUp", "ElectronIDSFDown",
                                       "DblMuTrigSFUp", "DblMuTrigSFDown",
                                       #"EMuTrigSFUp", "EMuTrigSFDown",
-                                      "DYReweightUp", "DYReweightDown",
+                                      #"DYReweightUp", "DYReweightDown",
                                       "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
                                       "HeavyTagUpCorr", "HeavyTagDownCorr",
                                       "LightTagUpUnCorr", "LightTagDownUnCorr",
@@ -65,11 +65,9 @@ class DiLeptonValidation(DiLeptonBase):
                        "bjets": bjets,
                        "METv": METv
                        }
-            weight = self.getBaseWeight(ev, jets, truth)
-            self.FillObjects(channel, objects, weight, syst="Central_NoLeptonWeight")
             for syst in self.weightVariations:
                 weight = self.getWeight(channel, ev, tightMuons, tightElectrons, jets, truth, syst)
-                self.FillObjects(channel, objects, weight, syst)
+                self.FillObjects(channel, ev, objects, weight, syst)
         
         # Scale variations
         for syst in self.scaleVariations:
@@ -83,7 +81,7 @@ class DiLeptonValidation(DiLeptonBase):
                        "METv": METv,
                        }
             weight = self.getWeight(channel, ev, tightMuons, tightElectrons, jets, truth, syst)
-            self.FillObjects(channel, objects, weight, syst)
+            self.FillObjects(channel, ev, objects, weight, syst)
         
     def defineObjects(self, rawMuons, rawElectrons, rawJets, syst="Central"):
         # first copy objects
@@ -137,32 +135,42 @@ class DiLeptonValidation(DiLeptonBase):
         if self.channel == "RunEMu":
             if not isEMu: return None
         
-        ## DiMu selection
         if self.channel == "RunDiMu":
-            if not event.PassTrigger(super().DblMuTriggers): return None
-            mu1, mu2 = tuple(tightMuons)
+            mu1, mu2 = tightMuons.at(0), tightMuons.at(1)
             if not mu1.Pt() > 20.: return None
             if not mu2.Pt() > 10.: return None
-            if not mu1.Charge()+mu2.Charge() == 0: return None
-            pair = mu1 + mu2
-            if not pair.M() > 50.: return None
-            return "DiMu"
-            #if abs(pair.M() - 91.2) < 15.:
-            #    if not bjets.size() == 0: return None
-            #    if not METv.Pt() < 30.:   return None
-            #    return "DYDiMu"
-            #else:
-            #    if not jets.size() >= 2:  return None
-            #    if not bjets.size() >= 1: return None
-            #    if not pair.M() > 12.:    return None
-            #    if not METv.Pt() > 40.:   return None
-            #    return "TTDiMu"
-        ## EMu selection
         elif self.channel == "RunEMu":
             print("Not implemented yet")
             exit(1)
         else:
             print(f"Wrong channel {self.channel}")
+            exit(1)
+        return self.channel
+
+        ## DiMu selection
+        #if self.channel == "RunDiMu":
+        #    if not event.PassTrigger(super().DblMuTriggers): return None
+        #    mu1, mu2 = tuple(tightMuons)
+        #    if not mu1.Pt() > 20.: return None
+        #    if not mu2.Pt() > 10.: return None
+        #    if not mu1.Charge()+mu2.Charge() == 0: return None
+        #    pair = mu1 + mu2
+        #    if abs(pair.M() - 91.2) < 15.:
+        #        if not bjets.size() == 0: return None
+        #        if not METv.Pt() < 30.:   return None
+        #        return "DYDiMu"
+        #    else:
+        #        if not jets.size() >= 2:  return None
+        #        if not bjets.size() >= 1: return None
+        #        if not pair.M() > 12.:    return None
+        #        if not METv.Pt() > 40.:   return None
+        #        return "TTDiMu"
+        ## EMu selection
+        #elif self.channel == "RunEMu":
+        #    print("Not implemented yet")
+        #    exit(1)
+        #else:
+        #    print(f"Wrong channel {self.channel}")
     
     def getWeight(self, channel, event, muons, electrons, jets, truth, syst="Central"):
         weight = 1.
@@ -183,35 +191,36 @@ class DiLeptonValidation(DiLeptonBase):
             
             w_zptweight = 1.
             w_topptweight = 1.
-            if "DYJets" in super().MCSample:
-                if syst == "DYReweightUp":     w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, 1)
-                elif syst == "DYReweightDown": w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, -1)
-                else:                          w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, 0)
+            #if "DYJets" in super().MCSample:
+            #    if syst == "DYReweightUp":     w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, 1)
+            #    elif syst == "DYReweightDown": w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, -1)
+            #    else:                          w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, 0)
             if "TTLL" in super().MCSample or "TTLJ" in super().MCSample:
                 w_topptweight = super().mcCorr.GetTopPtReweight(truth)
             weight *= (w_zptweight * w_topptweight)
 
-            w_muonRecoSF = 1.
-            w_muonIDSF = 1.
-            w_dblMuTrigSF = 1.
-            for mu in muons:
-                w_muonRecoSF *= super().getMuonRecoSF(mu, 0)
-                if syst == "MuonIDSFUp":     w_muonIDSF *= super().getMuonIDSF(mu, 1)
-                elif syst == "MuonIDSFDown": w_muonIDSF *= super().getMuonIDSF(mu, -1)
-                else:                        w_muonIDSF *= super().getMuonIDSF(mu, 0)
+            #w_muonRecoSF = 1.
+            #w_muonIDSF = 1.
+            #w_dblMuTrigSF = 1.
+            #for mu in muons:
+            #    w_muonRecoSF *= super().getMuonRecoSF(mu, 0)
+            #    if syst == "MuonIDSFUp":     w_muonIDSF *= super().getMuonIDSF(mu, 1)
+            #    elif syst == "MuonIDSFDown": w_muonIDSF *= super().getMuonIDSF(mu, -1)
+            #    else:                        w_muonIDSF *= super().getMuonIDSF(mu, 0)
 
-            if "DiMu" in channel:
-                # trigger efficiency
-                if syst == "DblMuTrigSFUp":     w_dblMuTrigSF = self.getDblMuTriggerSF(muons, 1)
-                elif syst == "DblMuTrigSFDown": w_dblMuTrigSF = self.getDblMuTriggerSF(muons, -1)
-                else:                           w_dblMuTrigSF = self.getDblMuTriggerSF(muons, 0)
+            #if "DiMu" in channel:
+            #    # trigger efficiency
+            #    if syst == "DblMuTrigSFUp":     w_dblMuTrigSF = self.getDblMuTriggerSF(muons, 1)
+            #    elif syst == "DblMuTrigSFDown": w_dblMuTrigSF = self.getDblMuTriggerSF(muons, -1)
+            #    else:                           w_dblMuTrigSF = self.getDblMuTriggerSF(muons, 0)
                 # DZ efficiency
-                w_dblMuTrigSF *= super().getDZEfficiency(channel, isDATA=True)/super().getDZEfficiency(channel, isDATA=False)
+            #    w_dblMuTrigSF *= super().getDZEfficiency(channel, isDATA=True)/super().getDZEfficiency(channel, isDATA=False)
 
             weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
             weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
-
-            weight *= w_dblMuTrigSF        # print(f"muontrig: {w_dblMuTrigSF}")
+            #weight *= w_muonRecoSF         # print(f"w_muonRecoSF: {w_muonRecoSF}")
+            #weight *= w_muonIDSF           # print(f"muonID: {w_muonIDSF}")
+            #weight *= w_dblMuTrigSF        # print(f"muontrig: {w_dblMuTrigSF}")
 
             # b-tagging
             jtp = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
@@ -230,64 +239,34 @@ class DiLeptonValidation(DiLeptonBase):
         
         return weight
     
-    # to compare Lepton ID SF / trigger SF w.r.t. baseline
-    def getBaseWeight(self, event, jets, truth, applyJetTagging=True):
-        weight = 1.
-        if not super().IsDATA:
-            weight *= super().MCweight()
-            weight *= event.GetTriggerLumi("Full")
-            weight *= super().GetPrefireWeight(0)
-            weight *= super().GetPileUpWeight(super().nPileUp, 0)
-            #if "DY" in super().MCSample:
-            #    weight *= super().mcCorr.GetOfficialDYReweight(truth, 0)
-            if "TTLL" in super().MCSample or "TTLJ" in super().MCSample:
-                weight *= super().mcCorr.GetTopPtReweight(truth)
-
-            if applyJetTagging:
-                jtp = jParameters(3, 1, 0, 1)
-                vjets = vector[Jet]()
-                for j in jets: vjets.emplace_back(j)
-                weight *= super().mcCorr.GetBTaggingReweight_1a(vjets, jtp)
-        
-        return weight
-    
-    def FillObjects(self, channel, objects, weight, syst):
+    def FillObjects(self, channel, evt, objects, weight, syst):
         muons = objects["muons"]
         electrons = objects["electrons"]
         jets = objects["jets"]
         bjets = objects["bjets"]
         METv = objects["METv"]
         
-        if "DiMu" in channel:
-            pair = muons.at(0) + muons.at(1)
+        trigWeight = 1.
+        trigWeightUp = 1.
+        trigWeightDown = 1.
+        if channel == "RunDiMu":
+            trigWeight = self.getDblMuTriggerEff(muons, False, 0)
+            trigWeightUp = self.getDblMuTriggerEff(muons, False, 1)
+            trigWeightDown = self.getDblMuTriggerEff(muons, False, -1)
+            trigWeight *= super().getDZEfficiency(channel, isDATA=False)
+        elif channel == "RunEMu":
+            print("Not implemented yet")
+            exit(1)
+        else:
+            print(f"Wrong channel {channel}")
+            exit(1)
+
+        # get weight
+        super().FillHist("sumweight", 0., weight, 5, 0., 5.)
+        super().FillHist("sumweight", 1., weight*trigWeight, 5, 0., 5.)
+        super().FillHist("sumweight", 2., wieght*trigWeightUp, 5, 0., 5.)
+        super().FillHist("sumweight", 3., weight*trigWeightDown, 5, 0., 5.)
         
-        ## fill objects
-        for idx, mu in enumerate(muons, start=1):
-            super().FillHist(f"{channel}/{syst}/muons/{idx}/pt", mu.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/muons/{idx}/eta", mu.Eta(), weight, 48, -2.4, 2.4)
-            super().FillHist(f"{channel}/{syst}/muons/{idx}/phi", mu.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/muons/{idx}/mass", mu.M(), weight, 10, 0., 1.)
-        for idx, ele in enumerate(electrons, start=1):
-            super().FillHist(f"{channel}/{syst}/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
-            super().FillHist(f"{channel}/{syst}/electrons/{idx}/Phi", ele.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
-        for idx, jet in enumerate(jets, start=1):
-            super().FillHist(f"{channel}/{syst}/jets/{idx}/pt", jet.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/jets/{idx}/eta", jet.Eta(), weight, 48, -2.4, 2.4)
-            super().FillHist(f"{channel}/{syst}/jets/{idx}/phi", jet.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/jets/{idx}/mass", jet.M(), weight, 100, 0., 100.)
-        for idx, bjet in enumerate(bjets, start=1):
-            super().FillHist(f"{channel}/{syst}/bjets/{idx}/pt", bjet.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/bjets/{idx}/eta", bjet.Eta(), weight, 48, -2.4, 2.4)
-            super().FillHist(f"{channel}/{syst}/bjets/{idx}/phi", bjet.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/bjets/{idx}/mass", bjet.M(), weight, 100, 0., 100.)
-        super().FillHist(f"{channel}/{syst}/jets/size", jets.size(), weight, 20, 0., 20.)
-        super().FillHist(f"{channel}/{syst}/bjets/size", bjets.size(), weight, 15, 0., 15.)
-        super().FillHist(f"{channel}/{syst}/METv/pt", METv.Pt(), weight, 300, 0., 300.)
-        super().FillHist(f"{channel}/{syst}/METv/phi", METv.Phi(), weight, 64, -3.2, 3.2)
-        if "DiMu" in channel:
-            super().FillHist(f"{channel}/{syst}/pair/pt", pair.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/pair/eta", pair.Eta(), weight, 100, -5., 5.)
-            super().FillHist(f"{channel}/{syst}/pair/phi", pair.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/pair/mass", pair.M(), weight, 300, 0., 300.)
+        if not evt.PassTrigger(super().DblMuTriggers): return None
+        super().FillHist("sumweight", 4., weight, 5, 0., 5.)
+

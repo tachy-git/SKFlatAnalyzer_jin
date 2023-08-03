@@ -926,7 +926,6 @@ void MCCorrection::SetupJetTagging(){
       if(tmp_it_H==tmp_map_BTagCalibration.end()){
         tmp_map_BTagCalibration[tmp_tagger+"_"+this_key_H] = BTagCalibration(tmp_tagger, this_mt_H, btagpath.Data()+tmp_filename);
       }
-
       //==== Now, contructing BTagCalibrationReader obect
 
       std::vector<std::string> systvec_L = {"up", "up_correlated", "up_uncorrelated", "down", "down_correlated", "down_uncorrelated"};
