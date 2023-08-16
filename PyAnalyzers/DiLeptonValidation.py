@@ -32,7 +32,7 @@ class DiLeptonValidation(DiLeptonBase):
                                       #"ElectronIDSFUp", "ElectronIDSFDown",
                                       "DblMuTrigSFUp", "DblMuTrigSFDown",
                                       #"EMuTrigSFUp", "EMuTrigSFDown",
-                                      "DYReweightUp", "DYReweightDown",
+                                      #"DYReweightUp", "DYReweightDown",
                                       "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
                                       "HeavyTagUpCorr", "HeavyTagDownCorr",
                                       "LightTagUpUnCorr", "LightTagDownUnCorr",
@@ -183,10 +183,10 @@ class DiLeptonValidation(DiLeptonBase):
             
             w_zptweight = 1.
             w_topptweight = 1.
-            if "DYJets" in super().MCSample:
-                if syst == "DYReweightUp":     w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, 1)
-                elif syst == "DYReweightDown": w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, -1)
-                else:                          w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, 0)
+            #if "DYJets" in super().MCSample:
+            #    if syst == "DYReweightUp":     w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, 1)
+            #    elif syst == "DYReweightDown": w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, -1)
+            #    else:                          w_zptweight = super().mcCorr.GetOfficialDYReweight(truth, 0)
             if "TTLL" in super().MCSample or "TTLJ" in super().MCSample:
                 w_topptweight = super().mcCorr.GetTopPtReweight(truth)
             weight *= (w_zptweight * w_topptweight)

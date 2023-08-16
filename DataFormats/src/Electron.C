@@ -422,12 +422,13 @@ bool Electron::Pass_CaloIdL_TrackIdL_IsoVL() const{
 
 bool Electron::Pass_HcToWABaseline() const {
   // baseline electron ID for HcToWA study
-    // without MVA && MiniIso cuts
+  // without MVA && MiniIso cuts
   if (! Pass_CaloIdL_TrackIdL_IsoVL()) return false;
-    if (! PassConversionVeto()) return false;
-    if (! (NMissingHits() < 2)) return false;
-    if (! (fabs(dZ()) < 0.1)) return false;
-    return true;
+  if (! PassConversionVeto()) return false;
+  if (! (NMissingHits() < 2)) return false;
+  if (! (fabs(dZ()) < 0.1)) return false;
+  if(! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 4.)) return false;
+  return true;
 }
 
 bool Electron::Pass_HcToWA(TString era, TString wp) const{
