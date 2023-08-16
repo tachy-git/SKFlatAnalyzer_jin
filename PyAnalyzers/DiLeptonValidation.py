@@ -29,9 +29,9 @@ class DiLeptonValidation(DiLeptonBase):
             self.weightVariations += ["L1PrefireUp", "L1PrefireDown",
                                       "PileupReweightUp", "PileupReweightDown",
                                       "MuonIDSFUp", "MuonIDSFDown",
-                                      #"ElectronIDSFUp", "ElectronIDSFDown",
+                                      "ElectronIDSFUp", "ElectronIDSFDown",
                                       "DblMuTrigSFUp", "DblMuTrigSFDown",
-                                      #"EMuTrigSFUp", "EMuTrigSFDown",
+                                      "EMuTrigSFUp", "EMuTrigSFDown",
                                       #"DYReweightUp", "DYReweightDown",
                                       "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
                                       "HeavyTagUpCorr", "HeavyTagDownCorr",
@@ -147,20 +147,16 @@ class DiLeptonValidation(DiLeptonBase):
             pair = mu1 + mu2
             if not pair.M() > 50.: return None
             return "DiMu"
-            #if abs(pair.M() - 91.2) < 15.:
-            #    if not bjets.size() == 0: return None
-            #    if not METv.Pt() < 30.:   return None
-            #    return "DYDiMu"
-            #else:
-            #    if not jets.size() >= 2:  return None
-            #    if not bjets.size() >= 1: return None
-            #    if not pair.M() > 12.:    return None
-            #    if not METv.Pt() > 40.:   return None
-            #    return "TTDiMu"
         ## EMu selection
         elif self.channel == "RunEMu":
-            print("Not implemented yet")
-            exit(1)
+            if not event.PassTrigger(super().EMuTriggers): return None
+            mu = tightMuons.at(0)
+            ele = tightElectrons.at(0)
+            if not ((mu.Pt() > 20. and ele.Pt() > 15.) or (mu.Pt() > 10. and ele.Pt() > 25.)): return None
+            if not mu.Charge()+ele.Charge() == 0: return None
+            if not mu.DeltaR(ele) > 0.4: return None
+            if not jets.size() >= 2: return None
+            return "EMu"
         else:
             print(f"Wrong channel {self.channel}")
     
@@ -193,25 +189,40 @@ class DiLeptonValidation(DiLeptonBase):
 
             w_muonRecoSF = 1.
             w_muonIDSF = 1.
-            w_dblMuTrigSF = 1.
+            w_eleIDSF = 1.
+            w_trigSF = 1.
             for mu in muons:
                 w_muonRecoSF *= super().getMuonRecoSF(mu, 0)
-                if syst == "MuonIDSFUp":     w_muonIDSF *= super().getMuonIDSF(mu, 1)
-                elif syst == "MuonIDSFDown": w_muonIDSF *= super().getMuonIDSF(mu, -1)
-                else:                        w_muonIDSF *= super().getMuonIDSF(mu, 0)
+                if syst == "MuonIDSFUp":     w_muonIDSF *= self.getMuonIDSF(mu, 1)
+                elif syst == "MuonIDSFDown": w_muonIDSF *= self.getMuonIDSF(mu, -1)
+                else:                        w_muonIDSF *= self.getMuonIDSF(mu, 0)
 
+            for ele in electrons:
+                if syst == "EleIDSFUp":       w_eleIDSF *= self.getEleIDSF(ele, 1);
+                elif syst == "EleIDSFDown":   w_eleIDSF *= self.getEleIDSF(ele, -1);
+                else:                         w_eleIDSF *= self.getEleIDSF(ele, 0);
+            
             if "DiMu" in channel:
                 # trigger efficiency
-                if syst == "DblMuTrigSFUp":     w_dblMuTrigSF = self.getDblMuTriggerSF(muons, 1)
-                elif syst == "DblMuTrigSFDown": w_dblMuTrigSF = self.getDblMuTriggerSF(muons, -1)
-                else:                           w_dblMuTrigSF = self.getDblMuTriggerSF(muons, 0)
+                if syst == "DblMuTrigSFUp":     w_trigSF = self.getDblMuTriggerSF(muons, 1)
+                elif syst == "DblMuTrigSFDown": w_trigSF = self.getDblMuTriggerSF(muons, -1)
+                else:                           w_trigSF = self.getDblMuTriggerSF(muons, 0)
                 # DZ efficiency
-                w_dblMuTrigSF *= super().getDZEfficiency(channel, isDATA=True)/super().getDZEfficiency(channel, isDATA=False)
+                w_trigSF *= self.getDZEfficiency(channel, isDATA=True)/self.getDZEfficiency(channel, isDATA=False)
+
+
+            if "EMu" in channel:
+                if syst == "EMuTrigSFUp":     w_trigSF = self.getEMuTrigerSF(electrons, muons, 1)
+                elif syst == "EMuTrigSFDown": w_trigSF = self.getEMuTriggerSF(electrons, muons, -1)
+                else:                         w_trigSF = self.getEMuTriggerSF(electrons, muons, 0)
+                # DZ efficiency
+                w_trigSF *= self.getDZEfficiency(channel, isDATA=True)/self.getDZEfficiency(channel, isDATA=False)
 
             weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
             weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
-
-            weight *= w_dblMuTrigSF        # print(f"muontrig: {w_dblMuTrigSF}")
+            weight *= w_muonIDSF
+            weight *= w_eleIDSF
+            weight *= w_trigSF             # print(f"muontrig: {w_dblMuTrigSF}")
 
             # b-tagging
             jtp = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
