@@ -253,7 +253,7 @@ double DiLeptonBase::getMuonIDSF(const Muon &mu, int sys) {
 
 double DiLeptonBase::getEleIDSF(const Electron &ele, int sys) {
     double pt = ele.Pt();
-    double eta = ele.Eta();
+    double eta = ele.scEta();
     if (pt < 10.) pt = 10.;
     if (pt >= 500) pt = 499.;
     if (eta < -2.5) eta = -2.499;
@@ -310,7 +310,7 @@ double DiLeptonBase::getTriggerEff(const Muon &mu, TString histkey, bool isDATA,
 double DiLeptonBase::getTriggerEff(const Electron &ele, TString histkey, bool isDATA, int sys) {
     TH2D *h = nullptr;
     double pt = ele.Pt();
-    double eta = ele.Eta();
+    double eta = ele.scEta();
     if (eta < -2.5) eta = -2.499;
     if (eta >= 2.5) eta = 2.499;
     if (histkey == "El23Leg1" && isDATA) {

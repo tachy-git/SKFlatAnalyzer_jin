@@ -189,6 +189,7 @@ class DiLeptonValidation(DiLeptonBase):
 
             w_muonRecoSF = 1.
             w_muonIDSF = 1.
+            w_eleRecoSF = 1.
             w_eleIDSF = 1.
             w_trigSF = 1.
             for mu in muons:
@@ -198,6 +199,7 @@ class DiLeptonValidation(DiLeptonBase):
                 else:                        w_muonIDSF *= self.getMuonIDSF(mu, 0)
 
             for ele in electrons:
+                w_eleRecoSF *= super().mcCorr.ElectronReco_SF(ele.scEta(), ele.Pt(), 0) 
                 if syst == "EleIDSFUp":       w_eleIDSF *= self.getEleIDSF(ele, 1);
                 elif syst == "EleIDSFDown":   w_eleIDSF *= self.getEleIDSF(ele, -1);
                 else:                         w_eleIDSF *= self.getEleIDSF(ele, 0);
@@ -212,7 +214,7 @@ class DiLeptonValidation(DiLeptonBase):
 
 
             if "EMu" in channel:
-                if syst == "EMuTrigSFUp":     w_trigSF = self.getEMuTrigerSF(electrons, muons, 1)
+                if syst == "EMuTrigSFUp":     w_trigSF = self.getEMuTriggerSF(electrons, muons, 1)
                 elif syst == "EMuTrigSFDown": w_trigSF = self.getEMuTriggerSF(electrons, muons, -1)
                 else:                         w_trigSF = self.getEMuTriggerSF(electrons, muons, 0)
                 # DZ efficiency
@@ -281,7 +283,7 @@ class DiLeptonValidation(DiLeptonBase):
         for idx, ele in enumerate(electrons, start=1):
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
-            super().FillHist(f"{channel}/{syst}/electrons/{idx}/Phi", ele.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/phi", ele.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
         for idx, jet in enumerate(jets, start=1):
             super().FillHist(f"{channel}/{syst}/jets/{idx}/pt", jet.Pt(), weight, 300, 0., 300.)
