@@ -156,6 +156,7 @@ class DiLeptonValidation(DiLeptonBase):
             if not mu.Charge()+ele.Charge() == 0: return None
             if not mu.DeltaR(ele) > 0.4: return None
             if not jets.size() >= 2: return None
+            if not bjets.size() >= 1: return None
             return "EMu"
         else:
             print(f"Wrong channel {self.channel}")
@@ -222,7 +223,9 @@ class DiLeptonValidation(DiLeptonBase):
 
             weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
             weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
+            weight *= w_muonRecoSF
             weight *= w_muonIDSF
+            weight *= w_eleRecoSF
             weight *= w_eleIDSF
             weight *= w_trigSF             # print(f"muontrig: {w_dblMuTrigSF}")
 
