@@ -7,6 +7,12 @@ void DiLeptonBase::initializeAnalyzer() {
     RunDiMu = HasFlag("RunDiMu");
     RunEMu = HasFlag("RunEMu");
     RunSyst = HasFlag("RunSyst");
+    MeasNormMu = HasFlag("MeasNormMu");
+    MeasNPVMu = HasFlag("MeasNPVMu");
+    MeasFakeMu = HasFlag("MeasFakeMu");
+    MeasNormEl = HasFlag("MeasNormEl");
+    MeasNPVEl = HasFlag("MeasNPVEl");
+    MeasFakeEl = HasFlag("MeasFakeEl");
 
     // triggers & ID settings
     if (DataEra == "2016preVFP") {

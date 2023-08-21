@@ -6,6 +6,8 @@
 class DiLeptonBase: public AnalyzerCore {
 public:
     bool RunDiMu, RunEMu; // channel
+    bool MeasNormMu, MeasNPVMu, MeasFakeMu;
+    bool MeasNormEl, MeasNPVEl, MeasFakeEl;
     bool RunSyst;         // systematic run
     vector<TString> ElectronIDs, MuonIDs;
     vector<TString> DblMuTriggers, EMuTriggers;
