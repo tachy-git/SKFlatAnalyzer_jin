@@ -26,18 +26,21 @@ class DiLeptonValidation(DiLeptonBase):
         self.weightVariations = ["Central"]
         self.scaleVariations = []
         if self.run_syst:
-            self.weightVariations += ["L1PrefireUp", "L1PrefireDown",
-                                      "PileupReweightUp", "PileupReweightDown",
-                                      "MuonIDSFUp", "MuonIDSFDown",
-                                      "ElectronIDSFUp", "ElectronIDSFDown",
-                                      "DblMuTrigSFUp", "DblMuTrigSFDown",
-                                      "EMuTrigSFUp", "EMuTrigSFDown",
-                                      #"DYReweightUp", "DYReweightDown",
-                                      "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
-                                      "HeavyTagUpCorr", "HeavyTagDownCorr",
-                                      "LightTagUpUnCorr", "LightTagDownUnCorr",
-                                      "LightTagUpCorr", "LightTagDownCorr"
-                                      ]
+            if super().RunDiMu:
+                self.weightVariations += ["L1PrefireUp", "L1PrefireDown",
+                                          "PileupReweightUp", "PileupReweightDown",
+                                          "MuonIDSFUp", "MuonIDSFDown",
+                                          "DblMuTrigSFUp", "DblMuTrigSFDown"]
+            elif super().RunEMu:
+                self.weightVariations += ["L1PrefireUp", "L1PrefireDown",
+                                          "PileupReweightUp", "PileupReweightDown",
+                                          "MuonIDSFUp", "MuonIDSFDown",
+                                          "ElectronIDSFUp", "ElectronIDSFDown",
+                                          "EMuTrigSFUp", "EMuTrigSFDown",
+                                          "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
+                                          "HeavyTagUpCorr", "HeavyTagDownCorr",
+                                          "LightTagUpUnCorr", "LightTagDownUnCorr",
+                                          "LightTagUpCorr", "LightTagDownCorr"]
             self.scaleVariations += ["JetResUp", "JetResDown", 
                                      "JetEnUp", "JetEnDown",
                                      "ElectronResUp", "ElectronResDown", 
@@ -156,6 +159,7 @@ class DiLeptonValidation(DiLeptonBase):
             if not mu.Charge()+ele.Charge() == 0: return None
             if not mu.DeltaR(ele) > 0.4: return None
             if not jets.size() >= 2: return None
+            if not bjets.size() >= 1: return None
             return "EMu"
         else:
             print(f"Wrong channel {self.channel}")
@@ -222,24 +226,27 @@ class DiLeptonValidation(DiLeptonBase):
 
             weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
             weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
+            weight *= w_muonRecoSF
             weight *= w_muonIDSF
+            weight *= w_eleRecoSF
             weight *= w_eleIDSF
             weight *= w_trigSF             # print(f"muontrig: {w_dblMuTrigSF}")
 
             # b-tagging
-            jtp = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
-            vjets = vector[Jet]()
-            for j in jets: vjets.emplace_back(j)
-            if syst == "HeavyTagUpUnCorr":     w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpHTag")
-            elif syst == "HeavyTagDownUnCorr": w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownHTag")
-            elif syst == "HeavyTagUpCorr":     w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpHTagCorr")
-            elif syst == "HeavyTagDownCorr":   w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownHTagCorr")
-            elif syst == "LightTagUpUnCorr":   w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpLTag")
-            elif syst == "LightTagDownUnCorr": w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownLTag")
-            elif syst == "LightTagUpCorr":     w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpLTagCorr")
-            elif syst == "LightTagDownCorr":   w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownLTagCorr")
-            else:                              w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp)
-            weight *= w_btag
+            if "EMu" in channel:
+                jtp = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
+                vjets = vector[Jet]()
+                for j in jets: vjets.emplace_back(j)
+                if syst == "HeavyTagUpUnCorr":     w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpHTag")
+                elif syst == "HeavyTagDownUnCorr": w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownHTag")
+                elif syst == "HeavyTagUpCorr":     w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpHTagCorr")
+                elif syst == "HeavyTagDownCorr":   w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownHTagCorr")
+                elif syst == "LightTagUpUnCorr":   w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpLTag")
+                elif syst == "LightTagDownUnCorr": w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownLTag")
+                elif syst == "LightTagUpCorr":     w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystUpLTagCorr")
+                elif syst == "LightTagDownCorr":   w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp, "SystDownLTagCorr")
+                else:                              w_btag = super().mcCorr.GetBTaggingReweight_1a(vjets, jtp)
+                weight *= w_btag
         
         return weight
     
