@@ -23,8 +23,8 @@ class MeasFakeRate(DiLeptonBase):
         if super().MeasNormEl: self.channel = "MeasNormEl"
         if super().MeasNPVEl:  self.channel = "MeasNPVEl"
         if super().MeasFakeEl: self.channel = "MeasFakeEl"
-        if super().MeasNormMu: self.channel = "MeasFakeMu"
-        if super().MeasNPVMu:  self.channel = "MeasFakeMu"
+        if super().MeasNormMu: self.channel = "MeasNormMu"
+        if super().MeasNPVMu:  self.channel = "MeasNPVMu"
         if super().MeasFakeMu: self.channel = "MeasFakeMu" 
         if super().RunSyst:  self.run_syst = True
         
