@@ -184,7 +184,7 @@ class MeasFakeRate(DiLeptonBase):
             ZCand = looseElectrons.at(0) + looseElectrons.at(1)
             if not (60. < ZCand.M() and ZCand.M() < 120.): return None
             return self.channel
-        if self.channel in ["MeasNPVEl", "MeasFakeEl"]:
+        if self.channel == "MeasFakeEl":
             if not (NEL == 1 and NEV == 1 and NML == 0 and NMV == 0): return None
             if not event.PassTrigger(self.triggerList): return None
             if syst == "RequireHeavyTag":
@@ -196,13 +196,21 @@ class MeasFakeRate(DiLeptonBase):
             if not METv.Pt() < 25.: return None
             if not (METv+looseElectrons.at(0)).Mt() < 25.: return None
             return self.channel
+        if self.channel == "MeasNPVEl":
+            if not (NEL == 1 and NEV == 1 and NML == 0 and NMV == 0): return None
+            if not event.PassTrigger(self.triggerList): return None
+            if not jets.size() >= 1: return None
+            if not jets.at(0).DeltaR(looseElectrons.at(0)) > 1.: return None
+            #if not METv.Pt() < 25.: return None
+            #if not (METv+looseElectrons.at(0)).Mt() < 25.: return None
+            return self.channel
         if self.channel == "MeasNormMu":
             if not (NEL == 0 and NEV == 0 and NML == 2 and NMV == 2): return None
             if not event.PassTrigger(self.triggerList): return None
             ZCand = looseMuons.at(0) + looseMuons.at(1)
             if not (abs(ZCand.M()-91.2) < 15.): return None 
             return self.channel
-        if self.channel in ["MeasNPVMu", "MeasFakeMu"]:
+        if self.channel == "MeasFakeMu":
             if not (NEL == 0 and NEV == 0 and NML == 1 and NMV == 1): return None
             if not event.PassTrigger(self.triggerList): return None
             if syst == "RequireHeavyTag":
@@ -214,6 +222,14 @@ class MeasFakeRate(DiLeptonBase):
             if not METv.Pt() < 25.: return None
             if not (METv+looseMuons.at(0)).Mt() < 25.: return None 
             return self.channel        
+        if self.channel == "MeasNPVMu":
+            if not (NEL == 0 and NEV == 0 and NML == 1 and NMV == 1): return None
+            if not event.PassTrigger(self.triggerList): return None
+            if not jets.size() >= 1: return None
+            if not jets.at(0).DeltaR(looseMuons.at(0)) > 1.: return None
+            #if not METv.Pt() < 25.: return None
+            #if not (METv+looseMuons.at(0)).Mt() < 25.: return None
+            return self.channel
         return None
     
     def getWeight(self, event, muons, electrons, jets, truth, syst="Central"):
@@ -229,14 +245,13 @@ class MeasFakeRate(DiLeptonBase):
             elif syst == "L1PrefireDown": w_prefire = super().GetPrefireWeight(-1)
             else:                         w_prefire = super().GetPrefireWeight(0)
             
-            if syst == "PileupReweightUp":     w_pileup = super().GetPileUpWeight(super().nPileUp, 1)
-            elif syst == "PileupReweightDown": w_pileup = super().GetPileUpWeight(super().nPileUp, -1)
-            else:                              w_pileup = super().GetPileUpWeight(super().nPileUp, 0)
-            
             w_topptweight = 1.
             if "TTLL" in super().MCSample or "TTLJ" in super().MCSample:
                 w_topptweight = super().mcCorr.GetTopPtReweight(truth)
+            weight *= w_prefire
             weight *= w_topptweight
+            if "NPV" in self.channel:
+                return weight
 
             w_muonRecoSF = 1.
             w_muonIDSF = 1.
@@ -254,8 +269,6 @@ class MeasFakeRate(DiLeptonBase):
                 elif syst == "EleIDSFDown":   w_eleIDSF *= self.getEleIDSF(ele, -1)
                 else:                         w_eleIDSF *= self.getEleIDSF(ele, 0)
             
-            weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
-            weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
             weight *= w_muonRecoSF
             weight *= w_muonIDSF
             weight *= w_eleRecoSF
