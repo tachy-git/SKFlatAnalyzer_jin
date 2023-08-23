@@ -102,7 +102,43 @@ void DiLeptonBase::initializeAnalyzer() {
     hEl12Leg2_MC = (TH2D*)fEl12Leg2->Get("sim");    hEl12Leg2_MC->SetDirectory(0);
     fEl12Leg2->Close();
 
-
+    // NPV distributions
+    TString PUPath = datapath + "/" + GetEra() + "/PileUp";
+    if (MeasNormMu || MeasFakeMu) {
+        TFile *fNPV_Data = new TFile(PUPath+"/NPVMuon_DATA.root");
+        TFile *fNPV_MC   = new TFile(PUPath+"/NPVMuon_MC.root");
+        hNPVMu8_Data = (TH1D*)fNPV_Data->Get("MeasNPVMu_Mu8/loose/Central/nPV");  hNPVMu8_Data->SetDirectory(0);
+        hNPVMu17_Data = (TH1D*)fNPV_Data->Get("MeasNPVMu_Mu8/loose/Central/nPV"); hNPVMu17_Data->SetDirectory(0);
+        hNPVMu8_MC = (TH1D*)fNPV_MC->Get("MeasNPVMu_Mu8/loose/Central/nPV");  hNPVMu8_MC->SetDirectory(0);
+        hNPVMu17_MC = (TH1D*)fNPV_MC->Get("MeasNPVMu_Mu8/loose/Central/nPV"); hNPVMu17_MC->SetDirectory(0);
+        fNPV_Data->Close();
+        fNPV_MC->Close();
+        // scale
+        hNPVMu8_Data->Scale(1./hNPVMu8_Data->Integral());
+        hNPVMu17_Data->Scale(1./hNPVMu17_Data->Integral());
+        hNPVMu8_MC->Scale(1./hNPVMu8_MC->Integral());
+        hNPVMu17_MC->Scale(1./hNPVMu17_MC->Integral());
+    }
+    if (MeasNormEl || MeasFakeEl) {
+        TFile *fNPV_Data = new TFile(PUPath+"/NPVElectron_DATA.root");
+        TFile *fNPV_MC   = new TFile(PUPath+"/NPVElectron_MC.root");
+        hNPVEl8_Data = (TH1D*)fNPV_Data->Get("MeasNPVEl_Ele8/loose/Central/nPV");   hNPVEl8_Data->SetDirectory(0);
+        hNPVEl12_Data = (TH1D*)fNPV_Data->Get("MeasNPVEl_Ele12/loose/Central/nPV"); hNPVEl12_Data->SetDirectory(0);
+        hNPVEl23_Data = (TH1D*)fNPV_Data->Get("MeasNPVEl_Ele23/loose/Central/nPV"); hNPVEl23_Data->SetDirectory(0);
+        hNPVEl8_MC = (TH1D*)fNPV_MC->Get("MeasNPVEl_Ele8/loose/Central/nPV");   hNPVEl8_MC->SetDirectory(0);
+        hNPVEl12_MC = (TH1D*)fNPV_MC->Get("MeasNPVEl_Ele12/loose/Central/nPV"); hNPVEl12_MC->SetDirectory(0);
+        hNPVEl23_MC = (TH1D*)fNPV_MC->Get("MeasNPVEl_Ele23/loose/Central/nPV"); hNPVEl23_MC->SetDirectory(0);
+        fNPV_Data->Close();
+        fNPV_MC->Close();
+        // scale
+        hNPVEl8_Data->Scale(1./hNPVEl8_Data->Integral());
+        hNPVEl12_Data->Scale(1./hNPVEl12_Data->Integral());
+        hNPVEl23_Data->Scale(1./hNPVEl23_Data->Integral());
+        hNPVEl8_MC->Scale(1./hNPVEl8_MC->Integral());
+        hNPVEl12_MC->Scale(1./hNPVEl12_MC->Integral());
+        hNPVEl23_MC->Scale(1./hNPVEl23_MC->Integral());
+    }
+    
     // Jet tagger
     vector<JetTagging::Parameters> jtps;
     jtps.emplace_back(JetTagging::Parameters(JetTagging::DeepJet, JetTagging::Medium, JetTagging::incl, JetTagging::mujets));
@@ -418,6 +454,35 @@ double DiLeptonBase::getEMuTriggerSF(vector<Electron> &electrons, vector<Muon> &
     if (effMC == 0 || effData == 0) return 1.;
     return effData / effMC;
 }
+
+double DiLeptonBase::getNPVReweight(unsigned int NPV, TString &path) {
+    if (NPV < 1) NPV = 1;
+    if (NPV > 70) NPV = 69;
+
+    TH1D *h_data, *h_mc;
+    if (path == "Ele8") {
+        h_data = hNPVEl8_Data; h_mc = hNPVEl8_MC;
+    }
+    else if (path == "Ele12") {
+        h_data = hNPVEl12_Data; h_mc = hNPVEl12_MC;
+    }
+    else if (path == "Ele23") {
+        h_data = hNPVEl23_Data; h_mc = hNPVEl23_MC;
+    }
+    else if (path == "Mu8") {
+        h_data = hNPVMu8_Data; h_mc = hNPVMu8_MC;
+    }
+    else if (path == "Mu17") {
+        h_data = hNPVMu17_Data; h_mc = hNPVMu17_MC;
+    }
+    else {
+        cerr << "[DiLeptonBase::getNPVReweight] Wrong path " << path << endl;
+        exit(EXIT_FAILURE);
+    }
+    const unsigned int thisBin = h_data->FindBin(NPV);
+    return h_data->GetBinContent(thisBin) / h_mc->GetBinContent(thisBin);
+}
+
 
 DiLeptonBase::~DiLeptonBase() {
     delete hMuonIDSF;
