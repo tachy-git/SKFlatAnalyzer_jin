@@ -438,10 +438,10 @@ bool Electron::Pass_HcToWA(TString era, TString wp) const{
   }
   else if (wp == "loose") {
     float cutA, cutB, cutC;
-    if      (era == "2016a") { cutA = 0.97; cutB = 0.93; cutC = 0.85; }
-    else if (era == "2016b") { cutA = 0.97; cutB = 0.95; cutC = 0.85; }
-    else if (era == "2017")  { cutA = 0.96; cutB = 0.83; cutC = 0.5;  }
-    else if (era == "2018")  { cutA = 0.96; cutB = 0.83; cutC = 0.5;  }
+    if      (era == "2016a") { cutA = 0.96; cutB = 0.93; cutC = 0.85; }
+    else if (era == "2016b") { cutA = 0.96; cutB = 0.93; cutC = 0.85; }
+    else if (era == "2017")  { cutA = 0.94; cutB = 0.79; cutC = 0.5;  }
+    else if (era == "2018")  { cutA = 0.94; cutB = 0.79; cutC = 0.5;  }
     else {
       cerr << "[Electron] Wrong era " << era << endl;
       exit(EXIT_FAILURE);

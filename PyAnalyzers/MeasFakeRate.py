@@ -53,13 +53,12 @@ class MeasFakeRate(DiLeptonBase):
                 self.weightVariations += ["PileupReweight",
                                           "L1PrefireUp", "L1PrefireDown",
                                           "ElectronRecoSFUp", "ElectronRecoSFDown",
-                                          "ElectronIDSFUp", "ElectronIDSFDown",
                                           "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
                                           "LightTagUpUnCorr", "LightTagDownUnCorr"]
             if self.channel == "MeasNormMu": 
                 self.weightVariations += ["PileupReweight",
                                           "L1PrefireUp", "L1PrefireDown",
-                                          "MuonIDSFUp", "MuonIDSFDown",
+                                          "MuonRecoSFUp", "MuonRecoSFDown",
                                           "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
                                           "LightTagUpUnCorr", "LightTagDownUnCorr"]
             self.scaleVariations += ["JetResUp", "JetResDown",
