@@ -18,6 +18,10 @@ public:
     TH2D *hElIDSF;
     TH2D *hEl23Leg1_Data, *hEl23Leg1_MC;
     TH2D *hEl12Leg2_Data, *hEl12Leg2_MC;
+    TH1D *hNPVEl8_Data, *hNPVEl12_Data, *hNPVEl23_Data;
+    TH1D *hNPVEl8_MC, *hNPVEl12_MC, *hNPVEl23_MC;
+    TH1D *hNPVMu8_Data, *hNPVMu17_Data;
+    TH1D *hNPVMu8_MC, *hNPVMu17_MC;
     DiLeptonBase();
     ~DiLeptonBase();
 
@@ -34,6 +38,7 @@ public:
     double getEMuTriggerEff(vector<Electron> &electrons, vector<Muon> &muons, bool isDATA, int sys);
     double getEMuTriggerSF(vector<Electron> &electrons, vector<Muon> &muons, int sys);
     double getDZEfficiency(TString SFkey, bool isDATA);
+    double getNPVReweight(unsigned int NPV, TString &path);
 };
 
 #endif
