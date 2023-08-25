@@ -107,10 +107,10 @@ void DiLeptonBase::initializeAnalyzer() {
     if (MeasNormMu || MeasFakeMu) {
         TFile *fNPV_Data = new TFile(PUPath+"/NPVMuon_DATA.root");
         TFile *fNPV_MC   = new TFile(PUPath+"/NPVMuon_MC.root");
-        hNPVMu8_Data = (TH1D*)fNPV_Data->Get("MeasNPVMu_Mu8/loose/Central/nPV");  hNPVMu8_Data->SetDirectory(0);
-        hNPVMu17_Data = (TH1D*)fNPV_Data->Get("MeasNPVMu_Mu8/loose/Central/nPV"); hNPVMu17_Data->SetDirectory(0);
-        hNPVMu8_MC = (TH1D*)fNPV_MC->Get("MeasNPVMu_Mu8/loose/Central/nPV");  hNPVMu8_MC->SetDirectory(0);
-        hNPVMu17_MC = (TH1D*)fNPV_MC->Get("MeasNPVMu_Mu8/loose/Central/nPV"); hNPVMu17_MC->SetDirectory(0);
+        hNPVMu8_Data = (TH1D*)fNPV_Data->Get("Inclusive_Mu8/loose/Central/nPV");  hNPVMu8_Data->SetDirectory(0);
+        hNPVMu17_Data = (TH1D*)fNPV_Data->Get("Inclusive_Mu8/loose/Central/nPV"); hNPVMu17_Data->SetDirectory(0);
+        hNPVMu8_MC = (TH1D*)fNPV_MC->Get("Inclusive_Mu8/loose/Central/nPV");  hNPVMu8_MC->SetDirectory(0);
+        hNPVMu17_MC = (TH1D*)fNPV_MC->Get("Inclusive_Mu8/loose/Central/nPV"); hNPVMu17_MC->SetDirectory(0);
         fNPV_Data->Close();
         fNPV_MC->Close();
         // scale
@@ -122,12 +122,12 @@ void DiLeptonBase::initializeAnalyzer() {
     if (MeasNormEl || MeasFakeEl) {
         TFile *fNPV_Data = new TFile(PUPath+"/NPVElectron_DATA.root");
         TFile *fNPV_MC   = new TFile(PUPath+"/NPVElectron_MC.root");
-        hNPVEl8_Data = (TH1D*)fNPV_Data->Get("MeasNPVEl_Ele8/loose/Central/nPV");   hNPVEl8_Data->SetDirectory(0);
-        hNPVEl12_Data = (TH1D*)fNPV_Data->Get("MeasNPVEl_Ele12/loose/Central/nPV"); hNPVEl12_Data->SetDirectory(0);
-        hNPVEl23_Data = (TH1D*)fNPV_Data->Get("MeasNPVEl_Ele23/loose/Central/nPV"); hNPVEl23_Data->SetDirectory(0);
-        hNPVEl8_MC = (TH1D*)fNPV_MC->Get("MeasNPVEl_Ele8/loose/Central/nPV");   hNPVEl8_MC->SetDirectory(0);
-        hNPVEl12_MC = (TH1D*)fNPV_MC->Get("MeasNPVEl_Ele12/loose/Central/nPV"); hNPVEl12_MC->SetDirectory(0);
-        hNPVEl23_MC = (TH1D*)fNPV_MC->Get("MeasNPVEl_Ele23/loose/Central/nPV"); hNPVEl23_MC->SetDirectory(0);
+        hNPVEl8_Data = (TH1D*)fNPV_Data->Get("Inclusive_Ele8/loose/Central/nPV");   hNPVEl8_Data->SetDirectory(0);
+        hNPVEl12_Data = (TH1D*)fNPV_Data->Get("Inclusive_Ele12/loose/Central/nPV"); hNPVEl12_Data->SetDirectory(0);
+        hNPVEl23_Data = (TH1D*)fNPV_Data->Get("Inclusive_Ele23/loose/Central/nPV"); hNPVEl23_Data->SetDirectory(0);
+        hNPVEl8_MC = (TH1D*)fNPV_MC->Get("Inclusive_Ele8/loose/Central/nPV");   hNPVEl8_MC->SetDirectory(0);
+        hNPVEl12_MC = (TH1D*)fNPV_MC->Get("Inclusive_Ele12/loose/Central/nPV"); hNPVEl12_MC->SetDirectory(0);
+        hNPVEl23_MC = (TH1D*)fNPV_MC->Get("Inclusive_Ele23/loose/Central/nPV"); hNPVEl23_MC->SetDirectory(0);
         fNPV_Data->Close();
         fNPV_MC->Close();
         // scale
