@@ -172,8 +172,8 @@ class MeasFakeRateV2(DiLeptonBase):
         return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
     
     def preselectEvent(self, event, vetoMuons, looseMuons, vetoElectrons, looseElectrons, jets, bjets, METv, syst="Central"):
-        NML, NMV = len(looseMuons), len(vetoMuons)
-        NEL, NEV = len(looseElectrons), len(vetoElectrons)
+        NML, NMV = looseMuons.size(), vetoMuons.size()
+        NEL, NEV = looseElectrons.size(), vetoElectrons.size()
         if self.channel == "MeasFakeEl":
             if not event.PassTrigger(self.triggerList): return None
             # single electron
