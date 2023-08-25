@@ -172,8 +172,8 @@ class MeasFakeRateV2(DiLeptonBase):
         return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
     
     def preselectEvent(self, event, vetoMuons, looseMuons, vetoElectrons, looseElectrons, jets, bjets, METv, syst="Central"):
-        NML, NMV = len(looseMuons), len(vetoMuons)
-        NEL, NEV = len(looseElectrons), len(vetoElectrons)
+        NML, NMV = looseMuons.size(), vetoMuons.size()
+        NEL, NEV = looseElectrons.size(), vetoElectrons.size()
         if self.channel == "MeasFakeEl":
             if not event.PassTrigger(self.triggerList): return None
             # single electron
@@ -445,7 +445,7 @@ class MeasFakeRateV2(DiLeptonBase):
                     super().FillHist(f"{selection}_{trigSuffix}/loose/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
                     super().FillHist(f"{selection}_{trigSuffix}/loose/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
                     super().FillHist(f"{selection}_{trigSuffix}/loose/{syst}/abseta_ptcorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
-            if tightMuons.size() != 2: return None
+            if tightMuons.size() != 1: return None
             if event.PassTrigger("HLT_Mu8_TrkIsoVVL_v"):
                 trigSuffix = "Mu8"
                 npvweight = 1.
@@ -975,7 +975,7 @@ class MeasFakeRateV2(DiLeptonBase):
                     super().FillHist(f"{selection}_{trigSuffix}/loose/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
                     super().FillHist(f"{selection}_{trigSuffix}/loose/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
                     super().FillHist(f"{selection}_{trigSuffix}/loose/{syst}/abseta_ptcorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)  
-            if tightElectrons.size() != 2: return None
+            if tightElectrons.size() != 1: return None
             if event.PassTrigger("HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"):
                 trigSuffix = "Ele8"
                 npvweight = 1.
