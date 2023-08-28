@@ -7,11 +7,7 @@ void DiLeptonBase::initializeAnalyzer() {
     RunDiMu = HasFlag("RunDiMu");
     RunEMu = HasFlag("RunEMu");
     RunSyst = HasFlag("RunSyst");
-    MeasNormMu = HasFlag("MeasNormMu");
-    MeasNPVMu = HasFlag("MeasNPVMu");
     MeasFakeMu = HasFlag("MeasFakeMu");
-    MeasNormEl = HasFlag("MeasNormEl");
-    MeasNPVEl = HasFlag("MeasNPVEl");
     MeasFakeEl = HasFlag("MeasFakeEl");
 
     // triggers & ID settings
@@ -104,7 +100,7 @@ void DiLeptonBase::initializeAnalyzer() {
 
     // NPV distributions
     TString PUPath = datapath + "/" + GetEra() + "/PileUp";
-    if (MeasNormMu || MeasFakeMu) {
+    if (MeasFakeMu) {
         TFile *fNPV_Data = new TFile(PUPath+"/NPVMuon_DATA.root");
         TFile *fNPV_MC   = new TFile(PUPath+"/NPVMuon_MC.root");
         hNPVMu8_Data = (TH1D*)fNPV_Data->Get("Inclusive_Mu8/loose/Central/nPV");  hNPVMu8_Data->SetDirectory(0);
@@ -119,7 +115,7 @@ void DiLeptonBase::initializeAnalyzer() {
         hNPVMu8_MC->Scale(1./hNPVMu8_MC->Integral());
         hNPVMu17_MC->Scale(1./hNPVMu17_MC->Integral());
     }
-    if (MeasNormEl || MeasFakeEl) {
+    if (MeasFakeEl) {
         TFile *fNPV_Data = new TFile(PUPath+"/NPVElectron_DATA.root");
         TFile *fNPV_MC   = new TFile(PUPath+"/NPVElectron_MC.root");
         hNPVEl8_Data = (TH1D*)fNPV_Data->Get("Inclusive_Ele8/loose/Central/nPV");   hNPVEl8_Data->SetDirectory(0);
