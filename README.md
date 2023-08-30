@@ -12,13 +12,15 @@ KISTI : ~/ # home directory
 KNU :  ~/scartch/
 
 ## First time setup
-```
-#### When first time gie clone, use the option "--recursive" to initiate the submodules
-git clone --recursive git@github.com:CMSSNU/SKFlatAnalyzer.git
+```bash
+#### When first time git clone, use the option "--recursive" to initiate the submodules
+# git clone --recursive git@github.com:CMSSNU/SKFlatAnalyzer.git
+git clone --recursive git@github.com:<gitaccount>/SKFlatAnalyzer.git
 cd SKFlatAnalyzer
+
 #### add your remote repo
-git remote add <nickname> git@github.com:<gitaccount>/SKFlatAnalyzer.git
-git checkout <your working branch>
+git remote add upstream git@github.com:CMSSNU/SKFlatAnalyzer.git
+git checkout devParticleNet
 
 #### First time setup script
 source bin/FirstTimeSetup.sh 
@@ -28,20 +30,30 @@ source setup.sh
 #### First, copy the temply using the command below
 cp $SKFlat_WD/python/UserInfo_template.py $SKFlat_WD/python/UserInfo_${USER}.py 
 #### Then, edit $SKFlat_WD/python/UserInfo_${USER}.py
+```
+Compile
+> Note that after submitting condor jobs, we use singularity image based on conda setup
+> Make object file inside the singularity image
+
+```bash
+#### better restart a new shell and enter singularity image before setup.sh
+singularity shell /data6/Users/choij/Singularity/torch200
+source setup.sh
+make clean
+make
+exit
 
 #### Now, run setup script.
 #### This should be done for every new shell
 source setup.sh
 ```
-Compile
-```
-make clean
-make
-```
 
 ## Test job
 ```bash
-SKFlat.py -a ExampleRun -i DYJets -n 50 -y 2016 &
+# C++ based analyzers
+SKFlat.py -a ExampleRun -i DYJets -n 50 -e 2017 &
+# python based analyzers
+SKFlat.py -a TutorialRun -i DYJets -n 50 -e 2017 --python &
 ```
 
 ## Making a new Ananlyzer
@@ -63,6 +75,11 @@ Then, add
 #pragma link C++ class NewAnalyzer+;
 ```
 in Analyzers/include/Analyzers_LinkDef.h
+
+For python based analyzers, check
+```bash
+PyAnalyzers/TutorialRun.py
+```
 
 ## Detailed descriptions
 
