@@ -12,6 +12,7 @@ KISTI : ~/ # home directory
 KNU :  ~/scartch/
 
 ## First time setup
+Before clone the repository, it is a good strategy to fork from the upstream repository.
 ```bash
 #### When first time git clone, use the option "--recursive" to initiate the submodules
 # git clone --recursive git@github.com:CMSSNU/SKFlatAnalyzer.git
@@ -19,7 +20,7 @@ git clone --recursive git@github.com:<gitaccount>/SKFlatAnalyzer.git
 cd SKFlatAnalyzer
 
 #### add your remote repo
-git remote add upstream git@github.com:CMSSNU/SKFlatAnalyzer.git
+git remote add upstream git@github.com:choij1589/SKFlatAnalyzer.git
 git checkout devParticleNet
 
 #### First time setup script
