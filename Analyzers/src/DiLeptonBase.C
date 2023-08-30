@@ -7,8 +7,13 @@ void DiLeptonBase::initializeAnalyzer() {
     RunDiMu = HasFlag("RunDiMu");
     RunEMu = HasFlag("RunEMu");
     RunSyst = HasFlag("RunSyst");
-    MeasFakeMu = HasFlag("MeasFakeMu");
-    MeasFakeEl = HasFlag("MeasFakeEl");
+    //MeasFakeMu = HasFlag("MeasFakeMu");
+    //MeasFakeEl = HasFlag("MeasFakeEl");
+    MeasFakeMu8 = HasFlag("MeasFakeMu8");
+    MeasFakeMu17 = HasFlag("MeasFakeMu17");
+    MeasFakeEl8 = HasFlag("MeasFakeEl8");
+    MeasFakeEl12 = HasFlag("MeasFakeEl12");
+    MeasFakeEl23 = HasFlag("MeasFakeEl23");
 
     // triggers & ID settings
     if (DataEra == "2016preVFP") {
@@ -60,7 +65,7 @@ void DiLeptonBase::initializeAnalyzer() {
         ElectronIDs = {"HcToWATight18", "HcToWALoose18", "HcToWAVeto18"};
     }
     else {
-        cerr << "[TriLeptonBase::initializeAnalyzer] Wrong era " << DataEra << endl;
+        cerr << "[DiLeptonBase::initializeAnalyzer] Wrong era " << DataEra << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -100,7 +105,7 @@ void DiLeptonBase::initializeAnalyzer() {
 
     // NPV distributions
     TString PUPath = datapath + "/" + GetEra() + "/PileUp";
-    if (MeasFakeMu) {
+    if (MeasFakeMu8 || MeasFakeMu17) {
         TFile *fNPV_Data = new TFile(PUPath+"/NPVMuon_DATA.root");
         TFile *fNPV_MC   = new TFile(PUPath+"/NPVMuon_MC.root");
         hNPVMu8_Data = (TH1D*)fNPV_Data->Get("Inclusive_Mu8/loose/Central/nPV");  hNPVMu8_Data->SetDirectory(0);
@@ -115,7 +120,7 @@ void DiLeptonBase::initializeAnalyzer() {
         hNPVMu8_MC->Scale(1./hNPVMu8_MC->Integral());
         hNPVMu17_MC->Scale(1./hNPVMu17_MC->Integral());
     }
-    if (MeasFakeEl) {
+    if (MeasFakeEl8 || MeasFakeEl12 || MeasFakeEl23) {
         TFile *fNPV_Data = new TFile(PUPath+"/NPVElectron_DATA.root");
         TFile *fNPV_MC   = new TFile(PUPath+"/NPVElectron_MC.root");
         hNPVEl8_Data = (TH1D*)fNPV_Data->Get("Inclusive_Ele8/loose/Central/nPV");   hNPVEl8_Data->SetDirectory(0);
