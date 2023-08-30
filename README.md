@@ -32,8 +32,8 @@ cp $SKFlat_WD/python/UserInfo_template.py $SKFlat_WD/python/UserInfo_${USER}.py
 #### Then, edit $SKFlat_WD/python/UserInfo_${USER}.py
 ```
 Compile
-> Note that after submitting condor jobs, we use singularity image based on conda setup
-> Make object file inside the singularity image
+> Note that after submitting condor jobs, we use singularity image based on conda setup.
+> Compiliation should be done inside the singularity image to match with the environments.
 
 ```bash
 #### better restart a new shell and enter singularity image before setup.sh
