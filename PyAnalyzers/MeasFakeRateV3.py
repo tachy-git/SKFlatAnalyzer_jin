@@ -736,25 +736,3 @@ class MeasFakeRateV3(DiLeptonBase):
             super().FillHist(f"{channel}/tight/{syst}/pair/phi", pair.Phi(), weight*npvweight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/tight/{syst}/pair/mass", pair.M(), weight*npvweight, 80, 50., 130.)
             super().FillHist(f"{channel}/tight/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
-
-if __name__ == "__main__":
-    m = MeasFakeRateV3()
-    m.SetTreeName("recoTree/SKFlat")
-    m.IsDATA = False
-    m.MCSample = "DYJets"
-    m.xsec = 6077.22
-    m.sumSign = 61192713.0
-    m.sumW = 1.545707971038e+12
-    m.IsFastSim = False
-    m.SetEra("2016preVFP")
-    m.Userflags = vector[TString]()
-    m.Userflags.emplace_back("MeasFakeMu8")
-    m.Userflags.emplace_back("RunSyst")
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2016preVFP/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/220706_092734/0000/SKFlatNtuple_2016preVFP_MC_964.root"): exit(1)
-    m.SetOutfilePath("hists.root")
-    m.Init()
-    m.initializePyAnalyzer()
-    m.initializeAnalyzerTools()
-    m.SwitchToTempDir()
-    m.Loop()
-    m.WriteHist()
