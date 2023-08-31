@@ -481,7 +481,12 @@ double DiLeptonBase::getNPVReweight(unsigned int NPV, TString &path) {
         exit(EXIT_FAILURE);
     }
     const unsigned int thisBin = h_data->FindBin(NPV);
-    return h_data->GetBinContent(thisBin) / h_mc->GetBinContent(thisBin);
+    // for 2016a and 2016b, some bins (nPV > 60) are empty...
+    // almost no event would be affected by this bins, just apply 1
+    if (h_mc->GetBinContent(thisBin) == 0)
+        return 1.;
+    else
+        return h_data->GetBinContent(thisBin) / h_mc->GetBinContent(thisBin);
 }
 
 
