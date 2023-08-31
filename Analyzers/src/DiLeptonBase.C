@@ -491,4 +491,18 @@ DiLeptonBase::~DiLeptonBase() {
     delete hMu17Leg1_MC;
     delete hMu8Leg2_Data;
     delete hMu8Leg2_MC;
+    if (MeasFakeMu8 || MeasFakeMu17) {
+        delete hNPVMu8_Data;
+        delete hNPVMu17_Data;
+        delete hNPVMu8_MC;
+        delete hNPVMu17_MC;
+    }
+    if (MeasFakeEl8 || MeasFakeEl12 || MeasFakeEl23) {
+        delete hNPVEl8_Data;
+        delete hNPVEl12_Data;
+        delete hNPVEl23_Data;
+        delete hNPVEl8_MC;
+        delete hNPVEl12_MC;
+        delete hNPVEl23_MC;
+    }
 }
