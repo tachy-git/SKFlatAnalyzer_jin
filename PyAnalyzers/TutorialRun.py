@@ -7,7 +7,7 @@ class TutorialRun(TutorialBase):
     def __init__(self):
         super().__init__()
 
-    def intializePyAnalyzer(self):
+    def initializePyAnalyzer(self):
         super().initializeAnalyzer()
 
     # Override executeEvent function
@@ -56,8 +56,6 @@ class TutorialRun(TutorialBase):
                 # Muon ID efficiency
                 #for mu in muons:
                 #    print(super().mcCorr.MuonID_SF("NUM_TopHN_DEN_TrackerMuons", mu.Eta(), mu.Pt()))
-
-
 
             super().FillHist(f"{muonID}/ZCand/mass", ZCand.M(), weight, 40, 70., 110.);
             super().FillHist(f"{muonID}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.);
