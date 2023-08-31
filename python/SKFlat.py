@@ -715,7 +715,7 @@ try:
                                 time.sleep(60)
                             print(f"hadd target {outputName}.root")
                             os.system(f'hadd -f {outputName}.root output/*.root >> JobStatus.log')
-                            os.system('rm output/*.root')
+                            #os.system('rm output/*.root')
 
                         ## Final Outputpath
                         shutil.move(f"{outputName}.root", finalOutputPath)
