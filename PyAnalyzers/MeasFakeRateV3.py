@@ -4,6 +4,7 @@ from ROOT import TString
 from ROOT.std import vector
 from ROOT.JetTagging import Parameters as jParameters
 from ROOT import Muon, Electron, Jet
+from math import sqrt, cos
 from array import array
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
 
@@ -37,13 +38,13 @@ class MeasFakeRateV3(DiLeptonBase):
         if self.channel == "MeasFakeMu8":  self.triggerList.emplace_back("HLT_Mu8_TrkIsoVVL_v")
         if self.channel == "MeasFakeMu17": self.triggerList.emplace_back("HLT_Mu17_TrkIsoVVL_v") 
         
-        self.ptcorr_bins = None
+        self.ptCorr_bins = None
         self.eta_bins = None
         if "MeasFakeEl" in self.channel:
-            self.ptcorr_bins = array('d', [10., 15., 20., 25., 35., 50., 70., 100.])
+            self.ptCorr_bins = array('d', [10., 15., 20., 25., 35., 50., 70., 100.])
             self.eta_bins = array('d', [0., 0.8, 1.579, 2.5])
         if "MeasFakeMu" in self.channel:
-            self.ptcorr_bins = array('d', [10., 15., 20., 30., 50., 70., 100.])
+            self.ptCorr_bins = array('d', [10., 15., 20., 30., 50., 70., 100.])
             self.eta_bins = array('d', [0., 0.9, 1.6, 2.4])
             
         # systematics
@@ -163,7 +164,7 @@ class MeasFakeRateV3(DiLeptonBase):
         bjets = vector[Jet]()
         for jet in jets:
             btagScore = jet.GetTaggerResult(3)                  # DeepJet score
-            wp = super().mcCorr.GetJetTaggingCutValue(3, 1)     # DeepJet Medium
+            wp = super().mcCorr.GetJetTaggingCutValue(3, 0)     # DeepJet Medium
             if btagScore > wp: bjets.emplace_back(jet)
             
         vetoMuons = vector[Muon](sorted(vetoMuons, key=lambda x: x.Pt(), reverse=True))
@@ -289,7 +290,9 @@ class MeasFakeRateV3(DiLeptonBase):
         
         if channel == "preselSglMu":
             mu = looseMuons.at(0)
-            MT = (METv+mu).Mt()
+            dPhi = mu.DeltaPhi(METv)
+            MT = sqrt(2.*mu.Pt()*METv.Pt()*(1.-cos(dPhi)))
+            MTfix = sqrt(2.*35.*METv.Pt()*(1.-cos(dPhi)))
             MET = METv.Pt()
             ptCorr = mu.Pt()*(1. + max(0, mu.MiniRelIso()-0.1))
             trigSuffix = ""
@@ -320,11 +323,13 @@ class MeasFakeRateV3(DiLeptonBase):
             super().FillHist(f"{selection}/loose/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
             super().FillHist(f"{selection}/loose/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
             super().FillHist(f"{selection}/loose/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+            super().FillHist(f"{selection}/loose/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+            super().FillHist(f"{selection}/loose/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
             super().FillHist(f"{selection}/loose/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
             super().FillHist(f"{selection}/loose/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{selection}/loose/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{selection}/loose/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-            super().FillHist(f"{selection}/loose/{syst}/abseta_ptcorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
+            super().FillHist(f"{selection}/loose/{syst}/abseta_ptCorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
             if (MT < 25. and MET < 25.):
                 selection = "QCDEnriched"
                 for idx, mu in enumerate(looseMuons, start=1):
@@ -345,12 +350,14 @@ class MeasFakeRateV3(DiLeptonBase):
                 super().FillHist(f"{selection}/loose/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
                 super().FillHist(f"{selection}/loose/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
                 super().FillHist(f"{selection}/loose/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/loose/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/loose/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/loose/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/loose/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/loose/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/loose/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{selection}/loose/{syst}/abseta_ptcorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
-            if (MET > 50. and MT > 70.):
+                super().FillHist(f"{selection}/loose/{syst}/abseta_ptCorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
+            if (MET > 50. and MT > 50.):
                 selection = "WEnriched"
                 for idx, mu in enumerate(looseMuons, start=1):
                     super().FillHist(f"{selection}/loose/{syst}/muons/{idx}/pt", mu.Pt(), weight*npvweight, 300, 0., 300.)
@@ -370,11 +377,13 @@ class MeasFakeRateV3(DiLeptonBase):
                 super().FillHist(f"{selection}/loose/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
                 super().FillHist(f"{selection}/loose/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
                 super().FillHist(f"{selection}/loose/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/loose/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/loose/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/loose/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/loose/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/loose/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/loose/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{selection}/loose/{syst}/abseta_ptcorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
+                super().FillHist(f"{selection}/loose/{syst}/abseta_ptCorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
             # tight
             if tightMuons.size() != 1: return None
             selection = "Inclusive"
@@ -396,11 +405,13 @@ class MeasFakeRateV3(DiLeptonBase):
             super().FillHist(f"{selection}/tight/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
             super().FillHist(f"{selection}/tight/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
             super().FillHist(f"{selection}/tight/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+            super().FillHist(f"{selection}/tight/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+            super().FillHist(f"{selection}/tight/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
             super().FillHist(f"{selection}/tight/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
             super().FillHist(f"{selection}/tight/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{selection}/tight/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{selection}/tight/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-            super().FillHist(f"{selection}/tight/{syst}/abseta_ptcorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
+            super().FillHist(f"{selection}/tight/{syst}/abseta_ptCorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
             if (MT < 25. and MET < 25.):
                 selection = "QCDEnriched"
                 for idx, mu in enumerate(tightMuons, start=1):
@@ -421,12 +432,14 @@ class MeasFakeRateV3(DiLeptonBase):
                 super().FillHist(f"{selection}/tight/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
                 super().FillHist(f"{selection}/tight/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
                 super().FillHist(f"{selection}/tight/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/tight/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/tight/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/tight/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/tight/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/tight/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/tight/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{selection}/tight/{syst}/abseta_ptcorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
-            if (MET > 50. and MT > 70.):
+                super().FillHist(f"{selection}/tight/{syst}/abseta_ptCorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
+            if (MET > 50. and MT > 50.):
                 selection = "WEnriched"
                 for idx, mu in enumerate(tightMuons, start=1):
                     super().FillHist(f"{selection}/tight/{syst}/muons/{idx}/pt", mu.Pt(), weight*npvweight, 300, 0., 300.)
@@ -446,11 +459,13 @@ class MeasFakeRateV3(DiLeptonBase):
                 super().FillHist(f"{selection}/tight/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
                 super().FillHist(f"{selection}/tight/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
                 super().FillHist(f"{selection}/tight/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/tight/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/tight/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/tight/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/tight/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/tight/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/tight/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{selection}/tight/{syst}/abseta_ptcorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
+                super().FillHist(f"{selection}/tight/{syst}/abseta_ptCorr", abs(mu.Eta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
             # end of preselSglMu
         if "MeasFakeMu" in self.channel and channel == "ZEnriched":
             pair = looseMuons.at(0) + looseMuons.at(1)
@@ -514,7 +529,9 @@ class MeasFakeRateV3(DiLeptonBase):
             # end of MeasFakeMu / ZEnriched
         if channel == "preselSglEl":
             ele = looseElectrons.at(0)
-            MT = (METv+ele).Mt()
+            dPhi = ele.DeltaPhi(METv)
+            MT = sqrt(2*ele.Pt()*METv.Pt()*(1.-cos(dPhi)))
+            MTfix = sqrt(2*35.*METv.Pt()*(1.-cos(dPhi)))
             MET = METv.Pt()
             ptCorr = ele.Pt()*(1. + max(0, ele.MiniRelIso()-0.1))
             trigSuffix = ""
@@ -545,11 +562,13 @@ class MeasFakeRateV3(DiLeptonBase):
             super().FillHist(f"{selection}/loose/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
             super().FillHist(f"{selection}/loose/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
             super().FillHist(f"{selection}/loose/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+            super().FillHist(f"{selection}/loose/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+            super().FillHist(f"{selection}/loose/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
             super().FillHist(f"{selection}/loose/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
             super().FillHist(f"{selection}/loose/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{selection}/loose/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{selection}/loose/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-            super().FillHist(f"{selection}/loose/{syst}/abseta_ptcorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
+            super().FillHist(f"{selection}/loose/{syst}/abseta_ptCorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
             if (MT < 25. and MET < 25.):
                 selection = "QCDEnriched"
                 for idx, ele in enumerate(looseElectrons, start=1):
@@ -570,12 +589,14 @@ class MeasFakeRateV3(DiLeptonBase):
                 super().FillHist(f"{selection}/loose/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
                 super().FillHist(f"{selection}/loose/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
                 super().FillHist(f"{selection}/loose/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/loose/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/loose/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/loose/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/loose/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/loose/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/loose/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{selection}/loose/{syst}/abseta_ptcorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
-            if (MET > 50. and MT > 70.):
+                super().FillHist(f"{selection}/loose/{syst}/abseta_ptCorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
+            if (MET > 50. and MT > 50.):
                 selection = "WEnriched"
                 for idx, ele in enumerate(looseElectrons, start=1):
                     super().FillHist(f"{selection}/loose/{syst}/electrons/{idx}/pt", ele.Pt(), weight*npvweight, 300, 0., 300.)
@@ -595,11 +616,13 @@ class MeasFakeRateV3(DiLeptonBase):
                 super().FillHist(f"{selection}/loose/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
                 super().FillHist(f"{selection}/loose/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
                 super().FillHist(f"{selection}/loose/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/loose/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/loose/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/loose/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/loose/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/loose/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/loose/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{selection}/loose/{syst}/abseta_ptcorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
+                super().FillHist(f"{selection}/loose/{syst}/abseta_ptCorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
             # tight
             if not tightElectrons.size() == 1: return None
             selection = "Inclusive"
@@ -621,11 +644,13 @@ class MeasFakeRateV3(DiLeptonBase):
             super().FillHist(f"{selection}/tight/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
             super().FillHist(f"{selection}/tight/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
             super().FillHist(f"{selection}/tight/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+            super().FillHist(f"{selection}/tight/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+            super().FillHist(f"{selection}/tight/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
             super().FillHist(f"{selection}/tight/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
             super().FillHist(f"{selection}/tight/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{selection}/tight/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{selection}/tight/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-            super().FillHist(f"{selection}/tight/{syst}/abseta_ptcorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
+            super().FillHist(f"{selection}/tight/{syst}/abseta_ptCorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
             if (MT < 25. and MET < 25.):
                 selection = "QCDEnriched"
                 for idx, ele in enumerate(tightElectrons, start=1):
@@ -646,12 +671,14 @@ class MeasFakeRateV3(DiLeptonBase):
                 super().FillHist(f"{selection}/tight/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
                 super().FillHist(f"{selection}/tight/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
                 super().FillHist(f"{selection}/tight/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/tight/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/tight/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/tight/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/tight/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/tight/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/tight/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{selection}/tight/{syst}/abseta_ptcorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
-            if (MET > 50. and MT > 70.):
+                super().FillHist(f"{selection}/tight/{syst}/abseta_ptCorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
+            if (MET > 50. and MT > 50.):
                 selection = "WEnriched"
                 for idx, ele in enumerate(tightElectrons, start=1):
                     super().FillHist(f"{selection}/tight/{syst}/electrons/{idx}/pt", ele.Pt(), weight*npvweight, 300, 0., 300.)
@@ -671,11 +698,13 @@ class MeasFakeRateV3(DiLeptonBase):
                 super().FillHist(f"{selection}/tight/{syst}/jets/size", jets.size(), weight*npvweight, 20, 0., 20.)
                 super().FillHist(f"{selection}/tight/{syst}/bjets/size", bjets.size(), weight*npvweight, 15, 0., 15.)
                 super().FillHist(f"{selection}/tight/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/tight/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
+                super().FillHist(f"{selection}/tight/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/tight/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/tight/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/tight/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{selection}/tight/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{selection}/tight/{syst}/abseta_ptcorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptcorr_bins)-1, self.ptcorr_bins)
+                super().FillHist(f"{selection}/tight/{syst}/abseta_ptCorr", abs(ele.scEta()), ptCorr, weight*npvweight, len(self.eta_bins)-1, self.eta_bins, len(self.ptCorr_bins)-1, self.ptCorr_bins)
             # end of preselSglEl
         if "MeasFakeEl" in self.channel and channel == "ZEnriched":
             pair = looseElectrons.at(0) + looseElectrons.at(1)
