@@ -623,6 +623,6 @@ class MeasFakeRateV4(DiLeptonBase):
                 break
         # find bin index for abseta
         for i in range(len(self.eta_bins)-1):
-            if self.eta_bins[i] < abseta < self.eta_bins[i]:
+            if self.eta_bins[i] < abseta < self.eta_bins[i+1]:
                 prefix += f"_abseta_{str(self.eta_bins[i]).replace('.', 'p')}to{str(self.eta_bins[i+1]).replace('.', 'p')}"
         return prefix
