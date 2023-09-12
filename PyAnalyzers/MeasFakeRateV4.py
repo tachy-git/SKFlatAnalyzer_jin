@@ -57,22 +57,25 @@ class MeasFakeRateV4(DiLeptonBase):
         self.weightVariations = ["Central"]
         self.scaleVariations = []
         self.selectionVariations = []
-        if "MeasFakeEl" in self.channel and self.run_syst:
-            self.weightVariations += ["PileupReweight",
-                                      "L1PrefireUp", "L1PrefireDown",
-                                      "ElectronRecoSFUp", "ElectronRecoSFDown"]
-        if "MeasFakeMu" in self.channel and self.run_syst: 
-            self.weightVariations += ["PileupReweight",
-                                      "L1PrefireUp", "L1PrefireDown",
-                                      "MuonRecoSFUp", "MuonRecoSFDown"]
-        if self.run_syst: 
+        if self.run_syst:
+            if "MeasFakeEl" in self.channel and not super().IsDATA:
+                self.weightVariations += ["PileupReweight",
+                                          "L1PrefireUp", "L1PrefireDown",
+                                          "ElectronRecoSFUp", "ElectronRecoSFDown"]
+            if "MeasFakeMu" in self.channel and not super().IsDATA: 
+                self.weightVariations += ["PileupReweight",
+                                          "L1PrefireUp", "L1PrefireDown",
+                                          "MuonRecoSFUp", "MuonRecoSFDown"]
             self.scaleVariations += ["JetResUp", "JetResDown",
                                      "JetEnUp", "JetEnDown",
                                      "ElectronResUp", "ElectronResDown",
                                      "ElectronEnUp", "ElectronEnDown",
                                      "MuonEnUp", "MuonEnDown"]
             self.selectionVariations += ["RequireHeavyTag", "MotherJetPtUp", "MotherJetPtDown"]
-        self.systematics = self.weightVariations + self.scaleVariations + self.selectionVariations
+        if super().IsDATA:
+            self.systematics = ["Central"] + self.scaleVariations + self.selectionVariations
+        else:
+            self.systematics = self.weightVariations + self.scaleVariations + self.selectionVariations
         
     def executeEvent(self):
         if not super().PassMETFilter(): return None
@@ -228,8 +231,7 @@ class MeasFakeRateV4(DiLeptonBase):
     def getWeight(self, event, muons, electrons, jets, truth, syst="Central"):
         weight = 1.
         if not syst in self.systematics:
-            print(f"[FakeMeasurement::getWeight] Wrong systematic {syst}")
-            exit(1)
+            raise KeyError(f"[FakeMeasurement::getWeight] Wrong systematic {syst}")   
 
         if not super().IsDATA:
             weight *= super().MCweight()
@@ -621,6 +623,6 @@ class MeasFakeRateV4(DiLeptonBase):
                 break
         # find bin index for abseta
         for i in range(len(self.eta_bins)-1):
-            if self.eta_bins[i] < abseta < self.eta_bins[i+1]:
-                prefix += f"_abseta_{str(self.eta_bins[i]).replace('.', 'p')}to{str(self.eta_bins[i]).replace('.', 'p')}"
+            if self.eta_bins[i] < abseta < self.eta_bins[i]:
+                prefix += f"_abseta_{str(self.eta_bins[i]).replace('.', 'p')}to{str(self.eta_bins[i+1]).replace('.', 'p')}"
         return prefix
