@@ -60,7 +60,7 @@ elif [[ $ERA == "2017" ]]; then
 elif [[ $ERA == "2018" ]]; then
     if [[ $CHANNEL == "MeasFakeMu"* ]]; then
         DATASTREAM="DoubleMuon"
-        QCD="qcdMuEnrichd"
+        QCD="qcdMuEnriched"
     elif [[ $CHANNEL == "MeasFakeEl"* ]]; then
         DATASTREAM="EGamma"
         QCD="qcdEMEnriched"
