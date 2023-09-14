@@ -600,7 +600,7 @@ class MeasFakeRateV4(DiLeptonBase):
             super().FillHist(f"{channel}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.) 
             
             # tight
-            if not tightMuons.size() == 2: return None
+            if not tightElectrons.size() == 2: return None
             ID = "tight"
             super().FillHist(f"{channel}/{ID}/{syst}/pair/pt", pair.Pt(), weight*npvweight, 300, 0., 300.)
             super().FillHist(f"{channel}/{ID}/{syst}/pair/eta", pair.Eta(), weight*npvweight, 100, -5., 5.)
