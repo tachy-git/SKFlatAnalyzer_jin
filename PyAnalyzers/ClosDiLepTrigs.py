@@ -6,7 +6,7 @@ from ROOT.JetTagging import Parameters as jParameters
 from ROOT import Muon, Electron, Jet
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
 
-class ClosureDiLepTrigs(DiLeptonBase):
+class ClosDiLepTrigs(DiLeptonBase):
     def __init__(self):
         super().__init__()
         # at this point, DiLeptonBase::initializeAnalyzer has not been called
@@ -207,7 +207,7 @@ class ClosureDiLepTrigs(DiLeptonBase):
 
 
 if __name__ == "__main__":
-    m = ClosureDiLepTrigs()
+    m = ClosDiLepTrigs()
     m.SetTreeName("recoTree/SKFlat")
     m.IsDATA = False
     m.MCSample = "DYJets"
