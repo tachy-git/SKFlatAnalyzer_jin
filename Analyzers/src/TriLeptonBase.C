@@ -362,13 +362,13 @@ double TriLeptonBase::getTriggerEff(const Muon &mu, TString histkey, bool isData
     double eta = fabs(mu.Eta());
     if (histkey == "Mu17Leg1" && isDataEff) {
         h = hMu17Leg1_Data;
-        if (pt < 16.) pt = 16.;
+        if (pt < 20.) pt = 20.;
         if (pt > 200.) pt = 199.;
         if (eta > 2.4) eta = 2.39;
     }
     else if (histkey == "Mu17Leg1" && (!isDataEff)) {
         h = hMu17Leg1_MC;
-        if (pt < 16.) pt = 16.;
+        if (pt < 20.) pt = 20.;
         if (pt > 200.) pt = 199.;
         if (eta > 2.4) eta = 2.39;
     }
@@ -470,8 +470,9 @@ double TriLeptonBase::getEMuTriggerEff(vector<Electron> &electrons, vector<Muon>
     Muon     &mu1 = muons.at(0);
     Muon     &mu2 = muons.at(1);
 
-    double case1 = getTriggerEff(mu1, "Mu8Leg2", isDATA, sys) + (1.-getTriggerEff(mu1, "Mu8Leg2", isDATA, sys)*getTriggerEff(mu2, "Mu8Leg2", isDATA, sys));
-    double case2 = mu2.Pt() > 25. ? getTriggerEff(mu1, "Mu17Leg1", isDATA, sys) + (1.-getTriggerEff(mu1, "Mu17Leg1", isDATA, sys)*getTriggerEff(mu2, "Mu17Leg1", isDATA, sys)) : getTriggerEff(mu1, "Mu17Leg1", isDATA, sys); 
+    double case1 = getTriggerEff(mu1, "Mu8Leg2", isDATA, sys) + (1.-getTriggerEff(mu1, "Mu8Leg2", isDATA, sys)*getDZEfficiency("EMu", isDATA))*getTriggerEff(mu2, "Mu8Leg2", isDATA, sys);
+    double case2 = mu2.Pt() > 25. ? getTriggerEff(mu1, "Mu17Leg1", isDATA, sys) + (1.-getTriggerEff(mu1, "Mu17Leg1", isDATA, sys)*getDZEfficiency("EMu", isDATA))*getTriggerEff(mu2, "Mu17Leg1", isDATA, sys) 
+                                  : getTriggerEff(mu1, "Mu17Leg1", isDATA, sys); 
 
     double eff_el = (mu1.Pt() > 25. || mu2.Pt() > 25.) ? getTriggerEff(ele, "El12Leg2", isDATA, sys) : getTriggerEff(ele, "El23Leg1", isDATA, sys);
     double eff_mu = (ele.Pt() > 25.) ? case1 : case2;
