@@ -401,6 +401,7 @@ double DiLeptonBase::getDblMuTriggerEff(vector<Muon> &muons, bool isDATA, int sy
     return getTriggerEff(mu1, "Mu17Leg1", isDATA, sys) * getTriggerEff(mu2, "Mu8Leg2", isDATA, sys);
 }
 
+// WARNING: Mu 23 leg is not measured! Temporarily use Mu17 leg
 double DiLeptonBase::getEMuTriggerEff(vector<Electron> &electrons, vector<Muon> &muons, bool isDATA, int sys) {
     // check no. of leptons
     if (! (electrons.size() == 1 && muons.size() == 1)) {
@@ -411,7 +412,7 @@ double DiLeptonBase::getEMuTriggerEff(vector<Electron> &electrons, vector<Muon> 
     Muon &mu = muons.at(0);
 
     double eff_el, eff_mu;
-    eff_el = mu.Pt() > 20. ? getTriggerEff(ele, "El12Leg2", isDATA, sys) : getTriggerEff(ele, "El23Leg1", isDATA, sys);
+    eff_el = mu.Pt() > 25. ? getTriggerEff(ele, "El12Leg2", isDATA, sys) : getTriggerEff(ele, "El23Leg1", isDATA, sys);
     eff_mu = ele.Pt() > 25. ? getTriggerEff(mu, "Mu8Leg2", isDATA, sys) : getTriggerEff(mu, "Mu17Leg1", isDATA, sys);
     return eff_el * eff_mu;
 }
@@ -442,7 +443,7 @@ double DiLeptonBase::getDZEfficiency(TString SFKey, bool isDATA) {
 
 double DiLeptonBase::getDblMuTriggerSF(vector<Muon> &muons, int sys) {
    double effData = getDblMuTriggerEff(muons, true, sys); 
-   double effMC   = getDblMuTriggerEff(muons, false, sys);
+   double effMC   = getDblMuTriggerEff(muons, false, -1*sys);
    if (effMC == 0 || effData == 0)
        return 1.;
 
@@ -451,7 +452,7 @@ double DiLeptonBase::getDblMuTriggerSF(vector<Muon> &muons, int sys) {
 
 double DiLeptonBase::getEMuTriggerSF(vector<Electron> &electrons, vector<Muon> &muons, int sys) {
     double effData = getEMuTriggerEff(electrons, muons, true, sys);
-    double effMC = getEMuTriggerEff(electrons, muons, false, sys);
+    double effMC = getEMuTriggerEff(electrons, muons, false, -1*sys);
     if (effMC == 0 || effData == 0) return 1.;
     return effData / effMC;
 }

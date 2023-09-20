@@ -140,8 +140,11 @@ class ClosDiLepTrigs(DiLeptonBase):
             if not mu1.Pt() > 20.: return None
             if not mu2.Pt() > 10.: return None
         elif self.channel == "RunEMu":
-            print("Not implemented yet")
-            exit(1)
+            ele = tightElectrons.at(0)
+            mu = tightMuons.at(0)
+            leadMu = mu.Pt() > 25. and ele.Pt() > 15.
+            leadEle = ele.Pt() > 25. and mu.Pt() > 10.
+            if not (leadMu or leadEle): return None
         else:
             print(f"Wrong channel {self.channel}")
             exit(1)
@@ -185,13 +188,15 @@ class ClosDiLepTrigs(DiLeptonBase):
         trigWeightUp = 1.
         trigWeightDown = 1.
         if channel == "RunDiMu":
-            trigWeight = self.getDblMuTriggerEff(muons, False, 0)
-            trigWeightUp = self.getDblMuTriggerEff(muons, False, 1)
-            trigWeightDown = self.getDblMuTriggerEff(muons, False, -1)
-            trigWeight *= super().getDZEfficiency(channel, isDATA=False)
+            effDZ = self.getDZEfficiency(channel, isDATA=False)
+            trigWeight = self.getDblMuTriggerEff(muons, False, 0) * effDZ
+            trigWeightUp = self.getDblMuTriggerEff(muons, False, 1) * effDZ
+            trigWeightDown = self.getDblMuTriggerEff(muons, False, -1) * effDZ
         elif channel == "RunEMu":
-            print("Not implemented yet")
-            exit(1)
+            effDZ = self.getDZEfficiency(channel, isDATA=False)
+            trigWeight = self.getEMuTriggerEff(electrons, muons, False, 0) * effDZ
+            trigWeightUp = self.getEMuTriggerEff(electrons, muons, False, 1) * effDZ
+            trigWeightDown = self.getEMuTriggerEff(electrons, muons, False, -1) * effDZ 
         else:
             print(f"Wrong channel {channel}")
             exit(1)
@@ -202,27 +207,6 @@ class ClosDiLepTrigs(DiLeptonBase):
         super().FillHist("sumweight", 2., weight*trigWeightUp, 5, 0., 5.)
         super().FillHist("sumweight", 3., weight*trigWeightDown, 5, 0., 5.)
         
-        if not evt.PassTrigger(super().DblMuTriggers): return None
+        if channel == "RunDiMu" and not evt.PassTrigger(super().DblMuTriggers): return None
+        if channel == "RunEMu" and not evt.PassTrigger(super().EMuTriggers): return None
         super().FillHist("sumweight", 4., weight, 5, 0., 5.)
-
-
-if __name__ == "__main__":
-    m = ClosDiLepTrigs()
-    m.SetTreeName("recoTree/SKFlat")
-    m.IsDATA = False
-    m.MCSample = "DYJets"
-    m.xsec = 6077.22
-    m.sumSign = 61192713.0
-    m.sumW = 1.545707971038e+12
-    m.IsFastSim = False
-    m.SetEra("2016preVFP")
-    m.Userflags = vector[TString]()
-    m.Userflags.emplace_back("RunDiMu")
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2016preVFP/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/220706_092734/0000/SKFlatNtuple_2016preVFP_MC_964.root"): exit(1)
-    m.SetOutfilePath("hists.root")
-    m.Init()
-    m.initializePyAnalyzer()
-    m.initializeAnalyzerTools()
-    m.SwitchToTempDir()
-    m.Loop()
-    m.WriteHist()
