@@ -21,29 +21,6 @@ class ClosDiLepTrigs(DiLeptonBase):
             exit(1)
         if super().RunDiMu:     self.channel = "RunDiMu"
         if super().RunEMu:      self.channel = "RunEMu"
-        if super().RunSyst:     self.run_syst = True
-        
-        self.weightVariations = ["Central"]
-        self.scaleVariations = []
-        if self.run_syst:
-            self.weightVariations += ["L1PrefireUp", "L1PrefireDown",
-                                      "PileupReweightUp", "PileupReweightDown",
-                                      "MuonIDSFUp", "MuonIDSFDown",
-                                      #"ElectronIDSFUp", "ElectronIDSFDown",
-                                      "DblMuTrigSFUp", "DblMuTrigSFDown",
-                                      #"EMuTrigSFUp", "EMuTrigSFDown",
-                                      #"DYReweightUp", "DYReweightDown",
-                                      "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
-                                      "HeavyTagUpCorr", "HeavyTagDownCorr",
-                                      "LightTagUpUnCorr", "LightTagDownUnCorr",
-                                      "LightTagUpCorr", "LightTagDownCorr"
-                                      ]
-            self.scaleVariations += ["JetResUp", "JetResDown", 
-                                     "JetEnUp", "JetEnDown",
-                                     "ElectronResUp", "ElectronResDown", 
-                                     "ElectronEnUp", "ElectronEnDown",
-                                     "MuonEnUp", "MuonEnDown"]
-        self.systematics = self.weightVariations + self.scaleVariations
     
     def executeEvent(self):
         if not super().PassMETFilter(): return None
@@ -58,50 +35,20 @@ class ClosDiLepTrigs(DiLeptonBase):
         vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
         channel = self.selectEvent(ev, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
         
-        if not channel is None:
-            objects = {"muons": tightMuons,
-                       "electrons": tightElectrons,
-                       "jets": jets,
-                       "bjets": bjets,
-                       "METv": METv
-                       }
-            for syst in self.weightVariations:
-                weight = self.getWeight(channel, ev, tightMuons, tightElectrons, jets, truth, syst)
-                self.FillObjects(channel, ev, objects, weight, syst)
+        objects = {"muons": tightMuons,
+                   "electrons": tightElectrons,
+                   "jets": jets,
+                   "bjets": bjets,
+                   "METv": METv
+                    }
+        weight = self.getWeight(channel, ev, tightMuons, tightElectrons, jets, truth)
+        self.FillObjects(channel, ev, objects, weight)
         
-        # Scale variations
-        for syst in self.scaleVariations:
-            vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets, syst)
-            channel = self.selectEvent(ev, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
-            if channel is None: continue
-            objects = {"muons": tightMuons,
-                       "electrons": tightElectrons,
-                       "jets": jets,
-                       "bjets": bjets,
-                       "METv": METv,
-                       }
-            weight = self.getWeight(channel, ev, tightMuons, tightElectrons, jets, truth, syst)
-            self.FillObjects(channel, ev, objects, weight, syst)
-        
-    def defineObjects(self, rawMuons, rawElectrons, rawJets, syst="Central"):
+    def defineObjects(self, rawMuons, rawElectrons, rawJets):
         # first copy objects
         allMuons = rawMuons
         allElectrons = rawElectrons
         allJets = rawJets
-        
-        # check the syst argument
-        if not syst in self.systematics:
-            print(f"[PromptEstimator::defineObjects] Wrong systematics {syst}")
-        if syst == "MuonEnUp":         allMuons = super().ScaleMuons(allMuons, +1)
-        if syst == "MuonEnDown":       allMuons = super().ScaleMuons(allMuons, -1)
-        if syst == "ElectronResUp":    allElectrons = super().SmearElectrons(allElectrons, +1)
-        if syst == "ElectronsResDown": allElectrons = super().SmearElectrons(allElectrons, -1)
-        if syst == "ElectronEnUp":     allElectrons = super().ScaleElectrons(allElectrons, +1)
-        if syst == "ElectronEnDown":   allElectrons = super().ScaleElectrons(allElectrons, -1)
-        if syst == "JetResUp":         allJets = super().SmearJets(allJets, +1)
-        if syst == "JetResDown":       allJets = super().SmearJets(allJets, -1)
-        if syst == "JetEnUp":          allJets = super().ScaleJets(allJets, +1)
-        if syst == "JetEnDown":        allJets = super().ScaleJets(allJets, -1)
         
         vetoMuons = super().SelectMuons(allMuons, super().MuonIDs[2], 10., 2.4)
         tightMuons = super().SelectMuons(vetoMuons, super().MuonIDs[0], 10., 2.4)
@@ -150,34 +97,25 @@ class ClosDiLepTrigs(DiLeptonBase):
             exit(1)
         return self.channel
 
-    def getWeight(self, channel, event, muons, electrons, jets, truth, syst="Central"):
+    def getWeight(self, channel, event, muons, electrons, jets, truth):
         weight = 1.
-        if not syst in self.systematics:
-            print(f"[PromptEstimator::getWeight] Wrong systematic {syst}")
-            exit(1)
-
+        
         if not super().IsDATA:
             weight *= super().MCweight()
             weight *= event.GetTriggerLumi("Full")
-            if syst == "L1PrefireUp":     w_prefire = super().GetPrefireWeight(1)
-            elif syst == "L1PrefireDown": w_prefire = super().GetPrefireWeight(-1)
-            else:                         w_prefire = super().GetPrefireWeight(0)
-            
-            if syst == "PileupReweightUp":     w_pileup = super().GetPileUpWeight(super().nPileUp, 1)
-            elif syst == "PileupReweightDown": w_pileup = super().GetPileUpWeight(super().nPileUp, -1)
-            else:                              w_pileup = super().GetPileUpWeight(super().nPileUp, 0)
-            
+            w_prefire = super().GetPrefireWeight(0)
+            w_pileup = super().GetPileUpWeight(super().nPileUp, 0)
+            weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
+            weight *= w_pileup  
+             
             w_topptweight = 1.
             if "TTLL" in super().MCSample or "TTLJ" in super().MCSample:
                 w_topptweight = super().mcCorr.GetTopPtReweight(truth)
             weight *= w_topptweight
 
-            weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
-            weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
-        
         return weight
     
-    def FillObjects(self, channel, evt, objects, weight, syst):
+    def FillObjects(self, channel, evt, objects, weight):
         muons = objects["muons"]
         electrons = objects["electrons"]
         jets = objects["jets"]
