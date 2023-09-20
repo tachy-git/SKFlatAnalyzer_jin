@@ -15,6 +15,14 @@ if [[ $HOSTNAME == *"tamsa"* ]]; then
     # temporarily use ROOT and python from LCG environment
     source /cvmfs/sft.cern.ch/lcg/views/LCG_102cuda/x86_64-centos7-gcc8-opt/setup.sh
   fi
+elif [[ $HOSTNAME == *"cms"* ]]; then
+  echo "@@@@ Working in cms"
+  export SKFlat_WD="/data6/Users/$USER/SKFlatAnalyzer"
+  export SKFlatRunlogDir="/data6/Users/$USER/SKFlatRunlog"
+  export SKFlatOutputDir="/data6/Users/$USER/SKFlatOutput"
+  # root configuration
+  source /home/choij/miniconda3/bin/activate
+  conda activate torch
 else
   echo "@@@@ Working in local"
   export SKFlat_WD="/home/$USER/workspace/SKFlatAnalyzer"
