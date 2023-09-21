@@ -106,7 +106,7 @@ class PromptUnbinned(TriLeptonBase):
                 return None
             
             # weight / scale variations for MC
-            w_norm = super().MCweight() * ev.GetTriggerLumi("Full")
+            w_norm = super().MCweight() * super().GetKFactor() * v.GetTriggerLumi("Full")
             w_l1prefire = super().GetPrefireWeight(0)
             w_l1prefire_up = super().GetPrefireWeight(1)
             w_l1prefire_down = super().GetPrefireWeight(-1)

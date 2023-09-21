@@ -204,6 +204,9 @@ public:
   bool IsSignalPID(int pid);
   bool FindHEMElectron(Electron electron);
 
+  //==== K-factor
+  double GetKFactor();
+
   //============ JEC Uncertainty
   float GetJECUncertainty(TString source, TString JetType,  float eta, float pt, int sys);
   void  SetupJECUncertainty(TString source , TString JetType="AK4PFchs");
