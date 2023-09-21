@@ -362,5 +362,3 @@ class MeasConversion(TriLeptonBase):
             super().FillHist(f"{channel}/{self.measure}/{syst}/nZCand/eta", nZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{self.measure}/{syst}/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{self.measure}/{syst}/nZCand/mass", nZCand.M(), weight, 200, 0., 200.)
-         
-

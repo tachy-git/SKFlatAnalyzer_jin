@@ -306,12 +306,34 @@ class PromptUnbinned(TriLeptonBase):
 
         # for patching samples
         if "DYJets" in super().MCSample:
+            # first do matching
+            promptMuons = vector[Muon]()
+            promptElectrons = vector[Electron]()
+            for mu in tightMuons:
+                if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
+            for ele in tightElectrons:
+                if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
+
+            if promptMuons.size() != tightMuons.size(): return None
+            if promptElectrons.size() != tightElectrons.size(): return None
+
             leptons = vector[Lepton]()
             for mu in tightMuons: leptons.emplace_back(mu)
             for ele in tightElectrons: leptons.emplace_back(ele)
             if leptons.at(0).Pt() > 20. and leptons.at(1).Pt() > 20. and leptons.at(2).Pt() > 20.:
                 return None
         if "ZGToLLG" in super().MCSample:
+            # first do matching
+            promptMuons = vector[Muon]()
+            promptElectrons = vector[Electron]()
+            for mu in tightMuons:
+                if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
+            for ele in tightElectrons:
+                if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
+
+            if promptMuons.size() != tightMuons.size(): return None
+            if promptElectrons.size() != tightElectrons.size(): return None
+
             leptons = vector[Lepton]()
             for mu in tightMuons: leptons.emplace_back(mu)
             for ele in tightElectrons: leptons.emplace_back(ele)
