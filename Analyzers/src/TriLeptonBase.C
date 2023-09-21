@@ -7,13 +7,8 @@ TriLeptonBase::~TriLeptonBase() {
     delete hMu17Leg1_MC;
     delete hMu8Leg2_Data;
     delete hMu8Leg2_MC;
-    delete hMuonFR;
-    delete hMuonFRUp;
-    delete hMuonFRDown;
-    //delete hElectronFR;
-    //delete hElectronFRUp;
-    //delete hElectronFRDown;
-    
+    delete hMuFR;
+    delete hElFR;
 }
 
 void TriLeptonBase::initializeAnalyzer() {
@@ -120,19 +115,30 @@ void TriLeptonBase::initializeAnalyzer() {
     fEl12Leg2->Close();
 
     // muon fake rate
-    TFile* fMuonFR = new TFile(muonIDpath+"/fakerate_TopHN.root");
-    hMuonFR = (TH2D*)fMuonFR->Get("FR_cent_TopHNT_TopHNL");
-    hMuonFRUp = (TH2D*)fMuonFR->Get("FRErrUp_Tot_TopHNT_TopHNL");
-    hMuonFRDown = (TH2D*)fMuonFR->Get("FRErrDown_Tot_TopHNT_TopHNL");
-    hMuonFR->SetDirectory(0);
-    hMuonFRUp->SetDirectory(0);
-    hMuonFRDown->SetDirectory(0);
-    fMuonFR->Close();
+    if (FakeStudy) {
+        TFile* fMuFR = new TFile(muonIDpath+"/fakerate_TopHNT_TopHNL_qcd.root");
+        hMuFR = (TH2D*)fMuFR->Get("fakerate");
+        hMuFR->SetDirectory(0);
+        fMuFR->Close();
 
-    // electron fake rate
-    hElectronFR = nullptr;
-    hElectronFRUp = nullptr;
-    hElectronFRDown = nullptr;
+        // electron fake rate
+        TFile* fElFR = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL_qcd.root");
+        hElFR = (TH2D*)fElFR->Get("fakerate");
+        hElFR->SetDirectory(0);
+        fElFR->Close();
+    }
+    else {
+        TFile* fMuFR = new TFile(muonIDpath+"/fakerate_TopHNT_TopHNL.root");
+        hMuFR = (TH2D*)fMuFR->Get("fakerate");
+        hMuFR->SetDirectory(0);
+        fMuFR->Close();
+
+        // electron fake rate
+        TFile* fElFR = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL.root");
+        hElFR = (TH2D*)fElFR->Get("fakerate");
+        hElFR->SetDirectory(0);
+        fElFR->Close();
+    }
 
     // Jet tagger
     vector<JetTagging::Parameters> jtps;
@@ -325,6 +331,135 @@ void TriLeptonBase::executeEvent() {
         FillHist(channel+"/isSignalMassLow", isSignalMassLow, weight, 2, 0., 2.);
     }
 
+}
+
+double TriLeptonBase::getMuonRecoSF(const Muon &mu, int sys) {
+    const double abseta = fabs(mu.Eta());
+
+    if (DataEra == "2016preVFP") {
+        if (abseta < 0.9) {
+            const double value = 0.9998229551300333;
+            const double stat = 0.0001538802103231026;
+            const double syst = 0.0003540897399334497;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 1.2) {
+            const double value = 1.0001593416915515;
+            const double stat = 0.00019861903120026457;
+            const double syst = 0.00031024592139106355;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2)); 
+        }
+        else if (abseta < 2.1) {
+            const double value = 0.9998936144006075;
+            const double stat = 0.00012188589514012365;
+            const double syst = 0.00021277119878493345;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2)); 
+        }
+        else if (abseta < 2.4) {
+            const double value = 0.9990268820042745;
+            const double stat = 0.00027638902644996395;
+            const double syst = 0.0019462359914510508;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2)); 
+        }
+        else {
+            cerr << "[TriLeptonBase::getMuonRecoSF] wrong muon eta value " << abseta << endl;
+            exit(EXIT_FAILURE); 
+        }
+    }
+    else if (DataEra == "2016postVFP") {
+        if (abseta < 0.9) {
+            const double value = 1.0000406419782646;
+            const double stat = 0.00010260291858070426;
+            const double syst = 0.0014366927652431664;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 1.2) {
+            const double value = 0.9997959311146515;
+            const double stat = 0.00019912837537507789;
+            const double syst = 0.0010917857343065423;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.1) {
+            const double value = 0.9994928400570587;
+            const double stat = 0.00012513847429973846;
+            const double syst = 0.0014814654032937547;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.4) {
+            const double value = 0.9990728619505579;
+            const double stat = 0.0002754474704705526;
+            const double syst = 0.0017364778744567663;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else {
+            cerr << "[TriLeptonBase::getMuonRecoSF] wrong muon eta value " << abseta << endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    else if (DataEra == "2017") {
+        if (abseta < 0.9) {
+            const double value = 0.9996742562806361;
+            const double stat = 7.650191371261136e-05;
+            const double syst = 0.0006514874387277825;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 1.2) {
+            const double value = 0.9997813602035737;
+            const double stat = 0.00014496238686164667;
+            const double syst = 0.0004372795928526685;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.1) {
+            const double value = 0.9994674742459532;
+            const double stat = 7.739510750489317e-05;
+            const double syst = 0.0010650515080936618;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.4) {
+            const double value = 0.9993566412630517;
+            const double stat = 0.00022835790507860388;
+            const double syst = 0.0011810962222705494;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else {
+            cerr << "[TriLeptonBase::getMuonRecoSF] wrong muon eta value " << abseta << endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    else if (DataEra == "2018") {
+        if (abseta < 0.9) {
+            const double value = 0.9998088006315689;
+            const double stat = 6.498845788247257e-05;
+            const double syst = 0.0003823987368622994;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 1.2) {
+            const double value = 0.999754701980269;
+            const double stat = 0.00011054079511271507;
+            const double syst = 0.0005221124230931915;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.1) {
+            const double value = 0.9995842791862117;
+            const double stat = 7.574443994874554e-05;
+            const double syst = 0.0008314416275765346;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else if (abseta < 2.4) {
+            const double value = 0.9990341741614288;
+            const double stat = 0.00019911479235592246;
+            const double syst = 0.0017237408292350668;
+            return value + sys*sqrt(pow(stat, 2)+pow(syst, 2));
+        }
+        else {
+            cerr << "[TriLeptonBase::getMuonRecoSF] wrong muon eta value " << abseta << endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    else {
+        cerr << "[TriLeptonBase::getMuonRecoSF] not implemented era" << DataEra << endl;
+        exit(EXIT_FAILURE);
+    }
 }
 
 double TriLeptonBase::getMuonIDSF(const Muon &mu, int sys) {
@@ -526,24 +661,24 @@ double TriLeptonBase::getMuonFakeProb(const Muon &mu, int sys) {
     if (ptCorr > 50.) ptCorr = 49.9;
     if (absEta > 2.4) absEta = 2.399;
 
-    int thisBin = hMuonFR->FindBin(ptCorr, absEta);
-    double value = hMuonFR->GetBinContent(thisBin);
-    double error = 0.;
-    if (sys == 1) error = hMuonFRUp->GetBinContent(thisBin);
-    if (sys == -1) error = hMuonFRDown->GetBinContent(thisBin);
+    int thisBin = hMuFR->FindBin(absEta, ptCorr);
+    double value = hMuFR->GetBinContent(thisBin);
+    double error = hMuFR->GetBinError(thisBin);
     
-    return value + error;
+    return value + double(sys)*error;
 }
 
 double TriLeptonBase::getElectronFakeProb(const Electron &ele, int sys) {
     double ptCorr = ele.Pt()*(1.+max(0., ele.MiniRelIso()-0.1));
-    int thisBin = hElectronFR->FindBin(ptCorr, fabs(ele.Eta()));
-    double value = hElectronFR->GetBinContent(thisBin);
-    double error = 0.;
-    if (sys == 1) error = hElectronFRUp->GetBinError(thisBin);
-    if (sys == -1) error = hElectronFRDown->GetBinError(thisBin);
+    double absEta = fabs(ele.Eta());
+    if (ptCorr < 10.) ptCorr = 10.;
+    if (ptCorr > 50.) ptCorr = 49.9;
+    if (absEta > 2.5) absEta = 2.499;
+    int thisBin = hElFR->FindBin(absEta, ptCorr);
+    double value = hElFR->GetBinContent(thisBin);
+    double error = hElFR->GetBinError(thisBin);
 
-    return value + error;
+    return value + double(sys)*error;
 }
 
 double TriLeptonBase::getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons, int sys) {
