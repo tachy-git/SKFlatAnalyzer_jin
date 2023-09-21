@@ -19,13 +19,13 @@ public:
     TH2D *hElIDSF;
     TH2D *hEl23Leg1_Data, *hEl23Leg1_MC;
     TH2D *hEl12Leg2_Data, *hEl12Leg2_MC;
-    TH2D *hMuonFR, *hMuonFRUp, *hMuonFRDown;
-    TH2D *hElectronFR, *hElectronFRUp, *hElectronFRDown;
+    TH2D *hMuFR, *hElFR;
     TriLeptonBase();
     ~TriLeptonBase();
     void initializeAnalyzer();
     void executeEvent();
 
+    double getMuonRecoSF(const Muon &mu, int sys);
     double getMuonIDSF(const Muon &mu, int sys);
     double getEleIDSF(const Electron &ele, int sys);
     double getTriggerEff(const Muon &mu, TString histkey, bool isDataEff, int sys);
