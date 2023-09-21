@@ -2113,6 +2113,50 @@ bool AnalyzerCore::IsSignalPID(int pid){
 //==== END Gen Matching Tools
 //==============================================================
 
+
+//==== K-factor
+double AnalyzerCore::GetKFactor(){
+
+  if(IsDATA) return 1.;
+
+  float weight = 1.;
+  if(MCSample.Contains("WZTo3LNu_powheg") or MCSample.Contains("WZTo2L2Q")) {
+    //Physics Letters B 761 (2016) 197
+    //http://dx.doi.org/10.1016/j.physletb.2016.08.017
+    weight = 1.109;
+  }
+  else if(MCSample.Contains("ZZTo4L_powheg") or MCSample.Contains("ZZTo2L2Nu") or MCSample.Contains("ZZTo2L2Q")){
+    // Physics Letters B 735 (2014) 311-313
+    // https://doi.org/10.1016/j.physletb.2014.06.056
+    weight = 1.16;
+  }
+  else if(MCSample.Contains("ggZZto")){
+    //  1.67 brings gg->ZZ from LO to NLO (http://arxiv.org/abs/1509.06734)
+    return 1.67;
+  }
+  else if(MCSample.Contains("ggHtoZZ")){
+    return 1.67;
+    //AN2016_359
+  }
+  else if(MCSample.Contains("ttZ") && !MCSample.Contains("To")){
+    weight = 839.3/780.;
+  }
+  else if(MCSample.Contains("ttW") && !MCSample.Contains("To")){
+    weight = 600.8/610.;
+  }
+  return weight;
+
+}
+
+
+
+
+
+
+
+
+
+
 TH1D* AnalyzerCore::GetHist1D(TString histname){
 
   TH1D *h = NULL;
