@@ -30,7 +30,7 @@ class PromptUnbinned(TriLeptonBase):
         # self.network = "GraphNeuralNet"
         
         if self.channel == "Skim1E2Mu":
-            self.weightVariation = ["L1PrefireUp", "L1PrefireDown",
+            self.weightVariations = ["L1PrefireUp", "L1PrefireDown",
                                     "PileupReweightUp", "PileupReweightDown",
                                     "MuonIDSFUp", "MuonIDSFDown",
                                     "ElectronIDSFUp", "ElectronIDSFDown",
@@ -41,7 +41,7 @@ class PromptUnbinned(TriLeptonBase):
                                     "LightTagUpCorr", "LightTagDownCorr"]
         
         if self.channel == "Skim3Mu":
-            self.weightVariation = ["L1PrefireUp", "L1PrefireDown",
+            self.weightVariations = ["L1PrefireUp", "L1PrefireDown",
                                     "PileupReweightUp", "PileupReweightDown",
                                     "MuonIDSFUp", "MuonIDSFDown",
                                     "ElectronIDSFUp", "ElectronIDSFDown",
@@ -58,7 +58,7 @@ class PromptUnbinned(TriLeptonBase):
         
         self.systematics = ["Central"]
         if not super().IsDATA:
-            self.systematics += self.weightVariation + self.scaleVariations
+            self.systematics += self.weightVariations + self.scaleVariations
         
         #self.signalStrings = ["MHc-70_MA-65", "MHc-160_MA-85", "MHc-130_MA-90", "MHc-100_MA-95", "MHc-160_MA-120"]
         #self.backgroundStrings = ["nonprompt", "diboson", "ttZ"]
@@ -159,7 +159,7 @@ class PromptUnbinned(TriLeptonBase):
                 self.weight["MuonIDSFDown"][0] =  w_norm * w_l1prefire * w_pileup * sf_muonid_down * sf_eleid * sf_trig * sf_btag
                 self.weight["DblMuTrigSFUp"][0] =  w_norm * w_l1prefire * w_pileup * sf_muonid * sf_eleid * sf_trig_up * sf_btag
                 self.weight["DblMuTrigSFDown"][0] =  w_norm * w_l1prefire * w_pileup * sf_muonid * sf_eleid * sf_trig_down * sf_btag
-            for syst in self.weightVariation:
+            for syst in self.weightVariations:
                 self.mass1[syst][0] = self.mass1["Central"][0]
                 self.mass2[syst][0] = self.mass2["Central"][0]
                 #for SIG in self.signalStrings:
