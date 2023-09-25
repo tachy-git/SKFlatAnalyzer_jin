@@ -150,8 +150,7 @@ class MatrixUnbinned(TriLeptonBase):
         
         if self.channel == "Skim1E2Mu":
             if not is1E2Mu: return None
-            if tightMuons.size() == looseMuons.size(): return None
-            if tightElectrons.size() == looseElectrons.size(): return None
+            if (tightMuons.size() == looseMuons.size()) and (tightElectrons.size() == looseElectrons.size()): return None
         if self.channel == "Skim3Mu":
             if not is3Mu: return None
             if tightMuons.size() == looseMuons.size(): return None
