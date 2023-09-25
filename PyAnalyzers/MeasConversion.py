@@ -22,33 +22,37 @@ class MeasConversion(TriLeptonBase):
         if super().Skim3Mu: self.channel = "Skim3Mu"
         
         ## systematic sources
-        if self.channel == "Skim1E2Mu":
-            self.weightVariations = ["L1PrefireUp", "L1PrefireDown",
-                                    "PileupReweightUp", "PileupReweightDown",
-                                    "MuonIDSFUp", "MuonIDSFDown",
-                                    "ElectronIDSFUp", "ElectronIDSFDown",
-                                    "EMuTrigSFUp", "EMuTrigSFDown",
-                                    "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
-                                    "HeavyTagUpCorr", "HeavyTagDownCorr",
-                                    "LightTagUpUnCorr", "LightTagDownUnCorr",
-                                    "LightTagUpCorr", "LightTagDownCorr"]
+        self.weightVariations = []
+        self.scaleVariations = []
+        if not super().IsDATA:
+            if self.channel == "Skim1E2Mu":
+                self.weightVariations = ["L1PrefireUp", "L1PrefireDown",
+                                         "PileupReweightUp", "PileupReweightDown",
+                                         "MuonIDSFUp", "MuonIDSFDown",
+                                         "ElectronIDSFUp", "ElectronIDSFDown",
+                                         "EMuTrigSFUp", "EMuTrigSFDown",
+                                         "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
+                                         "HeavyTagUpCorr", "HeavyTagDownCorr",
+                                         "LightTagUpUnCorr", "LightTagDownUnCorr",
+                                         "LightTagUpCorr", "LightTagDownCorr"]
         
-        if self.channel == "Skim3Mu":
-            self.weightVariations = ["L1PrefireUp", "L1PrefireDown",
-                                    "PileupReweightUp", "PileupReweightDown",
-                                    "MuonIDSFUp", "MuonIDSFDown",
-                                    "ElectronIDSFUp", "ElectronIDSFDown",
-                                    "DblMuTrigSFUp", "DblMuTrigSFDown",
-                                    "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
-                                    "HeavyTagUpCorr", "HeavyTagDownCorr",
-                                    "LightTagUpUnCorr", "LightTagDownUnCorr",
-                                    "LightTagUpCorr", "LightTagDownCorr"]
-        self.scaleVariations = ["JetResUp", "JetResDown",
-                                "JetEnUp", "JetEnDown",
-                                "ElectronResUp", "ElectronResDown",
-                                "ElectronEnUp", "ElectronEnDown",
-                                "MuonEnUp", "MuonEnDown"]
+            if self.channel == "Skim3Mu":
+                self.weightVariations = ["L1PrefireUp", "L1PrefireDown",
+                                         "PileupReweightUp", "PileupReweightDown",
+                                         "MuonIDSFUp", "MuonIDSFDown",
+                                         "ElectronIDSFUp", "ElectronIDSFDown",
+                                         "DblMuTrigSFUp", "DblMuTrigSFDown",
+                                         "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
+                                         "HeavyTagUpCorr", "HeavyTagDownCorr",
+                                         "LightTagUpUnCorr", "LightTagDownUnCorr",
+                                         "LightTagUpCorr", "LightTagDownCorr"]
+            self.scaleVariations = ["JetResUp", "JetResDown",
+                                    "JetEnUp", "JetEnDown",
+                                    "ElectronResUp", "ElectronResDown",
+                                    "ElectronEnUp", "ElectronEnDown",
+                                    "MuonEnUp", "MuonEnDown"]
         
+        # for data, only central scale with no weight variation
         self.systematics = ["Central"]
         if not super().IsDATA:
             self.systematics += self.weightVariations + self.scaleVariations
