@@ -485,7 +485,7 @@ double TriLeptonBase::getEleIDSF(const Electron &ele, int sys) {
 
     int thisBin = hElIDSF->FindBin(eta, pt);
     double value = hElIDSF->GetBinContent(thisBin);
-    double error = hElIDSF->GetBinContent(thisBin);
+    double error = hElIDSF->GetBinError(thisBin);
 
     return value + float(sys)*error;
 }
@@ -685,12 +685,12 @@ double TriLeptonBase::getFakeWeight(const vector<Muon> &muons, const vector<Elec
     double weight = -1.;
     for (const auto &mu: muons) {
         if (mu.PassID(MuonIDs.at(0))) continue;
-        double fr = getMuonFakeProb(mu, sys);
+        const double fr = getMuonFakeProb(mu, sys);
         weight *= -1.*(fr / (1.-fr));
     }
     for (const auto &ele: electrons) {
         if (ele.PassID(ElectronIDs.at(0))) continue;
-        double fr = getElectronFakeProb(ele, sys);
+        const double fr = getElectronFakeProb(ele, sys);
         weight *= -1.*(fr / (1.-fr));
     }
     return weight;

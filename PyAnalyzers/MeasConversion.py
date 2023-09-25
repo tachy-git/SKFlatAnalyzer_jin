@@ -252,7 +252,7 @@ class MeasConversion(TriLeptonBase):
             exit(1)
 
         if not super().IsDATA:
-            weight *= super().MCweight()
+            weight *= super().MCweight() * super().GetKFactor()
             weight *= event.GetTriggerLumi("Full")
             if syst == "L1PrefireUp":     w_prefire = super().GetPrefireWeight(1)
             elif syst == "L1PrefireDown": w_prefire = super().GetPrefireWeight(-1)
@@ -274,9 +274,11 @@ class MeasConversion(TriLeptonBase):
                     if syst == "ElectronIDSFUp":     w_eleIDSF *= self.mcCorr.ElectronReco_SF(el.scEta(), el.Pt(), 1) * self.getEleIDSF(el, 1)
                     elif syst == "ElectronIDSFDown": w_eleIDSF *= self.mcCorr.ElectronReco_SF(el.scEta(), el.Pt(), -1) * self.getEleIDSF(el, -1)
                     else:                            w_eleIDSF *= self.mcCorr.ElectronReco_SF(el.scEta(), el.Pt(), 0) * self.getEleIDSF(el, 0) 
+
                 if syst == "EMuTriggerSFUp":     w_trigSF = self.getEMuTriggerSF(electrons, muons, 1)
                 elif syst == "EMuTriggerSFDown": w_trigSF = self.getEMuTriggerSF(electrons, muons, -1)
                 else:                            w_trigSF = self.getEMuTriggerSF(electrons, muons, 0)
+            
             if "3Mu" in channel:
                 for mu in muons:
                     if syst == "MuonIDSFUp":      w_muonIDSF *= self.getMuonRecoSF(mu, 1) * self.getMuonIDSF(mu, 1)
@@ -289,7 +291,7 @@ class MeasConversion(TriLeptonBase):
             weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
             weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
             weight *= w_muonIDSF           # print(f"muonID: {w_muonIDSF}")
-            weight *= w_eleIDSF
+            weight *= w_eleIDSF;           # print(syst, w_eleIDSF)
             weight *= w_trigSF        # print(f"muontrig: {w_dblMuTrigSF}")
             
             # b-tagging
@@ -315,7 +317,6 @@ class MeasConversion(TriLeptonBase):
         jets = objects["jets"]
         bjets = objects["bjets"]
         METv = objects["METv"]
-        
         ## fill input observables
         for idx, mu in enumerate(muons, start=1):
             super().FillHist(f"{channel}/{self.measure}/{syst}/muons/{idx}/pt", mu.Pt(), weight, 300, 0., 300.)
