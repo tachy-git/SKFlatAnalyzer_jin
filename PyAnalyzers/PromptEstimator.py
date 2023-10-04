@@ -23,8 +23,7 @@ class PromptEstimator(TriLeptonBase):
         if super().Skim3Mu:     self.channel = "Skim3Mu"
         if super().RunSyst:     self.run_syst = True
         if not self.channel in ["Skim1E2Mu", "Skim3Mu"]:
-            print(f"Wrong channel {self.channel}")
-            raise(KeyError)
+            raise KeyError(f"Wron channel {self.channel}")
             
         self.weightVariations = ["Central"]
         self.scaleVariations = []
@@ -149,7 +148,7 @@ class PromptEstimator(TriLeptonBase):
     
     def selectEvent(self, event, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv):
         is3Mu = (len(tightMuons) == 3 and len(vetoMuons) == 3 and len(tightElectrons) == 0 and len(vetoElectrons) == 0)
-        is1E2Mu = len(tightMuons) == 2 and len(vetoMuons) == 2 and len(tightElectrons) == 1 and len(vetoElectrons) == 1
+        is1E2Mu = (len(tightMuons) == 2 and len(vetoMuons) == 2 and len(tightElectrons) == 1 and len(vetoElectrons) == 1)
         
         if self.channel == "Skim1E2Mu":
             if not is1E2Mu: return None
@@ -346,7 +345,7 @@ class PromptEstimator(TriLeptonBase):
         for idx, ele in enumerate(electrons, start=1):
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
-            super().FillHist(f"{channel}/{syst}/electrons/{idx}/Phi", ele.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/phi", ele.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
         for idx, jet in enumerate(jets, start=1):
             super().FillHist(f"{channel}/{syst}/jets/{idx}/pt", jet.Pt(), weight, 300, 0., 300.)
