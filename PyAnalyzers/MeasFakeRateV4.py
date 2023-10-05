@@ -48,7 +48,7 @@ class MeasFakeRateV4(DiLeptonBase):
         self.eta_bins = None
         if "MeasFakeEl" in self.channel:
             self.ptCorr_bins = [10., 15., 20., 25., 35., 50., 100.]
-            self.eta_bins = [0., 0.8, 1.579, 2.5]
+            self.eta_bins = [0., 0.8, 1.479, 2.5]
         if "MeasFakeMu" in self.channel:
             self.ptCorr_bins = [10., 15., 20., 30., 50., 100.]
             self.eta_bins = [0., 0.9, 1.6, 2.4]
@@ -453,7 +453,7 @@ class MeasFakeRateV4(DiLeptonBase):
             MTfix = TMath.Sqrt(2.*35.*METv.Pt()*(1.-TMath.Cos(dPhi)))
             MET = METv.Pt()
             ptCorr = ele.Pt()*(1. + max(0, ele.MiniRelIso()-0.1))
-            abseta = abs(ele.Eta())
+            abseta = abs(ele.scEta())
             prefix = self.findbin(ptCorr, abseta)
             trigSuffix = ""
             if self.channel == "MeasFakeEl8":  trigSuffix = "Ele8"

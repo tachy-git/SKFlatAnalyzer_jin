@@ -34,6 +34,7 @@ class ClosFakeRate(TriLeptonBase):
         # Get central scale objects & event selection
         vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
         thisChannel = self.selectEvent(ev, truth, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv)
+        
         if thisChannel is None: return None
         pairs = self.makePair(looseMuons)
         objects = {"muons": looseMuons,
@@ -43,7 +44,6 @@ class ClosFakeRate(TriLeptonBase):
                    "METv": METv,
                    "pairs": pairs}
         
-        if thisChannel is None: return None
         weight = super().MCweight() * ev.GetTriggerLumi("Full") * super().GetPrefireWeight(0) * super().GetPileUpWeight(super().nPileUp, 0)
 
         if "SR" in thisChannel:
@@ -74,7 +74,7 @@ class ClosFakeRate(TriLeptonBase):
             super().FillHist(f"{channel}/{syst}/muons/{idx}/mass", mu.M(), weight, 10, 0., 1.)
         for idx, ele in enumerate(electrons, start=1):
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/scEta", ele.scEta(), weight, 50, -2.5, 2.5)
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/phi", ele.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
         for idx, jet in enumerate(jets, start=1):
