@@ -322,7 +322,7 @@ class MeasFakeRateV4(DiLeptonBase):
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
 
-            if (MT < 25. and MET < 25.):
+            if ("QCD" in super().MCSample) or (MT < 25. and MET < 25.):
                 selection = "QCDEnriched1"
                 super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
@@ -380,7 +380,7 @@ class MeasFakeRateV4(DiLeptonBase):
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
 
-            if (MT < 25. and MET < 25.):
+            if ("QCD" in super().MCSample) or (MT < 25. and MET < 25.):
                 selection = "QCDEnriched1"
                 super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
@@ -484,7 +484,7 @@ class MeasFakeRateV4(DiLeptonBase):
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
 
-            if (MT < 25. and MET < 25.):
+            if ("QCD" in super().MCSample) or (MT < 25. and MET < 25.):
                 selection = "QCDEnriched1"
                 super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
@@ -502,7 +502,7 @@ class MeasFakeRateV4(DiLeptonBase):
                 super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
                 super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-            if (MT < 50.):
+            if MT < 50.:
                 selection = "QCDEnriched2"
                 super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
@@ -542,7 +542,7 @@ class MeasFakeRateV4(DiLeptonBase):
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
 
-            if (MT < 25. and MET < 25.):
+            if ("QCD" in super().MCSample) or (MT < 25. and MET < 25.):
                 selection = "QCDEnriched1"
                 super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
