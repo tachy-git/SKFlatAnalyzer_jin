@@ -926,6 +926,9 @@ std::vector<Electron> AnalyzerCore::SelectElectrons(const std::vector<Electron>&
       //cout << "Fail Eta : eta = " << fabs(electrons.at(i).scEta()) << ", cut = " << fetamax << endl;
       continue;
     }
+    if (1.442 < fabs(electrons.at(i).scEta()) && fabs(electrons.at(i).scEta()) < 1.566) {
+        continue;
+    }
     if(!( electrons.at(i).PassID(id) )){
       //cout << "Fail ID" << endl;
       continue;
