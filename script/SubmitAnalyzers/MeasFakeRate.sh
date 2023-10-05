@@ -30,7 +30,7 @@ if [[ $ERA == "2016"* ]]; then
     SKFlat.py -a MeasFakeRateV4 -i SingleTop_tch_antitop_Incl      -n 10 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
     SKFlat.py -a MeasFakeRateV4 -i SingleTop_tW_top_NoFullyHad     -n 10 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
     SKFlat.py -a MeasFakeRateV4 -i SingleTop_tW_antitop_NoFullyHad -n 10 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
-    SKFlat.py -a MeasFakeRateV4 -l SampleLists/${QCD}.txt          -n 10 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
+    SKFlat.py -a MeasFakeRateV4 -l SampleLists/${QCD}.txt          -n 10 -e $ERA --memory $MEMORY --userflags $CHANNEL --python &
 elif [[ $ERA == "2017" ]]; then
     if [[ $CHANNEL == "MeasFakeMu"* ]]; then
         DATASTREAM="DoubleMuon"
@@ -56,7 +56,7 @@ elif [[ $ERA == "2017" ]]; then
     SKFlat.py -a MeasFakeRateV4 -i SingleTop_tch_antitop_Incl      -n 15 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
     SKFlat.py -a MeasFakeRateV4 -i SingleTop_tW_top_NoFullyHad     -n 15 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
     SKFlat.py -a MeasFakeRateV4 -i SingleTop_tW_antitop_NoFullyHad -n 15 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
-    SKFlat.py -a MeasFakeRateV4 -l SampleLists/${QCD}.txt          -n 15 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
+    SKFlat.py -a MeasFakeRateV4 -l SampleLists/${QCD}.txt          -n 15 -e $ERA --memory $MEMORY --userflags $CHANNEL --python &
 elif [[ $ERA == "2018" ]]; then
     if [[ $CHANNEL == "MeasFakeMu"* ]]; then
         DATASTREAM="DoubleMuon"
@@ -82,7 +82,7 @@ elif [[ $ERA == "2018" ]]; then
     SKFlat.py -a MeasFakeRateV4 -i SingleTop_tch_antitop_Incl      -n 20 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
     SKFlat.py -a MeasFakeRateV4 -i SingleTop_tW_top_NoFullyHad     -n 20 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
     SKFlat.py -a MeasFakeRateV4 -i SingleTop_tW_antitop_NoFullyHad -n 20 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
-    SKFlat.py -a MeasFakeRateV4 -l SampleLists/${QCD}.txt          -n 20 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
+    SKFlat.py -a MeasFakeRateV4 -l SampleLists/${QCD}.txt          -n 20 -e $ERA --memory $MEMORY --userflags $CHANNEL --python &
 else
     echo "Wrong era $ERA"
     exit 1
