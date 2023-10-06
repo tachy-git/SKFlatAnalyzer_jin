@@ -322,26 +322,8 @@ class MeasFakeRateV4(DiLeptonBase):
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
 
-            if (MT < 25. and MET < 25.):
-                selection = "QCDEnriched1"
-                super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/abseta", abseta, weight*npvweight, 48, 0., 2.4)
-                super().FillHist(f"{selection}/{ID}/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/abseta", abseta, weight*npvweight, 48, 0., 2.4)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-            if (MT < 50.):
-                selection = "QCDEnriched2"
+            if ("QCD" in super().MCSample) or (MT < 25. and MET < 25.):
+                selection = "QCDEnriched"
                 super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
@@ -380,26 +362,8 @@ class MeasFakeRateV4(DiLeptonBase):
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
 
-            if (MT < 25. and MET < 25.):
-                selection = "QCDEnriched1"
-                super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/abseta", abseta, weight*npvweight, 48, 0., 2.4)
-                super().FillHist(f"{selection}/{ID}/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/abseta", abseta, weight*npvweight, 48, 0., 2.4)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-            if (MT < 50.):
-                selection = "QCDEnriched2"
+            if ("QCD" in super().MCSample) or (MT < 25. and MET < 25.):
+                selection = "QCDEnriched"
                 super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
@@ -484,26 +448,8 @@ class MeasFakeRateV4(DiLeptonBase):
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
 
-            if (MT < 25. and MET < 25.):
-                selection = "QCDEnriched1"
-                super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/abseta", abseta, weight*npvweight, 50, 0., 2.5)
-                super().FillHist(f"{selection}/{ID}/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/abseta", abseta, weight*npvweight, 50, 0., 2.5)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-            if (MT < 50.):
-                selection = "QCDEnriched2"
+            if ("QCD" in super().MCSample) or (MT < 25. and MET < 25.):
+                selection = "QCDEnriched"
                 super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
@@ -542,26 +488,8 @@ class MeasFakeRateV4(DiLeptonBase):
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
             super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
 
-            if (MT < 25. and MET < 25.):
-                selection = "QCDEnriched1"
-                super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/abseta", abseta, weight*npvweight, 50, 0., 2.5)
-                super().FillHist(f"{selection}/{ID}/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{selection}/{ID}/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/abseta", abseta, weight*npvweight, 50, 0., 2.5)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MET", MET, weight*npvweight, 300, 0., 300.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPV", super().nPV, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/nPileUp", super().nPileUp, weight*npvweight, 100, 0., 100.)
-                super().FillHist(f"{prefix}/{selection}/{ID}/{syst}/MT_MET", MT, MET, weight*npvweight, 300, 0., 300., 300, 0., 300.)
-            if (MT < 50.):
-                selection = "QCDEnriched2"
+            if ("QCD" in super().MCSample) or (MT < 25. and MET < 25.):
+                selection = "QCDEnriched"
                 super().FillHist(f"{selection}/{ID}/{syst}/MT", MT, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/MTfix", MTfix, weight*npvweight, 300, 0., 300.)
                 super().FillHist(f"{selection}/{ID}/{syst}/ptCorr", ptCorr, weight*npvweight, 300, 0., 300.)
