@@ -670,7 +670,7 @@ double TriLeptonBase::getMuonFakeProb(const Muon &mu, int sys) {
 
 double TriLeptonBase::getElectronFakeProb(const Electron &ele, int sys) {
     double ptCorr = ele.Pt()*(1.+max(0., ele.MiniRelIso()-0.1));
-    double absEta = fabs(ele.Eta());
+    double absEta = fabs(ele.scEta());
     if (ptCorr < 10.) ptCorr = 10.;
     if (ptCorr > 50.) ptCorr = 49.9;
     if (absEta > 2.5) absEta = 2.499;

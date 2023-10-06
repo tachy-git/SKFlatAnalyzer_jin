@@ -193,10 +193,10 @@ class MeasFakeRateV4(DiLeptonBase):
             if (NEL == 1 and NEV == 1 and NML == 0 and NMV == 0):
                 if syst == "RequireHeavyTag":
                     if not bjets.size() >= 1: return None
-                    if not bjets.at(0).DeltaR(looseElectrons.at(0)) > 0.7: return None
+                    if not bjets.at(0).DeltaR(looseElectrons.at(0)) > 1.: return None
                 else:
                     if not jets.size() >= 1: return None
-                    if not jets.at(0).DeltaR(looseElectrons.at(0)) > 0.7: return None
+                    if not jets.at(0).DeltaR(looseElectrons.at(0)) > 1.: return None
                 return "preselSglEl"
             # double electron
             elif (NEL == 2 and NEV == 2 and NML == 0 and NMV == 0):
@@ -213,10 +213,10 @@ class MeasFakeRateV4(DiLeptonBase):
             if (NEL == 0 and NEV == 0 and NML == 1 and NMV == 1):
                 if syst == "RequireHeavyTag":
                     if not bjets.size() >= 1: return None
-                    if not bjets.at(0).DeltaR(looseMuons.at(0)) > 0.7: return None
+                    if not bjets.at(0).DeltaR(looseMuons.at(0)) > 1.: return None
                 else:
                     if not jets.size() >= 1: return None
-                    if not jets.at(0).DeltaR(looseMuons.at(0)) > 0.7: return None
+                    if not jets.at(0).DeltaR(looseMuons.at(0)) > 1.: return None
                 return "preselSglMu"
             elif (NEL == 0 and NEV == 0 and NML == 2 and NMV == 2):
                 ZCand = looseMuons.at(0) + looseMuons.at(1)
