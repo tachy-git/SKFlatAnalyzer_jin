@@ -88,7 +88,7 @@ class MeasConvMatrix(TriLeptonBase):
         
         return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
     
-    def selectEvent(self, event, vetoMuons, truth, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv):
+    def selectEvent(self, event, truth, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv):
         is3Mu = (looseMuons.size() == 3 and vetoMuons.size() == 3 and \
                  looseElectrons.size() == 0 and vetoElectrons.size() == 0)
         is1E2Mu = (looseMuons.size() == 2 and vetoMuons.size() == 2 and \
