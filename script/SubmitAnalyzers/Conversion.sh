@@ -12,8 +12,10 @@ else
 fi
 SKFlat.py -a MeasConversion -i $DATASTREAM --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL  --python &
 SKFlat.py -a MeasConvMatrix -i $DATASTREAM --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL  --python &
-SKFlat.py -a MeasConversion -i DYJets_MG  --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL  --python &
-SKFlat.py -a MeasConversion -i DYJets10to50_MG   --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL  --python & 
+SKFlat.py -a MeasConvMatrix -i DYJets_MG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL --python &
+SKFlat.py -a MeasConvMatrix -i DYJets10to50_MG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL --python &
+SKFlat.py -a MeasConversion -i DYJets_MG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL  --python &
+SKFlat.py -a MeasConversion -i DYJets10to50_MG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL  --python & 
 SKFlat.py -a MeasConversion -i WZTo3LNu_amcatnlo --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL  --python &
 SKFlat.py -a MeasConversion -i ZZTo4L_powheg --skim SkimTree_SS2lOR3l -n 30 -e ${ERA} --userflags $CHANNEL  --python &
 SKFlat.py -a MeasConversion -i ZGToLLG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL  --python &

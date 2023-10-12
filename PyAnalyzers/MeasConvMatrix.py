@@ -111,7 +111,6 @@ class MeasConvMatrix(TriLeptonBase):
         #   self.measure = "HighPT"
         #else:
         #    self.measure = "LowPT"
-
         # prompt matching
         if "DYJets" in super().MCSample or "ZGToLLT" in super().MCSample:
             convMuons = vector[Muon]()
@@ -121,7 +120,7 @@ class MeasConvMatrix(TriLeptonBase):
             for ele in looseElectrons:
                 if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
             if convMuons.size()+convElectrons.size() == 0: return None
-            
+        
         ##### event selection
         ## 1E2Mu ZGamma
         ## 1. pass EMuTriggers
