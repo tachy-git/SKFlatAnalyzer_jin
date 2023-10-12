@@ -112,14 +112,18 @@ class MeasConvMatrix(TriLeptonBase):
         #else:
         #    self.measure = "LowPT"
         # prompt matching
-        if "DYJets" in super().MCSample or "ZGToLLT" in super().MCSample:
+        if "DYJets" in super().MCSample or "ZGToLLG" in super().MCSample:
             convMuons = vector[Muon]()
             convElectrons = vector[Electron]()
             for mu in looseMuons:
                 if super().GetLeptonType(mu, truth) in [4, 5, -5, -6]: convMuons.emplace_back(mu)
             for ele in looseElectrons:
                 if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
-            if convMuons.size()+convElectrons.size() == 0: return None
+            #if convMuons.size()+convElectrons.size() == 0: return None
+            if self.channel == "Skim1E2Mu":
+                if convElectron.size() == 0: return None
+            if self.channel == "Skim3Mu":
+                if convMuon.size() == 0: return None
         
         ##### event selection
         ## 1E2Mu ZGamma

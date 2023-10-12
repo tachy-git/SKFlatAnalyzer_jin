@@ -155,18 +155,6 @@ class MeasConversion(TriLeptonBase):
         # prompt matching
         # for patching samples
         if "DYJets" in super().MCSample or "ZGToLLG" in super().MCSample:
-            # first do matching
-            """
-            promptMuons = vector[Muon]()
-            promptElectrons = vector[Electron]()
-            for mu in tightMuons:
-                if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
-            for ele in tightElectrons:
-                if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
-
-            if promptMuons.size() != tightMuons.size(): return None
-            if promptElectrons.size() != tightElectrons.size(): return None
-            """
             # at least one conversion lepton should exist
             # internal conversion: 4, 5
             # external conversion: -5, -6
@@ -176,16 +164,12 @@ class MeasConversion(TriLeptonBase):
                 if super().GetLeptonType(mu, truth) in [4, 5, -5, -6]: convMuons.emplace_back(mu)
             for ele in tightElectrons:
                 if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
-            if convMuons.size()+convElectrons.size() == 0: return None
-        # for conversion measurement
-        #leptons = vector[Lepton]()
-        #for mu in tightMuons: leptons.emplace_back(mu)
-        #for ele in tightElectrons: leptons.emplace_back(ele)
-        #if leptons.at(0).Pt() > 20. and leptons.at(1).Pt() > 20. and leptons.at(2).Pt() > 20.:
-        #    self.measure = "HighPT"
-        #else:
-        #    self.measure = "LowPT"
-            
+            if self.channel == "Skim1E2Mu":
+                if convElectrons.size() == 0: return None
+            if self.channel == "Skim3Mu":
+                if convMuons.size() == 0: return None
+        
+
         ##### event selection
         ## 1E2Mu ZGamma
         ## 1. pass EMuTriggers
