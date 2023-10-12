@@ -156,6 +156,7 @@ class MeasConversion(TriLeptonBase):
         # for patching samples
         if "DYJets" in super().MCSample or "ZGToLLG" in super().MCSample:
             # first do matching
+            """
             promptMuons = vector[Muon]()
             promptElectrons = vector[Electron]()
             for mu in tightMuons:
@@ -165,15 +166,25 @@ class MeasConversion(TriLeptonBase):
 
             if promptMuons.size() != tightMuons.size(): return None
             if promptElectrons.size() != tightElectrons.size(): return None
-
+            """
+            # at least one conversion lepton should exist
+            # internal conversion: 4, 5
+            # external conversion: -5, -6
+            convMuons = vector[Muon]()
+            convElectrons = vector[Electron]()
+            for mu in tightMuons:
+                if super().GetLeptonType(mu, truth) in [4, 5, -5, -6]: convMuons.emplace_back(mu)
+            for ele in tightElectrons:
+                if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
+            if convMuons.size()+convElectrons.size() == 0: return None
         # for conversion measurement
-        leptons = vector[Lepton]()
-        for mu in tightMuons: leptons.emplace_back(mu)
-        for ele in tightElectrons: leptons.emplace_back(ele)
-        if leptons.at(0).Pt() > 20. and leptons.at(1).Pt() > 20. and leptons.at(2).Pt() > 20.:
-            self.measure = "HighPT"
-        else:
-            self.measure = "LowPT"
+        #leptons = vector[Lepton]()
+        #for mu in tightMuons: leptons.emplace_back(mu)
+        #for ele in tightElectrons: leptons.emplace_back(ele)
+        #if leptons.at(0).Pt() > 20. and leptons.at(1).Pt() > 20. and leptons.at(2).Pt() > 20.:
+        #    self.measure = "HighPT"
+        #else:
+        #    self.measure = "LowPT"
             
         ##### event selection
         ## 1E2Mu ZGamma
@@ -246,6 +257,33 @@ class MeasConversion(TriLeptonBase):
             return (pair1, pair2)
         else:
             raise NotImplementedError(f"Wrong number of muons (muons.size())")
+
+    def getConvLepton(self, electrons, muons):
+        if electrons.size() == 1 and muons.size() == 2:
+            return electrons.at(0);
+        elif muons.size() == 3:
+            mu1, mu2, mu3 = tuple(muons)
+            if mu1.Charge() == mu2.Charge():
+                pair1, pair2 = mu1+mu3, mu2+mu3
+                if abs(pair1.M() - 91.2) > abs(pair2.M() - 91.2):
+                    return mu1
+                else:
+                    return mu2
+            elif mu1.Charge() == mu3.Charge():
+                pair1, pair2 = mu1+mu2, mu2+mu3
+                if abs(pair1.M() - 91.2) > abs(pair2.M() - 91.2):
+                    return mu1
+                else:
+                    return mu3
+            else:   # mu2.Charge() == mu3.Charge()
+                pair1, pair2 = mu1+mu2, mu1+mu3
+                if abs(pair1.M() - 91.2) > abs(pair2.M() - 91.2):
+                    return mu2
+                else:
+                    return mu3
+        else:
+            raise NotImplementedError(f"Wrong number of muons (muons.size())")
+
         
     # set weight
     def getWeight(self, channel, event, muons, electrons, jets, syst="Central"):
@@ -320,38 +358,43 @@ class MeasConversion(TriLeptonBase):
         jets = objects["jets"]
         bjets = objects["bjets"]
         METv = objects["METv"]
+        
         ## fill input observables
         for idx, mu in enumerate(muons, start=1):
-            super().FillHist(f"{channel}/{self.measure}/{syst}/muons/{idx}/pt", mu.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/muons/{idx}/eta", mu.Eta(), weight, 48, -2.4, 2.4)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/muons/{idx}/phi", mu.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/muons/{idx}/mass", mu.M(), weight, 10, 0., 1.)
+            super().FillHist(f"{channel}/{syst}/muons/{idx}/pt", mu.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/muons/{idx}/eta", mu.Eta(), weight, 48, -2.4, 2.4)
+            super().FillHist(f"{channel}/{syst}/muons/{idx}/phi", mu.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{syst}/muons/{idx}/mass", mu.M(), weight, 10, 0., 1.)
         for idx, ele in enumerate(electrons, start=1):
-            super().FillHist(f"{channel}/{self.measure}/{syst}/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/electrons/{idx}/Phi", ele.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/Phi", ele.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
         for idx, jet in enumerate(jets, start=1):
-            super().FillHist(f"{channel}/{self.measure}/{syst}/jets/{idx}/pt", jet.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/jets/{idx}/eta", jet.Eta(), weight, 48, -2.4, 2.4)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/jets/{idx}/phi", jet.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/jets/{idx}/mass", jet.M(), weight, 100, 0., 100.)
+            super().FillHist(f"{channel}/{syst}/jets/{idx}/pt", jet.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/jets/{idx}/eta", jet.Eta(), weight, 48, -2.4, 2.4)
+            super().FillHist(f"{channel}/{syst}/jets/{idx}/phi", jet.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{syst}/jets/{idx}/mass", jet.M(), weight, 100, 0., 100.)
         for idx, bjet in enumerate(bjets, start=1):
-            super().FillHist(f"{channel}/{self.measure}/{syst}/bjets/{idx}/pt", bjet.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/bjets/{idx}/eta", bjet.Eta(), weight, 48, -2.4, 2.4)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/bjets/{idx}/phi", bjet.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{self.measure}/{syst}/bjets/{idx}/mass", bjet.M(), weight, 100, 0., 100.)
-        super().FillHist(f"{channel}/{self.measure}/{syst}/jets/size", jets.size(), weight, 20, 0., 20.)
-        super().FillHist(f"{channel}/{self.measure}/{syst}/bjets/size", bjets.size(), weight, 15, 0., 15.)
-        super().FillHist(f"{channel}/{self.measure}/{syst}/METv/pt", METv.Pt(), weight, 300, 0., 300.)
-        super().FillHist(f"{channel}/{self.measure}/{syst}/METv/phi", METv.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{syst}/bjets/{idx}/pt", bjet.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/bjets/{idx}/eta", bjet.Eta(), weight, 48, -2.4, 2.4)
+            super().FillHist(f"{channel}/{syst}/bjets/{idx}/phi", bjet.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/{syst}/bjets/{idx}/mass", bjet.M(), weight, 100, 0., 100.)
+        super().FillHist(f"{channel}/{syst}/jets/size", jets.size(), weight, 20, 0., 20.)
+        super().FillHist(f"{channel}/{syst}/bjets/size", bjets.size(), weight, 15, 0., 15.)
+        super().FillHist(f"{channel}/{syst}/METv/pt", METv.Pt(), weight, 300, 0., 300.)
+        super().FillHist(f"{channel}/{syst}/METv/phi", METv.Phi(), weight, 64, -3.2, 3.2)
         
-        ## fill ZCand
+        ## fill ZCand and conversion candidate
         ZCand = None
         if "1E2Mu" in channel: ZCand = electrons.at(0) + muons.at(0) + muons.at(1)
         if "3Mu" in channel:   ZCand = muons.at(0) + muons.at(1) + muons.at(2)
+        convLep = self.getConvLepton(electrons, muons)
         
-        super().FillHist(f"{channel}/{self.measure}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
-        super().FillHist(f"{channel}/{self.measure}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
-        super().FillHist(f"{channel}/{self.measure}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
-        super().FillHist(f"{channel}/{self.measure}/{syst}/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
+        super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
+        super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
+        super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
+        super().FillHist(f"{channel}/{syst}/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
+        super().FillHist(f"{channel}/{syst}/convLep/pt", convLep.Pt(), weight, 300, 0., 300.)
+        super().FillHist(f"{channel}/{syst}/convLep/eta", convLep.Eta(), weight, 50, -2.5, 2.5)
+        super().FillHist(f"{channel}/{syst}/convLep/phi", convLep.Phi(), weight, 64, -3.2, 3.2)
