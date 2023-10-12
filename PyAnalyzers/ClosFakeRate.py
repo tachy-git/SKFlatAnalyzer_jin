@@ -156,7 +156,7 @@ class ClosFakeRate(TriLeptonBase):
             if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
         
         # not all leptons are prompt
-        if len(promptMuons) == len(looseMuons) and len(promptElectrons) == len(looseElectrons): return None
+        # if len(promptMuons) == len(looseMuons) and len(promptElectrons) == len(looseElectrons): return None
         
         ## 1E2Mu baseline
         ## 1. pass EMuTriggers

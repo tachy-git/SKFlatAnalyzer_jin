@@ -196,6 +196,7 @@ class MeasConversion(TriLeptonBase):
             pair = self.makePair(tightMuons)
             isOnZ = abs((mu1+mu2+ele).M() - 91.2) < 10. 
             if not pair.M() > 12.: return None
+            if not abs(pair.M() - 91.2) > 10.: return None
             if not isOnZ: return None
             if not bjets.size() == 0: return None
 
@@ -218,6 +219,8 @@ class MeasConversion(TriLeptonBase):
             isOnZ = abs((mu1+mu2+mu3).M() - 91.2) < 10.
             if not pair1.M() > 12.: return None
             if not pair2.M() > 12.: return None
+            if not abs(pair1.M() - 91.2) > 10.: return None
+            if not abs(pair2.M() - 91.2) > 10.: return None
             if not isOnZ: return None
             if not bjets.size() == 0: return None
             

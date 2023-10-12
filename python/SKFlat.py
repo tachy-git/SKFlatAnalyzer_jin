@@ -168,7 +168,7 @@ for flag in Userflags:
 masterJobDir += f"__{HOSTNAME}"
 
 ## copy library
-os.makedirs(masterJobDir)
+os.makedirs(masterJobDir, exist_ok=True)
 shutil.copytree(SKFlat_LIB_PATH, f"{masterJobDir}/lib")
 
 ## Loop over samples
