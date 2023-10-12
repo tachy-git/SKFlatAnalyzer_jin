@@ -30,9 +30,10 @@ class MeasConvMatrix(TriLeptonBase):
         rawElectrons = super().GetAllElectrons()
         rawJets = super().GetAllJets()
         METv = ev.GetMETVector()
+        truth = super().GetGens() if not super().IsDATA else None
         
         vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
-        thisChannel = self.selectEvent(ev, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv)
+        thisChannel = self.selectEvent(ev, truth, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv)
         
         if thisChannel is None: return None
         
@@ -84,11 +85,10 @@ class MeasConvMatrix(TriLeptonBase):
         tightElectrons = vector[Electron](sorted(tightElectrons, key=lambda x: x.Pt(), reverse=True))
         jets = vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
         bjets = vector[Jet](sorted(bjets, key=lambda x: x.Pt(), reverse=True))
-
         
         return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
     
-    def selectEvent(self, event, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv):
+    def selectEvent(self, event, vetoMuons, truth, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv):
         is3Mu = (looseMuons.size() == 3 and vetoMuons.size() == 3 and \
                  looseElectrons.size() == 0 and vetoElectrons.size() == 0)
         is1E2Mu = (looseMuons.size() == 2 and vetoMuons.size() == 2 and \
@@ -111,6 +111,16 @@ class MeasConvMatrix(TriLeptonBase):
         #   self.measure = "HighPT"
         #else:
         #    self.measure = "LowPT"
+
+        # prompt matching
+        if "DYJets" in super().MCSample or "ZGToLLT" in super().MCSample:
+            convMuons = vector[Muon]()
+            convElectrons = vector[Electron]()
+            for mu in looseMuons:
+                if super().GetLeptonType(mu, truth) in [4, 5, -5, -6]: convMuons.emplace_back(mu)
+            for ele in looseElectrons:
+                if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
+            if convMuons.size()+convElectrons.size() == 0: return None
             
         ##### event selection
         ## 1E2Mu ZGamma
