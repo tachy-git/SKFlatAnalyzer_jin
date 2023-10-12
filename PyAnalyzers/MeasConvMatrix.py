@@ -88,7 +88,7 @@ class MeasConvMatrix(TriLeptonBase):
         
         return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
     
-    def selectEvent(self, event, vetoMuons, truth, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv):
+    def selectEvent(self, event, truth, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv):
         is3Mu = (looseMuons.size() == 3 and vetoMuons.size() == 3 and \
                  looseElectrons.size() == 0 and vetoElectrons.size() == 0)
         is1E2Mu = (looseMuons.size() == 2 and vetoMuons.size() == 2 and \
@@ -111,7 +111,6 @@ class MeasConvMatrix(TriLeptonBase):
         #   self.measure = "HighPT"
         #else:
         #    self.measure = "LowPT"
-
         # prompt matching
         if "DYJets" in super().MCSample or "ZGToLLT" in super().MCSample:
             convMuons = vector[Muon]()
@@ -121,7 +120,7 @@ class MeasConvMatrix(TriLeptonBase):
             for ele in looseElectrons:
                 if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
             if convMuons.size()+convElectrons.size() == 0: return None
-            
+        
         ##### event selection
         ## 1E2Mu ZGamma
         ## 1. pass EMuTriggers
