@@ -40,7 +40,6 @@ class MeasConversion(TriLeptonBase):
                 self.weightVariations = ["L1PrefireUp", "L1PrefireDown",
                                          "PileupReweightUp", "PileupReweightDown",
                                          "MuonIDSFUp", "MuonIDSFDown",
-                                         "ElectronIDSFUp", "ElectronIDSFDown",
                                          "DblMuTrigSFUp", "DblMuTrigSFDown",
                                          "HeavyTagUpUnCorr", "HeavyTagDownUnCorr",
                                          "HeavyTagUpCorr", "HeavyTagDownCorr",
