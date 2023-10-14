@@ -495,8 +495,7 @@ if not args.Outputdir:
         finalOutputPath += "/DATA"
     if isSkimTree:
         finalOutputPath = f"/gv0/DATA/SKFlat/{SKFlatV}/{args.Era}"
-if not os.path.exists(finalOutputPath):
-    os.makedirs(finalOutputPath)
+os.makedirs(finalOutputPath, exist_ok=True)
 
 print(f"#################################################")
 print(f"Submission Finished")

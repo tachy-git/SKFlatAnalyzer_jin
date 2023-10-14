@@ -121,15 +121,20 @@ class MatrixEstimator(TriLeptonBase):
             # internal conversion: 4, 5
             # external conversion: -5, -6
             convMuons = vector[Muon]()
+            fakeMuons = vector[Muon]()
             convElectrons = vector[Electron]()
             for mu in looseMuons:
                 if super().GetLeptonType(mu, truth) in [4, 5, -5, -6]: convMuons.emplace_back(mu)
+                if super().GetLeptonType(mu, truth) in [-1, -2, -3, -4]: fakeMuons.emplace_back(mu)
             for ele in looseElectrons:
                 if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
             if self.channel == "Skim1E2Mu":
-                if convElectrons.size() == 0: return None
+                # remove hadronic contribution
+                if not fakeMuons.size() == 0: return None
+                if not convElectrons.size() == 1: return None
             if self.channel == "Skim3Mu":
-                if convMuons.size() == 0: return None
+                if not fakeMuons.size() == 0: return None
+                if not convMuons.size() == 1: return None
 
         ## 1E2Mu baseline
         ## 1. pass EMuTriggers
