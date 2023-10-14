@@ -8,6 +8,7 @@ public:
     bool Skim1E2Mu, Skim3Mu;    // channel flags 
     bool DenseNet, GraphNet;    // network flags
     bool ScaleVar, WeightVar;   // systematics flags
+    bool RunSyst;
     bool FakeStudy;             // for AcceptanceStudy, if FakeStudy is true, reverse prompt matching will be performed
     vector<TString> ElectronIDs, MuonIDs;
     vector<TString> DblMuTriggers, EMuTriggers;

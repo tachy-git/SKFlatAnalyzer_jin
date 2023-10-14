@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import torch
 from torch_geometric.data import Data
-from ROOT import TLorentzVector
+from ROOT import TLorentzVector, TMath
 from itertools import product, combinations
 from MLTools.models import SNN, ParticleNetV2
 from MLTools.formats import NodeParticle
@@ -49,7 +49,7 @@ def loadModels(network, channel, signals, backgrounds):
     models = {}
 
     for sig, bkg in product(signals, backgrounds):
-        csv = pd.read_csv(f"{os.environ['DATA_DIR']}/Classifiers/{network}/{channel}/summary/info-{sig}_vs_{bkg}.txt",
+        csv = pd.read_csv(f"{os.environ['DATA_DIR']}/Classifiers/{network}/{channel}/info/{sig}_vs_{bkg}.txt",
                               sep=",\s",
                               engine="python",
                               header=None).transpose()
@@ -65,8 +65,8 @@ def loadModels(network, channel, signals, backgrounds):
                 raise(ValueError)
         elif network == "GraphNeuralNet":
             num_hidden = int(csv[0][3])
-            if channel == "Skim1E2Mu": model = ParticleNetV2(9, 4, 2, num_hidden=num_hidden, dropout_p=0.4)
-            elif channel == "Skim3Mu": model = ParticleNetV2(9, 6, 2, num_hidden=num_hidden, dropout_p=0.4)
+            if channel == "Skim1E2Mu": model = ParticleNetV2(9, 6, 2, num_hidden=num_hidden, dropout_p=0.25)
+            elif channel == "Skim3Mu": model = ParticleNetV2(9, 6, 2, num_hidden=num_hidden, dropout_p=0.25)
             else:
                 print(f"Wrong channel {channel}")
                 raise(ValueError)
@@ -201,6 +201,10 @@ def getDenseScore(self, model, data):
         out = self.model(data)
     return out.numpy()[0][1]
 
+def MT(part1, part2):
+    dPhi = part1.DeltaPhi(part2)
+    return TMath.Sqrt(2*part1.Pt()*part2.Pt()*(1.-TMath.Cos(dPhi)))
+
 def getGraphInput(muons, electrons, jets, bjets, METv):
     particles = []
     for muon in muons:
@@ -233,13 +237,15 @@ def getGraphInput(muons, electrons, jets, bjets, METv):
     data = evtToGraph(nodeList, y=None, k=4)
     
     if muons.size() == 3:
-        MT1 = (muons.at(0)+METv).Mt()
-        MT2 = (muons.at(1)+METv).Mt()
-        MT3 = (muons.at(2)+METv).Mt()
+        MT1 = MT(muons.at(0), METv)
+        MT2 = MT(muons.at(1), METv)
+        MT3 = MT(muons.at(2), METv)
         data.graph_input = torch.tensor([[jets.size(), bjets.size(), METv.Pt(), MT1, MT2, MT3]], dtype=torch.float)
     elif electrons.size() == 1 and muons.size() == 2:
-        MT = (electrons.at(0)+METv).Mt()
-        data.graph_input = torch.tensor([[jets.size(), bjets.size(), METv.Pt(), MT]], dtype=torch.float)
+        MT1 = MT(electrons.at(0), METv)
+        MT2 = MT(muons.at(0), METv)
+        MT3 = MT(muons.at(1), METv)
+        data.graph_input = torch.tensor([[jets.size(), bjets.size(), METv.Pt(), MT1, MT2, MT3]], dtype=torch.float)
     else:
         print(f"Wrong size of muons {muons.size()} and electrons {electrons.size()}")
         raise(ValueError)

@@ -8,7 +8,7 @@ gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/lib
 
 from itertools import product
 from MLTools.helpers import loadModels
-#from MLTools.helpers import getDenseInput, getDenseScore
+from MLTools.helpers import getDenseInput, getDenseScore
 from MLTools.helpers import getGraphInput, getGraphScore
 
 class PromptEstimator(TriLeptonBase):
@@ -53,10 +53,10 @@ class PromptEstimator(TriLeptonBase):
                                      "ElectronEnUp", "ElectronEnDown",
                                      "MuonEnUp", "MuonEnDown"] 
         self.systematics = self.weightVariations + self.scaleVariations
-        self.signalStrings = ["MHc-70_MA-65", "MHc-100_MA-95", "MHc-130_MA-90", "MHc-160_MA-85", "MHc-160_MA-120"]
+        self.signalStrings = ["MHc-100_MA-95", "MHc-130_MA-90", "MHc-160_MA-85"]
         self.backgroundStrings = ["nonprompt", "diboson", "ttZ"]
         
-        self.models = loadModels(self.channel, self.signalStrings, self.backgroundStrings)
+        self.models = loadModels("GraphNeuralNet", self.channel, self.signalStrings, self.backgroundStrings)
         
     def executeEvent(self):
         if not super().PassMETFilter(): return None
@@ -69,9 +69,8 @@ class PromptEstimator(TriLeptonBase):
         
         # Central scale
         vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
-        channel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
-        
-        if not channel is None:
+        thisChannel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
+        if not thisChannel is None:
             pairs = self.makePair(tightMuons)
             data, scores = self.evalScore(tightMuons, tightElectrons, jets, bjets, METv)
             # make objects as a dictionary
@@ -84,13 +83,12 @@ class PromptEstimator(TriLeptonBase):
                        "data": data,
                        "scores": scores}
             for syst in self.weightVariations:
-                weight = self.getWeight(ev, tightMuons, tightElectrons, jets, syst)
-                self.FillObjects(channel, objects, weight, syst)
-        
+                weight = self.getWeight(thisChannel, ev, tightMuons, tightElectrons, jets, syst)
+                self.FillObjects(thisChannel, objects, weight, syst)
         for syst in self.scaleVariations:
             vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets, syst)
-            channel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
-            if not channel is None:
+            thisChannel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
+            if not thisChannel is None:
                 pairs = self.makePair(tightMuons)
                 data, scores = self.evalScore(tightMuons, tightElectrons, jets, bjets, METv)
                 objects = {"muons": tightMuons,
@@ -102,8 +100,8 @@ class PromptEstimator(TriLeptonBase):
                            "data": data,
                            "scores": scores
                            }
-                weight = self.getWeight(ev, tightMuons, tightElectrons, jets, syst)
-                self.FillObjects(channel, objects, weight, syst)
+                weight = self.getWeight(thisChannel, ev, tightMuons, tightElectrons, jets, syst)
+                self.FillObjects(thisChannel, objects, weight, syst)
 
     def defineObjects(self, rawMuons, rawElectrons, rawJets, syst="Central"):
         # first copy objects
@@ -155,34 +153,22 @@ class PromptEstimator(TriLeptonBase):
         if self.channel == "Skim3Mu":
             if not is3Mu: return None
 
-        # prompt matching
-        # not for data / nonprompt / conversion
-        if not super().IsDATA:
-            promptMuons = vector[Muon]()
-            promptElectrons = vector[Electron]()
+        # for conversion samples
+        if super().MCSample in ["DYJets_MG", "DYJets10to50_MG", "TTG", "WWG"]:
+            # at least one conversion lepton should exist
+            # internal conversion: 4, 5
+            # external conversion: -5, -6
+            convMuons = vector[Muon]()
+            convElectrons = vector[Electron]()
             for mu in tightMuons:
-                if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
+                if super().GetLeptonType(mu, truth) in [4, 5, -5, -6]: convMuons.emplace_back(mu)
             for ele in tightElectrons:
-                if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
+                if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
+            if self.channel == "Skim1E2Mu":
+                if convElectrons.size() == 0: return None
+            if self.channel == "Skim3Mu":
+                if convMuons.size() == 0: return None
 
-            if promptMuons.size() != tightMuons.size(): return None
-            if promptElectrons.size() != tightElectrons.size(): return None
-
-        # for patching samples
-        if "DYJets" in super().MCSample:
-            leptons = vector[Lepton]()
-            for mu in tightMuons: leptons.emplace_back(mu)
-            for ele in tightElectrons: leptons.emplace_back(ele)
-            if leptons.at(0).Pt() > 20. and leptons.at(1).Pt() > 20. and leptons.at(2).Pt() > 20.:
-                return None
-        if "ZGToLLG" in super().MCSample:
-            leptons = vector[Lepton]()
-            for mu in tightMuons: leptons.emplace_back(mu)
-            for ele in tightElectrons: leptons.emplace_back(ele)
-            if leptons.at(0).Pt() < 20. or leptons.at(1).Pt() < 20. or leptons.at(2).Pt() < 20.:
-                return None
-
-        channel = ""
         ## 1E2Mu baseline
         ## 1. pass EMuTriggers
         ## 2. Exact 2 tight muons and 1 tight electron, no additional lepton
@@ -198,24 +184,16 @@ class PromptEstimator(TriLeptonBase):
             passLeadEle = mu1.Pt() > 10. and ele.Pt() > 25.
             passSafeCut = passLeadMu or passLeadEle
             if not passSafeCut: return None
-
-            # first check muon charge conditions
-            if mu1.Charge()+mu2.Charge() == 0:
-                pair = self.makePair(tightMuons)
-                if not pair.M() > 12.: return None 
-                if not jets.size() >= 2: return None
-                if bjets.size() >= 1:
-                    channel = "SR1E2Mu"
-                else:
-                    mZ = 91.2
-                    isOnZ = abs(pair.M() - mZ) < 10.
-                    if isOnZ: channel = "ZFake1E2Mu"
-                    else:
-                        if abs((mu1+mu2+ele).M() - mZ) < 10.: channel = "ZGamma1E2Mu"
-                        else: return None
+            if not mu1.Charge()+mu2.Charge() == 0: return None
+            pair = self.makePair(tightMuons)
+            if not pair.M() > 12.: return None 
+            if not jets.size() >= 2: return None
+            if bjets.size() == 0:
+                isOnZ = abs(pair.M() - 91.2) < 10.
+                if isOnZ: return "ZFake1E2Mu"
+                else:     return None
             else:
-                return "SC1E2Mu"    # same charge
-                
+                return "SR1E2Mu"
         
         ## 3Mu baseline
         ## 1. pass DblMuTriggers
@@ -223,32 +201,27 @@ class PromptEstimator(TriLeptonBase):
         ## 3. Exist OS muon pair,
         ## 4. All OS muon pair mass > 12 GeV
         ## 5. At least two jets
-        elif self.channel == "Skim3Mu":
+        if self.channel == "Skim3Mu":
             if not event.PassTrigger(super().DblMuTriggers): return None
             mu1, mu2, mu3  = tuple(tightMuons)
             if not mu1.Pt() > 20.: return None
             if not mu2.Pt() > 10.: return None
             if not mu3.Pt() > 10.: return None
             
-            if abs(mu1.Charge()+mu2.Charge()+mu3.Charge()) == 1: 
-                pair1, pair2 = self.makePair(tightMuons)
-                if not pair1.M() > 12.: return None
-                if not pair2.M() > 12.: return None
-                if not jets.size() >= 2: return None
+            if not abs(mu1.Charge()+mu2.Charge()+mu3.Charge()) == 1: return None
+            pair1, pair2 = self.makePair(tightMuons)
+            if not pair1.M() > 12.: return None
+            if not pair2.M() > 12.: return None
+            if not jets.size() >= 2: return None
 
-                if bjets.size() >= 1:
-                    channel = "SR3Mu"
-                else:
-                    mZ = 91.2
-                    isOnZ = abs(pair1.M() - mZ) < 10. or abs(pair2.M() - mZ) < 10.
-                    if isOnZ: channel = "ZFake3Mu"
-                    else:
-                        if abs((mu1+mu2+mu3).M() - mZ) < 10.: channel = "ZGamma3Mu"
-                        else: return None
+            if bjets.size() == 0:
+                isOnZ = abs(pair1.M() - 91.2) < 10. or abs(pair2.M() - 91.2) < 10.
+                if isOnZ: return "ZFake3Mu"
+                else:     return None
             else:
-                return "SC3Mu"  # same charge
-        return channel
-    
+                return "SR3Mu"
+        raise EOFError       
+
     def makePair(self, muons):
         if muons.size() == 2:
             return (muons[0] + muons[1])
@@ -265,7 +238,7 @@ class PromptEstimator(TriLeptonBase):
                 pair2 = mu1 + mu3
             return (pair1, pair2)
         else:
-            print(f"[PromptEstimator::makePair] wrong no. of muons {muons.size}")
+            raise NotImplementedError(f"[PromptEstimator::makePair] wrong no. of muons {muons.size}")
             
     #### Get scores for each event
     def evalScore(self, muons, electrons, jets, bjets, METv):
@@ -276,14 +249,14 @@ class PromptEstimator(TriLeptonBase):
         return data, scores
     
     #### set weight
-    def getWeight(self, event, muons, electrons, jets, syst="Central"):
+    def getWeight(self, channel, event, muons, electrons, jets, syst="Central"):
         weight = 1.
         if not syst in self.systematics:
             print(f"[PromptEstimator::getWeight] Wrong systematic {syst}")
             exit(1)
 
         if not super().IsDATA:
-            weight *= super().MCweight()
+            weight *= super().MCweight() * super().GetKFactor()
             weight *= event.GetTriggerLumi("Full")
             if syst == "L1PrefireUp":     w_prefire = super().GetPrefireWeight(1)
             elif syst == "L1PrefireDown": w_prefire = super().GetPrefireWeight(-1)
@@ -294,20 +267,36 @@ class PromptEstimator(TriLeptonBase):
             else:                              w_pileup = super().GetPileUpWeight(super().nPileUp, 0)
             
             w_muonIDSF = 1.
-            w_dblMuTrigSF = 1.
-            for mu in muons:
-                if syst == "MuonIDSFUp":     w_muonIDSF *= super().getMuonIDSF(mu, 1)
-                elif syst == "MuonIDSFDown": w_muonIDSF *= super().getMuonIDSF(mu, -1)
-                else:                        w_muonIDSF *= super().getMuonIDSF(mu, 0)
+            w_eleIDSF = 1.
+            w_trigSF = 1.
+            if "1E2Mu" in channel:
+                for mu in muons:
+                    if syst == "MuonIDSFUp":      w_muonIDSF *= self.getMuonRecoSF(mu, 1) * self.getMuonIDSF(mu, 1)
+                    elif syst == "MuonIDSFDown":  w_muonIDSF *= self.getMuonRecoSF(mu, -1) * self.getMuonIDSF(mu, -1)
+                    else:                         w_muonIDSF *= self.getMuonRecoSF(mu, 0) * self.getMuonIDSF(mu, 0)
+                for el in electrons:
+                    if syst == "ElectronIDSFUp":     w_eleIDSF *= self.mcCorr.ElectronReco_SF(el.scEta(), el.Pt(), 1) * self.getEleIDSF(el, 1)
+                    elif syst == "ElectronIDSFDown": w_eleIDSF *= self.mcCorr.ElectronReco_SF(el.scEta(), el.Pt(), -1) * self.getEleIDSF(el, -1)
+                    else:                            w_eleIDSF *= self.mcCorr.ElectronReco_SF(el.scEta(), el.Pt(), 0) * self.getEleIDSF(el, 0) 
+
+                if syst == "EMuTriggerSFUp":     w_trigSF = self.getEMuTriggerSF(electrons, muons, 1)
+                elif syst == "EMuTriggerSFDown": w_trigSF = self.getEMuTriggerSF(electrons, muons, -1)
+                else:                            w_trigSF = self.getEMuTriggerSF(electrons, muons, 0)
             
-            if "3Mu" in self.channel:
-                if syst == "DblMuTrigSFUp":     w_dblMuTrigSF = self.getDblMuTriggerSF(muons, 1)
-                elif syst == "DblMuTrigSFDown": w_dblMuTrigSF = self.getDblMuTriggerSF(muons, -1)
-                else:                           w_dblMuTrigSF = self.getDblMuTriggerSF(muons, 0)
+            if "3Mu" in channel:
+                for mu in muons:
+                    if syst == "MuonIDSFUp":      w_muonIDSF *= self.getMuonRecoSF(mu, 1) * self.getMuonIDSF(mu, 1)
+                    elif syst == "MuonIDSFDown":  w_muonIDSF *= self.getMuonRecoSF(mu, -1) * self.getMuonIDSF(mu, -1)
+                    else:                         w_muonIDSF *= self.getMuonRecoSF(mu, 0) * self.getMuonIDSF(mu, 0)
+                if syst == "DblMuTrigSFUp":     w_trigSF = self.getDblMuTriggerSF(muons, 1)
+                elif syst == "DblMuTrigSFDown": w_trigSF = self.getDblMuTriggerSF(muons, -1)
+                else:                           w_trigSF = self.getDblMuTriggerSF(muons, 0) 
+            
             weight *= w_prefire            # print(f"w_prefire: {w_prefire}")
             weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
             weight *= w_muonIDSF           # print(f"muonID: {w_muonIDSF}")
-            weight *= w_dblMuTrigSF        # print(f"muontrig: {w_dblMuTrigSF}")
+            weight *= w_eleIDSF;           # print(syst, w_eleIDSF)
+            weight *= w_trigSF        # print(f"muontrig: {w_dblMuTrigSF}")
 
             # b-tagging
             jtp = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
@@ -381,21 +370,16 @@ class PromptEstimator(TriLeptonBase):
 
         # Fill ZCands
         if "1E2Mu" in channel:
-            if not "ZGamma" in channel: ZCand = pairs       # pairs == pair
-            else:                       ZCand = muons.at(0) + muons.at(1) + electrons.at(0) 
+            ZCand = pairs       # pairs == pair
             super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
         else:
-            if not "ZGamma" in channel:
-                pair1, pair2 = pairs
-                mZ = 91.2
-                if abs(pair1.M() - mZ) < abs(pair2.M() - mZ): ZCand, nZCand = pair1, pair2
-                else:                                         ZCand, nZCand = pair2, pair1
-            else:
-                ZCand = muons.at(0) + muons.at(1) + muons.at(2)
-                nZCand = Particle(0., 0., 0., 0.)
+            pair1, pair2 = pairs
+            mZ = 91.2
+            if abs(pair1.M() - mZ) < abs(pair2.M() - mZ): ZCand, nZCand = pair1, pair2
+            else:                                         ZCand, nZCand = pair2, pair1
             super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)

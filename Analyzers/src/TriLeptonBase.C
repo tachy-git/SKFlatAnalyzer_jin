@@ -15,10 +15,11 @@ void TriLeptonBase::initializeAnalyzer() {
     // flags
     Skim1E2Mu = HasFlag("Skim1E2Mu");
     Skim3Mu = HasFlag("Skim3Mu");
-    DenseNet = HasFlag("DenseNet");
-    GraphNet = HasFlag("GraphNet");
-    ScaleVar = HasFlag("ScaleVar");
-    WeightVar = HasFlag("WeightVar");
+    RunSyst = HasFlag("RunSyst");
+    //DenseNet = HasFlag("DenseNet");
+    //GraphNet = HasFlag("GraphNet");
+    //ScaleVar = HasFlag("ScaleVar");
+    //WeightVar = HasFlag("WeightVar");
     FakeStudy = HasFlag("FakeStudy");
 
     // triggers & ID settings

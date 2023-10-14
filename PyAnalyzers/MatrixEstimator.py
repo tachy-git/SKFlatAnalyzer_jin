@@ -8,7 +8,6 @@ gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/lib
 
 from itertools import product
 from MLTools.helpers import loadModels
-from MLTools.helpers import getDenseInput, getDenseScore
 from MLTools.helpers import getGraphInput, getGraphScore
 
 class MatrixEstimator(TriLeptonBase):
@@ -18,25 +17,19 @@ class MatrixEstimator(TriLeptonBase):
         
     def initializePyAnalyzer(self):
         super().initializeAnalyzer()
-        if super().Skim1E2Mu: 
-            self.channel = "Skim1E2Mu"
-        elif super().Skim3Mu: 
-            self.channel = "Skim3Mu"
-        else:
-            print("Wrong channel")
-            exit(1)
+       
+        ## channel assertion
+        try: assert super().Skim1E2Mu or super().Skim3Mu
+        except: raise AssertionError(f"Wrong channel flag")
 
-        if super().DenseNet:   self.network = "DenseNeuralNet"
-        elif super().GraphNet: self.network = "GraphNeuralNet"
-        else:
-            print("Wrong network")
-            exit(1)
-            
-        self.systematics = ["Central", "NonpromptUp", "NonpromptDown"]     
-        self.signalStrings = ["MHc-70_MA-65", "MHc-160_MA-85", "MHc-130_MA-90", "MHc-100_MA-95", "MHc-160_MA-120"]
+        if super().Skim1E2Mu: self.channel = "Skim1E2Mu"
+        if super().Skim3Mu: self.channel = "Skim3Mu"
+
+        self.systematics = ["Central", "NonpromptUp", "NonpromptDown"]
+        self.signalStrings = ["MHc-160_MA-85", "MHc-130_MA-90", "MHc-100_MA-95"]
         self.backgroundStrings = ["nonprompt", "diboson", "ttZ"]
     
-        self.models = loadModels(self.network, self.channel, self.signalStrings, self.backgroundStrings)
+        self.models = loadModels("GraphNeuralNet", self.channel, self.signalStrings, self.backgroundStrings)
         
     def executeEvent(self):
         if not super().PassMETFilter(): return None
@@ -45,11 +38,12 @@ class MatrixEstimator(TriLeptonBase):
         rawElectrons = super().GetAllElectrons()
         rawJets = super().GetAllJets()
         METv = ev.GetMETVector()
-        
+        truth = super().GetGens() if not super().IsDATA else None
+
         vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
-        channel = self.selectEvent(ev, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv)
+        thisChannel = self.selectEvent(ev, truth, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv)
         
-        if channel is None: return None
+        if thisChannel is None: return None
         
         pairs = self.makePair(looseMuons)
         data, scores = self.evalScore(looseMuons, looseElectrons, jets, bjets, METv)
@@ -70,9 +64,8 @@ class MatrixEstimator(TriLeptonBase):
             elif syst == "NonpromptDown":
                 weight = super().getFakeWeight(looseMuons, looseElectrons, -1)
             else:
-                print(f"[MatrixEstimator::executeEvent] Wrong systematics {syst}")
-                exit(1)
-            self.FillObjects(channel, objects, weight, syst)
+                raise NotImplementedError(f"[MatrixEstimator::executeEvent] Wrong systematics {syst}")
+            self.FillObjects(thisChannel, objects, weight, syst)
         
         
     def defineObjects(self, rawMuons, rawElectrons, rawJets, syst="Central"):
@@ -106,7 +99,7 @@ class MatrixEstimator(TriLeptonBase):
         
         return (vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets)
     
-    def selectEvent(self, event, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv):
+    def selectEvent(self, event, truth, vetoMuons, looseMuons, tightMuons, vetoElectrons, looseElectrons, tightElectrons, jets, bjets, METv):
         is3Mu = (looseMuons.size() == 3 and vetoMuons.size() == 3 and \
                  looseElectrons.size() == 0 and vetoElectrons.size() == 0)
         is1E2Mu = (looseMuons.size() == 2 and vetoMuons.size() == 2 and \
@@ -121,8 +114,23 @@ class MatrixEstimator(TriLeptonBase):
         if self.channel == "Skim3Mu":
             if not is3Mu: return None
             if tightMuons.size() == looseMuons.size(): return None
-        
-        channel = ""
+       
+        # for conversion samples
+        if super().MCSample in ["DYJets_MG", "DYJets10to50_MG", "TTG", "WWG"]:
+            # at least one conversion lepton should exist
+            # internal conversion: 4, 5
+            # external conversion: -5, -6
+            convMuons = vector[Muon]()
+            convElectrons = vector[Electron]()
+            for mu in looseMuons:
+                if super().GetLeptonType(mu, truth) in [4, 5, -5, -6]: convMuons.emplace_back(mu)
+            for ele in looseElectrons:
+                if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
+            if self.channel == "Skim1E2Mu":
+                if convElectrons.size() == 0: return None
+            if self.channel == "Skim3Mu":
+                if convMuons.size() == 0: return None
+
         ## 1E2Mu baseline
         ## 1. pass EMuTriggers
         ## 2. Exact 2 tight muons and 1 tight electron, no additional lepton
@@ -142,17 +150,12 @@ class MatrixEstimator(TriLeptonBase):
             pair = self.makePair(looseMuons)
             if not pair.M() > 12.: return None
             if not jets.size() >= 2: return None
-
-            # orthogonality of SR and CR done by bjet multiplicity
-            if bjets.size() >= 1:
-                channel == "SR1E2Mu"
+            if bjets.size() == 0:
+                isOnZ = abs(pair.M() - 91.2) < 10.
+                if isOnZ: return "ZFake1E2Mu"
+                else:     return None
             else:
-                mZ = 91.2
-                isOnZ = abs(pair.M() - mZ) < 10.
-                if isOnZ: channel = "ZFake1E2Mu"
-                else:
-                    if abs((mu1+mu2+ele).M() - mZ) < 10.: channel = "ZGamma1E2Mu"
-                    else: return None
+                return "SR1E2Mu"
 
         ## 3Mu baseline
         ## 1. pass DblMuTriggers
@@ -171,18 +174,15 @@ class MatrixEstimator(TriLeptonBase):
             if not pair1.M() > 12.: return None
             if not pair2.M() > 12.: return None
             if not jets.size() >= 2: return None
-            # orthogonality of SR and CR done by bjet multiplicity
-            if bjets.size() >= 1:
-                channel = "SR3Mu"
+            if bjets.size() == 0:
+                isOnZ = abs(pair1.M() - 91.2) < 10. or abs(pair2.M() - 91.2) < 10.
+                if isOnZ: return "ZFake3Mu"
+                else:     return None
             else:
-                mZ = 91.2
-                isOnZ = abs(pair1.M() - mZ) < 10. or abs(pair2.M() - mZ) < 10.
-                if isOnZ: channel = "ZFake3Mu"
-                else:
-                    if abs((mu1+mu2+mu3).M() - mZ) < 10.: channel = "ZGamma3Mu"
-                    else: return None
-        return channel
+                return "SR3Mu"
         
+        raise EOFError
+
     def makePair(self, muons):
         if muons.size() == 2:
             return (muons[0] + muons[1])
@@ -199,19 +199,14 @@ class MatrixEstimator(TriLeptonBase):
                 pair2 = mu1 + mu3
             return (pair1, pair2)
         else:
-            print(f"[PromptEstimator::makePair] wrong no. of muons {muons.size}")
-            
+            raise NotImplementedError(f"[PromptEstimator::makePair] wrong no. of muons {muons.size}")
+        
     #### Get scores for each event
     def evalScore(self, muons, electrons, jets, bjets, METv):
         scores = {}
-        if self.network == "DenseNeuralNet": 
-            data = getDenseInput(muons, electrons, jets, bjets, METv)
-            for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-                scores[f"{sig}_vs_{bkg}"] = getDenseScore(self.models[f"{sig}_vs_{bkg}"], data)
-        else:                                
-            data = getGraphInput(muons, electrons, jets, bjets, METv)
-            for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-                scores[f"{sig}_vs_{bkg}"] = getGraphScore(self.models[f"{sig}_vs_{bkg}"], data)
+        data = getGraphInput(muons, electrons, jets, bjets, METv)
+        for sig, bkg in product(self.signalStrings, self.backgroundStrings):
+            scores[f"{sig}_vs_{bkg}"] = getGraphScore(self.models[f"{sig}_vs_{bkg}"], data)
         return data, scores
     
     def FillObjects(self, channel, objects, weight, syst):
@@ -271,20 +266,15 @@ class MatrixEstimator(TriLeptonBase):
         # Fill ZCands
         if "1E2Mu" in channel:
             if not "ZGamma" in channel: ZCand = pairs       # pairs == pair
-            else:                       ZCand = muons.at(0) + muons.at(1) + electrons.at(0) 
             super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
         else:
-            if not "ZGamma" in channel:
-                pair1, pair2 = pairs
-                mZ = 91.2
-                if abs(pair1.M() - mZ) < abs(pair2.M() - mZ): ZCand, nZCand = pair1, pair2
-                else:                                         ZCand, nZCand = pair2, pair1
-            else:
-                ZCand = muons.at(0) + muons.at(1) + muons.at(2)
-                nZCand = Particle(0., 0., 0., 0.)
+            pair1, pair2 = pairs
+            mZ = 91.2
+            if abs(pair1.M() - mZ) < abs(pair2.M() - mZ): ZCand, nZCand = pair1, pair2
+            else:                                         ZCand, nZCand = pair2, pair1
             super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
@@ -294,128 +284,35 @@ class MatrixEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/{syst}/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/nZCand/mass", nZCand.M(), weight, 200, 0., 200.)
          
-        # Fill inputs for the network
-        if self.network == "DenseNeuralNet":
-            data = data[0].numpy()
-            if self.channel == "Skim1E2Mu":
-                super().FillHist(f"{channel}/{syst}/inputs/mu1_energy", data[0], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu1_px", data[1], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu1_py", data[2], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu1_pz", data[3], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu1_charge", data[4], weight, 3, -1, 2)
-                super().FillHist(f"{channel}/{syst}/inputs/mu2_energy", data[5], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu2_px", data[6], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu2_py", data[7], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu2_pz", data[8], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu2_charge", data[9], weight, 3, -1, 2) 
-                super().FillHist(f"{channel}/{syst}/inputs/ele_energy", data[10], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/ele_px", data[11], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/ele_py", data[12], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/ele_pz", data[13], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/ele_charge", data[14], weight, 3, -1, 2)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_energy", data[15], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_px", data[16], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_py", data[17], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_pz", data[18], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_charge", data[19], weight, 200, -1, 1)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_btagScore", data[20], weight, 100, 0., 1)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_energy", data[21], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_px", data[22], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_py", data[23], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_pz", data[24], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_charge", data[25], weight, 200, -1, 1)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_btagScore", data[26], weight, 100, 0., 1)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_mu1mu2", data[27], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_mu1ele", data[28], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_mu2ele", data[29], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_j1ele", data[30], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_j2ele", data[31], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_j1j2", data[32], weight, 100, 0., 5.) 
-                super().FillHist(f"{channel}/{syst}/inputs/HT", data[33], weight, 1000, 0., 1000.)
-                super().FillHist(f"{channel}/{syst}/inputs/LT", data[34], weight, 800, 0., 800.)
-                super().FillHist(f"{channel}/{syst}/inputs/MT", data[35], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/MET", data[36], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/Nj", data[37], weight, 20, 0., 20.)
-                super().FillHist(f"{channel}/{syst}/inputs/Nb", data[38], weight, 20, 0., 20.) 
-                super().FillHist(f"{channel}/{syst}/inputs/avg_dRjets", data[39], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/avg_btagScore", data[40], weight, 100, 0., 1.)
-            else:       # Skim3Mu
-                super().FillHist(f"{channel}/{syst}/inputs/mu1_energy", data[0], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu1_px", data[1], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu1_py", data[2], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu1_pz", data[3], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu1_charge", data[4], weight, 3, -1, 2)
-                super().FillHist(f"{channel}/{syst}/inputs/mu2_energy", data[5], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu2_px", data[6], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu2_py", data[7], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu2_pz", data[8], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu2_charge", data[9], weight, 3, -1, 2)
-                super().FillHist(f"{channel}/{syst}/inputs/mu3_energy", data[10], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu3_px", data[11], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu3_py", data[12], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu3_pz", data[13], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/mu3_charge", data[14], weight, 3, -1, 2)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_energy", data[15], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_px", data[16], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_py", data[17], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_pz", data[18], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_charge", data[19], weight, 200, -1, 1)
-                super().FillHist(f"{channel}/{syst}/inputs/j1_btagScore", data[20], weight, 100, 0., 1)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_energy", data[21], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_px", data[22], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_py", data[23], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_pz", data[24], weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_charge", data[25], weight, 200, -1, 1)
-                super().FillHist(f"{channel}/{syst}/inputs/j2_btagScore", data[26], weight, 100, 0., 1)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_mu1mu2", data[27], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_mu1mu3", data[28], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_mu2mu3", data[29], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_j1mu1", data[30], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_j1mu2", data[31], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_j1mu3", data[32], weight, 100, 0., 5.)  
-                super().FillHist(f"{channel}/{syst}/inputs/dR_j2mu1", data[33], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_j2mu2", data[34], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_j2mu3", data[35], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/dR_j1j2", data[36], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/HT", data[37], weight, 1000, 0., 1000.)
-                super().FillHist(f"{channel}/{syst}/inputs/LT", data[38], weight, 800, 0., 800.)
-                super().FillHist(f"{channel}/{syst}/inputs/MT1", data[39], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/MT2", data[40], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/MT3", data[41], weight, 300, 0., 300.) 
-                super().FillHist(f"{channel}/{syst}/inputs/MET", data[42], weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/Nj", data[43], weight, 20, 0., 20.)
-                super().FillHist(f"{channel}/{syst}/inputs/Nb", data[44], weight, 20, 0., 20.) 
-                super().FillHist(f"{channel}/{syst}/inputs/avg_dRjets", data[45], weight, 100, 0., 5.)
-                super().FillHist(f"{channel}/{syst}/inputs/avg_btagScore", data[46], weight, 100, 0., 1.)
-        else:       # network == GraphNeuralNet
-            for idx, mu in enumerate(muons, start=1):
-                super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/energy", mu.E(), weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/px", mu.Px(), weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/py", mu.Py(), weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/pz", mu.Pz(), weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/charge", mu.Charge(), weight, 3, -1, 2) 
-            for idx, ele in enumerate(electrons, start=1):
-                super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/energy", ele.E(), weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/px", ele.Px(), weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/py", ele.Py(), weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/pz", ele.Pz(), weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/charge", ele.Charge(), weight, 3, -1, 2) 
-            for idx, jet in enumerate(jets, start=1):
-                super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/energy", jet.E(), weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/px", jet.Px(), weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/py", jet.Py(), weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/pz", jet.Pz(), weight, 500, -250., 250.)
-                super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/charge", jet.Charge(), weight, 200, -1, 1)
-                super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/btagScore", jet.GetTaggerResult(3), weight, 100, 0., 1.)
-            super().FillHist(f"{channel}/{syst}/inputs/METv/energy", METv.E(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/inputs/METv/px", METv.Px(), weight, 500, -250, 250)
-            super().FillHist(f"{channel}/{syst}/inputs/METv/py", METv.Py(), weight, 500, -250, 250)
-            super().FillHist(f"{channel}/{syst}/inputs/METv/pz", METv.Pz(), weight, 500, -250, 250) 
-            super().FillHist(f"{channel}/{syst}/inputs/Nj", jets.size(), weight, 20, 0., 20.)
-            super().FillHist(f"{channel}/{syst}/inputs/Nb", bjets.size(), weight, 20, 0., 20.)
-            super().FillHist(f"{channel}/{syst}/inputs/MET", METv.Pt(), weight, 300, 0., 300.)
-            for idx, lep in enumerate(list(muons)+list(electrons), start=1):
-                super().FillHist(f"{channel}/{syst}/inputs/MT{idx}", (lep+METv).Mt(), weight, 300, 0., 300.)
+        # Fill graph inputs
+        for idx, mu in enumerate(muons, start=1):
+            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/energy", mu.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/px", mu.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/py", mu.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/pz", mu.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/charge", mu.Charge(), weight, 3, -1, 2) 
+        for idx, ele in enumerate(electrons, start=1):
+            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/energy", ele.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/px", ele.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/py", ele.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/pz", ele.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/charge", ele.Charge(), weight, 3, -1, 2) 
+        for idx, jet in enumerate(jets, start=1):
+            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/energy", jet.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/px", jet.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/py", jet.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/pz", jet.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/charge", jet.Charge(), weight, 200, -1, 1)
+            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/btagScore", jet.GetTaggerResult(3), weight, 100, 0., 1.)
+        super().FillHist(f"{channel}/{syst}/inputs/METv/energy", METv.E(), weight, 300, 0., 300.)
+        super().FillHist(f"{channel}/{syst}/inputs/METv/px", METv.Px(), weight, 500, -250, 250)
+        super().FillHist(f"{channel}/{syst}/inputs/METv/py", METv.Py(), weight, 500, -250, 250)
+        super().FillHist(f"{channel}/{syst}/inputs/METv/pz", METv.Pz(), weight, 500, -250, 250) 
+        super().FillHist(f"{channel}/{syst}/inputs/Nj", jets.size(), weight, 20, 0., 20.)
+        super().FillHist(f"{channel}/{syst}/inputs/Nb", bjets.size(), weight, 20, 0., 20.)
+        super().FillHist(f"{channel}/{syst}/inputs/MET", METv.Pt(), weight, 300, 0., 300.)
+        for idx, lep in enumerate(list(electrons)+list(muons), start=1):
+            super().FillHist(f"{channel}/{syst}/inputs/MT{idx}", (lep+METv).Mt(), weight, 300, 0., 300.)
         
         # Fill signal dependent distributions 
         for signal in self.signalStrings:
