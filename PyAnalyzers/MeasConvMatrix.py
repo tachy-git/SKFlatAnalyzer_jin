@@ -104,27 +104,26 @@ class MeasConvMatrix(TriLeptonBase):
             if tightMuons.size() == looseMuons.size(): return None
             
         # for conversion measurement
-        #leptons = vector[Lepton]()
-        #for mu in looseMuons: leptons.emplace_back(mu)
-        #for ele in looseElectrons: leptons.emplace_back(ele)
-        #if leptons.at(0).Pt() > 20. and leptons.at(1).Pt() > 20. and leptons.at(2).Pt() > 20.:
-        #   self.measure = "HighPT"
-        #else:
-        #    self.measure = "LowPT"
-        # prompt matching
         if "DYJets" in super().MCSample or "ZGToLLG" in super().MCSample:
+            # at least one conversion lepton should exist
+            # internal conversion: 4, 5
+            # external conversion: -5, -6
             convMuons = vector[Muon]()
+            fakeMuons = vector[Muon]()
             convElectrons = vector[Electron]()
             for mu in looseMuons:
                 if super().GetLeptonType(mu, truth) in [4, 5, -5, -6]: convMuons.emplace_back(mu)
+                if super().GetLeptonType(mu, truth) in [-1, -2, -3, -4]: fakeMuons.emplace_back(mu)
             for ele in looseElectrons:
                 if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
-            #if convMuons.size()+convElectrons.size() == 0: return None
             if self.channel == "Skim1E2Mu":
-                if convElectron.size() == 0: return None
+                # remove hadronic contribution
+                if not fakeMuons.size() == 0: return None
+                if not convElectrons.size() == 1: return None
             if self.channel == "Skim3Mu":
-                if convMuon.size() == 0: return None
-        
+                if not fakeMuons.size() == 0: return None
+                if not convMuons.size() == 1: return None
+ 
         ##### event selection
         ## 1E2Mu ZGamma
         ## 1. pass EMuTriggers
