@@ -7,8 +7,8 @@ gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/lib
 
 from array import array
 from itertools import product
-#from MLTools.helpers import loadModels
-#from MLTools.helpers import getGraphInput, getGraphScore
+from MLTools.helpers import loadModels
+from MLTools.helpers import getGraphInput, getGraphScore
 
 class MatrixUnbinned(TriLeptonBase):
     def __init__(self):
@@ -23,13 +23,14 @@ class MatrixUnbinned(TriLeptonBase):
         
         if super().Skim1E2Mu: self.channel = "Skim1E2Mu"
         if super().Skim3Mu: self.channel = "Skim3Mu"
+        self.network = "GraphNeuralNet"
         
         self.systematics = ["Central", "NonpromptUp", "NonpromptDown"]
 
-        #self.signalStrings = ["MHc-70_MA-65", "MHc-160_MA-85", "MHc-130_MA-90", "MHc-100_MA-95", "MHc-160_MA-120"]
-        #self.backgroundStrings = ["nonprompt", "diboson", "ttZ"]
+        self.signalStrings = ["MHc-160_MA-85", "MHc-130_MA-90", "MHc-100_MA-95"]
+        self.backgroundStrings = ["nonprompt", "diboson", "ttZ"]
 
-        #self.models = loadModels(self.network, self.channel, self.signalStrings, self.backgroundStrings)
+        self.models = loadModels(self.network, self.channel, self.signalStrings, self.backgroundStrings)
         self.__prepareTTree()
         
     def executeEvent(self):
@@ -49,7 +50,7 @@ class MatrixUnbinned(TriLeptonBase):
 
         if thisChannel is None: return None
         pairs = self.makePair(looseMuons)
-        #_, scores = self.evalScore(looseMuons, looseElectrons, jets, bjets, METv)
+        _, scores = self.evalScore(looseMuons, looseElectrons, jets, bjets, METv)
         
         if thisChannel == "SR1E2Mu":
             for syst in self.systematics:
@@ -60,11 +61,11 @@ class MatrixUnbinned(TriLeptonBase):
                 self.mass1[syst][0] = pairs[0].M()
                 self.mass2[syst][0] = pairs[1].M()
                 
-        #for SIG in self.signalStrings:
-        #    for syst in self.systematics:
-        #        self.scoreX[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_nonprompt"]
-        #        self.scoreY[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_diboson"]
-        #        self.scoreZ[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_ttZ"]
+        for SIG in self.signalStrings:
+            for syst in self.systematics:
+                self.scoreX[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_nonprompt"]
+                self.scoreY[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_diboson"]
+                self.scoreZ[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_ttZ"]
         
         self.weight["Central"][0] = super().getFakeWeight(looseMuons, looseElectrons, 0)
         self.weight["NonpromptUp"][0] = super().getFakeWeight(looseMuons, looseElectrons, 1)
@@ -78,25 +79,25 @@ class MatrixUnbinned(TriLeptonBase):
         self.tree = {}
         self.mass1 = {}
         self.mass2 = {}
-        #self.scoreX = {}
-        #self.scoreY = {}
-        #self.scoreZ = {}
+        self.scoreX = {}
+        self.scoreY = {}
+        self.scoreZ = {}
         self.weight = {}
         
         for syst in self.systematics:
             thisTree = TTree(f"Events_{syst}", "")
             self.mass1[syst] = array("d", [0.]); thisTree.Branch("mass1", self.mass1[syst], "mass1/D")
             self.mass2[syst] = array("d", [0.]); thisTree.Branch("mass2", self.mass2[syst], "mass2/D")
-            #for SIG in self.signalStrings:
-            #    # vs nonprompt
-            #    self.scoreX[f"{SIG}_{syst}"] = array("d", [0.])
-            #    thisTree.Branch(f"score_{SIG}_vs_nonprompt", self.scoreX[f"{SIG}_{syst}"], f"score_{SIG}_vs_nonprompt/D")
-            #    # vs diboson
-            #    self.scoreY[f"{SIG}_{syst}"] = array("d", [0.])
-            #    thisTree.Branch(f"score_{SIG}_vs_diboson", self.scoreY[f"{SIG}_{syst}"], f"score_{SIG}_vs_diboson/D")
-            #    # vs ttZ
-            #    self.scoreZ[f"{SIG}_{syst}"] = array("d", [0.])
-            #    thisTree.Branch(f"score_{SIG}_vs_ttZ", self.scoreZ[f"{SIG}_{syst}"], f"score_{SIG}_vs_ttZ/D")
+            for SIG in self.signalStrings:
+                # vs nonprompt
+                self.scoreX[f"{SIG}_{syst}"] = array("d", [0.])
+                thisTree.Branch(f"score_{SIG}_vs_nonprompt", self.scoreX[f"{SIG}_{syst}"], f"score_{SIG}_vs_nonprompt/D")
+                # vs diboson
+                self.scoreY[f"{SIG}_{syst}"] = array("d", [0.])
+                thisTree.Branch(f"score_{SIG}_vs_diboson", self.scoreY[f"{SIG}_{syst}"], f"score_{SIG}_vs_diboson/D")
+                # vs ttZ
+                self.scoreZ[f"{SIG}_{syst}"] = array("d", [0.])
+                thisTree.Branch(f"score_{SIG}_vs_ttZ", self.scoreZ[f"{SIG}_{syst}"], f"score_{SIG}_vs_ttZ/D")
             self.weight[syst] = array("d", [0.]); thisTree.Branch("weight", self.weight[syst], "weight/D")
             thisTree.SetDirectory(0)
             self.tree[syst] = thisTree
@@ -105,10 +106,10 @@ class MatrixUnbinned(TriLeptonBase):
         for syst in self.systematics:
             self.mass1[syst][0] = -999.
             self.mass2[syst][0] = -999.
-            #for SIG in self.signalStrings:
-            #    self.scoreX[f"{SIG}_{syst}"][0] = -999.
-            #    self.scoreY[f"{SIG}_{syst}"][0] = -999.
-            #    self.scoreZ[f"{SIG}_{syst}"][0] = -999.
+            for SIG in self.signalStrings:
+                self.scoreX[f"{SIG}_{syst}"][0] = -999.
+                self.scoreY[f"{SIG}_{syst}"][0] = -999.
+                self.scoreZ[f"{SIG}_{syst}"][0] = -999.
             self.weight[syst][0] = -999.
             
     def defineObjects(self, rawMuons, rawElectrons, rawJets, syst="Central"):
@@ -220,12 +221,12 @@ class MatrixUnbinned(TriLeptonBase):
             raise NotImplementedError(f"Wrong number of muons (muons.size())")
         
     #### Get scores for each event
-    #def evalScore(self, muons, electrons, jets, bjets, METv):
-    #    scores = {}
-    #    data = getGraphInput(muons, electrons, jets, bjets, METv)
-    #    for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-    #        scores[f"{sig}_vs_{bkg}"] = getGraphScore(self.models[f"{sig}_vs_{bkg}"], data)
-    #    return data, scores
+    def evalScore(self, muons, electrons, jets, bjets, METv):
+        scores = {}
+        data = getGraphInput(muons, electrons, jets, bjets, METv)
+        for sig, bkg in product(self.signalStrings, self.backgroundStrings):
+            scores[f"{sig}_vs_{bkg}"] = getGraphScore(self.models[f"{sig}_vs_{bkg}"], data)
+        return data, scores
 
     def WriteHist(self):
         super().outfile.cd()

@@ -8,8 +8,8 @@ gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/lib
 
 from array import array
 from itertools import product
-#from MLTools.helpers import loadModels
-#from MLTools.helpers import getGraphInput, getGraphScore
+from MLTools.helpers import loadModels
+from MLTools.helpers import getGraphInput, getGraphScore
 
 class PromptUnbinned(TriLeptonBase):
     def __init__(self):
@@ -86,7 +86,7 @@ class PromptUnbinned(TriLeptonBase):
             for j in jets: vjets.emplace_back(j)
             jtp = jParameters(3, 1, 0, 1)   # DeepJet, Medium, incl, mujets
             pairs = self.makePair(tightMuons)
-            #_, scores = self.evalScore(tightMuons, tightElectrons, jets, bjets, METv)
+            _, scores = self.evalScore(tightMuons, tightElectrons, jets, bjets, METv)
             
             if thisChannel == "SR1E2Mu":
                 self.mass1["Central"][0] = pairs.M()
@@ -183,7 +183,7 @@ class PromptUnbinned(TriLeptonBase):
             jtp = jParameters(3, 1, 0, 1) # DeepJet, Medium, incl, mujets
             
             pairs = self.makePair(tightMuons)
-            #data, scores = self.evalScore(tightMuons, tightElectrons, jets, bjets, METv)
+            data, scores = self.evalScore(tightMuons, tightElectrons, jets, bjets, METv)
             
             if thisChannel == "SR1E2Mu":
                 self.mass1[syst][0] = pairs.M()
@@ -384,13 +384,13 @@ class PromptUnbinned(TriLeptonBase):
             raise NotImplementedError(f"Wrong number of muons (muons.size())")
     
     #### Get scores for each event
-    #def evalScore(self, muons, electrons, jets, bjets, METv):
-    #    scores = {}
-    #    data = getGraphInput(muons, electrons, jets, bjets, METv)
-    #    for sig, bkg in product(self.signalStrings, self.backgroundStrings):
-    #        scores[f"{sig}_vs_{bkg}"] = getGraphScore(self.models[f"{sig}_vs_{bkg}"], data)
-    #    
-    #    return data, scores
+    def evalScore(self, muons, electrons, jets, bjets, METv):
+        scores = {}
+        data = getGraphInput(muons, electrons, jets, bjets, METv)
+        for sig, bkg in product(self.signalStrings, self.backgroundStrings):
+            scores[f"{sig}_vs_{bkg}"] = getGraphScore(self.models[f"{sig}_vs_{bkg}"], data)
+        
+        return data, scores
 
     def WriteHist(self):
         super().outfile.cd()
