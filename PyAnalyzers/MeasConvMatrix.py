@@ -121,9 +121,9 @@ class MeasConvMatrix(TriLeptonBase):
                 if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
             #if convMuons.size()+convElectrons.size() == 0: return None
             if self.channel == "Skim1E2Mu":
-                if convElectron.size() == 0: return None
+                if convElectrons.size() == 0: return None
             if self.channel == "Skim3Mu":
-                if convMuon.size() == 0: return None
+                if convMuons.size() == 0: return None
         
         ##### event selection
         ## 1E2Mu ZGamma
