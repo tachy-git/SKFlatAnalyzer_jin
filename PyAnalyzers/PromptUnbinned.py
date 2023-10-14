@@ -60,10 +60,10 @@ class PromptUnbinned(TriLeptonBase):
         if not super().IsDATA:
             self.systematics += self.weightVariations + self.scaleVariations
         
-        #self.signalStrings = ["MHc-70_MA-65", "MHc-160_MA-85", "MHc-130_MA-90", "MHc-100_MA-95", "MHc-160_MA-120"]
-        #self.backgroundStrings = ["nonprompt", "diboson", "ttZ"]
+        self.signalStrings = ["MHc-160_MA-85", "MHc-130_MA-90", "MHc-100_MA-95"]
+        self.backgroundStrings = ["nonprompt", "diboson", "ttZ"]
 
-        #self.models = loadModels(self.network, self.channel, self.signalStrings, self.backgroundStrings)
+        self.models = loadModels("GraphNeuralNet", self.channel, self.signalStrings, self.backgroundStrings)
         self.__prepareTTree()
         
     def executeEvent(self):
@@ -95,10 +95,10 @@ class PromptUnbinned(TriLeptonBase):
                 self.mass1["Central"][0] = pairs[0].M()
                 self.mass2["Central"][0] = pairs[1].M()
                 
-            #for SIG in self.signalStrings:
-                #self.scoreX[f"{SIG}_Central"][0] = scores[f"{SIG}_vs_nonprompt"]
-                #self.scoreY[f"{SIG}_Central"][0] = scores[f"{SIG}_vs_diboson"]
-                #self.scoreZ[f"{SIG}_Central"][0] = scores[f"{SIG}_vs_ttZ"]
+            for SIG in self.signalStrings:
+                self.scoreX[f"{SIG}_Central"][0] = scores[f"{SIG}_vs_nonprompt"]
+                self.scoreY[f"{SIG}_Central"][0] = scores[f"{SIG}_vs_diboson"]
+                self.scoreZ[f"{SIG}_Central"][0] = scores[f"{SIG}_vs_ttZ"]
             
             self.weight["Central"][0] = 1.
             if super().IsDATA:
@@ -162,10 +162,10 @@ class PromptUnbinned(TriLeptonBase):
             for syst in self.weightVariations:
                 self.mass1[syst][0] = self.mass1["Central"][0]
                 self.mass2[syst][0] = self.mass2["Central"][0]
-                #for SIG in self.signalStrings:
-                #    self.scoreX[f"{SIG}_{syst}"][0] = self.scoreX[f"{SIG}_Central"][0]
-                #    self.scoreY[f"{SIG}_{syst}"][0] = self.scoreY[f"{SIG}_Central"][0]
-                #    self.scoreZ[f"{SIG}_{syst}"][0] = self.scoreZ[f"{SIG}_Central"][0]
+                for SIG in self.signalStrings:
+                    self.scoreX[f"{SIG}_{syst}"][0] = self.scoreX[f"{SIG}_Central"][0]
+                    self.scoreY[f"{SIG}_{syst}"][0] = self.scoreY[f"{SIG}_Central"][0]
+                    self.scoreZ[f"{SIG}_{syst}"][0] = self.scoreZ[f"{SIG}_Central"][0]
                 self.tree[syst].Fill()
             # end of central scale
         
@@ -192,10 +192,10 @@ class PromptUnbinned(TriLeptonBase):
                 self.mass1[syst][0] = pairs[0].M()
                 self.mass2[syst][0] = pairs[1].M()
                 
-            #for SIG in self.signalStrings:
-            #    self.scoreX[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_nonprompt"]
-            #    self.scoreY[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_diboson"]
-            #    self.scoreZ[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_ttZ"]
+            for SIG in self.signalStrings:
+                self.scoreX[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_nonprompt"]
+                self.scoreY[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_diboson"]
+                self.scoreZ[f"{SIG}_{syst}"][0] = scores[f"{SIG}_vs_ttZ"]
             
             w_norm = super().MCweight() * ev.GetTriggerLumi("Full")
             w_l1prefire = super().GetPrefireWeight(0)
@@ -219,25 +219,25 @@ class PromptUnbinned(TriLeptonBase):
         self.tree = {}
         self.mass1 = {}
         self.mass2 = {}
-        #self.scoreX = {}
-        #self.scoreY = {}
-        #self.scoreZ = {}
+        self.scoreX = {}
+        self.scoreY = {}
+        self.scoreZ = {}
         self.weight = {}
         
         for syst in self.systematics:
             thisTree = TTree(f"Events_{syst}", "")
             self.mass1[syst] = array("d", [0.]); thisTree.Branch("mass1", self.mass1[syst], "mass1/D")
             self.mass2[syst] = array("d", [0.]); thisTree.Branch("mass2", self.mass2[syst], "mass2/D")
-            #for SIG in self.signalStrings:
+            for SIG in self.signalStrings:
                 # vs nonprompt
-                #self.scoreX[f"{SIG}_{syst}"] = array("d", [0.])
-                #thisTree.Branch(f"score_{SIG}_vs_nonprompt", self.scoreX[f"{SIG}_{syst}"], f"score_{SIG}_vs_nonprompt/D")
+                self.scoreX[f"{SIG}_{syst}"] = array("d", [0.])
+                thisTree.Branch(f"score_{SIG}_vs_nonprompt", self.scoreX[f"{SIG}_{syst}"], f"score_{SIG}_vs_nonprompt/D")
                 # vs diboson
-                #self.scoreY[f"{SIG}_{syst}"] = array("d", [0.])
-                #thisTree.Branch(f"score_{SIG}_vs_diboson", self.scoreY[f"{SIG}_{syst}"], f"score_{SIG}_vs_diboson/D")
+                self.scoreY[f"{SIG}_{syst}"] = array("d", [0.])
+                thisTree.Branch(f"score_{SIG}_vs_diboson", self.scoreY[f"{SIG}_{syst}"], f"score_{SIG}_vs_diboson/D")
                 # vs ttZ
-                #self.scoreZ[f"{SIG}_{syst}"] = array("d", [0.])
-                #thisTree.Branch(f"score_{SIG}_vs_ttZ", self.scoreZ[f"{SIG}_{syst}"], f"score_{SIG}_vs_ttZ/D")
+                self.scoreZ[f"{SIG}_{syst}"] = array("d", [0.])
+                thisTree.Branch(f"score_{SIG}_vs_ttZ", self.scoreZ[f"{SIG}_{syst}"], f"score_{SIG}_vs_ttZ/D")
             self.weight[syst] = array("d", [0.]); thisTree.Branch("weight", self.weight[syst], "weight/D")
             thisTree.SetDirectory(0)
             self.tree[syst] = thisTree
@@ -246,9 +246,9 @@ class PromptUnbinned(TriLeptonBase):
         for syst in self.systematics:
             self.mass1[syst][0] = -999.
             self.mass2[syst][0] = -999.
-            #for SIG in self.signalStrings:
-            #    self.scoreX[f"{SIG}_{syst}"][0] = -999.
-            #    self.scoreY[f"{SIG}_{syst}"][0] = -999.
+            for SIG in self.signalStrings:
+                self.scoreX[f"{SIG}_{syst}"][0] = -999.
+                self.scoreY[f"{SIG}_{syst}"][0] = -999.
             self.weight[syst][0] = -999.
             
     def defineObjects(self, rawMuons, rawElectrons, rawJets, syst="Central"):
@@ -303,43 +303,23 @@ class PromptUnbinned(TriLeptonBase):
                   
         if self.channel == "Skim1E2Mu" and not is1E2Mu: return None
         if self.channel == "Skim3Mu" and not is3Mu: return None
-
-        # for patching samples
-        if "DYJets" in super().MCSample:
-            # first do matching
-            promptMuons = vector[Muon]()
-            promptElectrons = vector[Electron]()
+        
+        # for conversion samples
+        if super().MCSample in ["DYJets_MG", "DYJets10to50_MG", "TTG", "WWG"]:
+            # at least one conversion lepton should exist
+            # internal conversion: 4, 5
+            # external conversion: -5, -6
+            convMuons = vector[Muon]()
+            convElectrons = vector[Electron]()
             for mu in tightMuons:
-                if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
+                if super().GetLeptonType(mu, truth) in [4, 5, -5, -6]: convMuons.emplace_back(mu)
             for ele in tightElectrons:
-                if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
+                if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
+            if self.channel == "Skim1E2Mu":
+                if convElectrons.size() == 0: return None
+            if self.channel == "Skim3Mu":
+                if convMuons.size() == 0: return None
 
-            if promptMuons.size() != tightMuons.size(): return None
-            if promptElectrons.size() != tightElectrons.size(): return None
-
-            leptons = vector[Lepton]()
-            for mu in tightMuons: leptons.emplace_back(mu)
-            for ele in tightElectrons: leptons.emplace_back(ele)
-            if leptons.at(0).Pt() > 20. and leptons.at(1).Pt() > 20. and leptons.at(2).Pt() > 20.:
-                return None
-        if "ZGToLLG" in super().MCSample:
-            # first do matching
-            promptMuons = vector[Muon]()
-            promptElectrons = vector[Electron]()
-            for mu in tightMuons:
-                if super().GetLeptonType(mu, truth) > 0: promptMuons.emplace_back(mu)
-            for ele in tightElectrons:
-                if super().GetLeptonType(ele, truth) > 0: promptElectrons.emplace_back(ele)
-
-            if promptMuons.size() != tightMuons.size(): return None
-            if promptElectrons.size() != tightElectrons.size(): return None
-
-            leptons = vector[Lepton]()
-            for mu in tightMuons: leptons.emplace_back(mu)
-            for ele in tightElectrons: leptons.emplace_back(ele)
-            if leptons.at(0).Pt() < 20. or leptons.at(1).Pt() < 20. or leptons.at(2).Pt() < 20.:
-                return None
-            
         ## 1E2Mu baseline
         ## 1. pass EMuTriggers
         ## 2. Exact 2 tight muons and 1 tight electron, no additional lepton

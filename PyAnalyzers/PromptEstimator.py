@@ -55,7 +55,6 @@ class PromptEstimator(TriLeptonBase):
         self.systematics = self.weightVariations + self.scaleVariations
         self.signalStrings = ["MHc-100_MA-95", "MHc-130_MA-90", "MHc-160_MA-85"]
         self.backgroundStrings = ["nonprompt", "diboson", "ttZ"]
-        
         self.models = loadModels("GraphNeuralNet", self.channel, self.signalStrings, self.backgroundStrings)
         
     def executeEvent(self):
