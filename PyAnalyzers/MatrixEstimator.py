@@ -270,7 +270,7 @@ class MatrixEstimator(TriLeptonBase):
         
         # Fill ZCands
         if "1E2Mu" in channel:
-            if not "ZGamma" in channel: ZCand = pairs       # pairs == pair
+            ZCand = pairs       # pairs == pair
             super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)

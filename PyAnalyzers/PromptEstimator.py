@@ -23,7 +23,7 @@ class PromptEstimator(TriLeptonBase):
         if super().Skim3Mu:     self.channel = "Skim3Mu"
         if super().RunSyst:     self.run_syst = True
         if not self.channel in ["Skim1E2Mu", "Skim3Mu"]:
-            raise KeyError(f"Wron channel {self.channel}")
+            raise KeyError(f"Wrong channel {self.channel}")
             
         self.weightVariations = ["Central"]
         self.scaleVariations = []

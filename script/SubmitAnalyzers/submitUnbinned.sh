@@ -3,8 +3,18 @@ ERA=$1
 CHANNEL=$2
 MEMORY=$3
 
-SKFlat.py -a PromptUnbinned -i DoubleMuon --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL --memory $MEMORY --python &
-SKFlat.py -a MatrixUnbinned -i DoubleMuon --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL --memory $MEMORY --python &
+if [[ $CHANNEL == "Skim1E2Mu" ]]; then
+    DATASTREAM="MuonEG"
+elif [[ $CHANNEL == "Skim3Mu" ]]; then
+    DATASTREAM="DoubleMuon"
+else
+    echo "Wrong channel $CHANNEL"
+    exit 1
+fi
+
+
+SKFlat.py -a PromptUnbinned -i $DATASTREAM --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL --memory $MEMORY --python &
+SKFlat.py -a MatrixUnbinned -i $DATASTREAM --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL --memory $MEMORY --python &
 SKFlat.py -a PromptUnbinned -i TTLL_powheg --skim SkimTree_SS2lOR3l -n 30 -e ${ERA} --userflags $CHANNEL --memory $MEMORY --python & 
 SKFlat.py -a PromptUnbinned -i DYJets_MG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL --memory $MEMORY --python &
 SKFlat.py -a PromptUnbinned -i DYJets10to50_MG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL --memory $MEMORY --python & 
