@@ -46,12 +46,13 @@ class MeasConvMatrix(TriLeptonBase):
                    "pairs": pairs,
                     }
         for syst in self.systematics:
+            weight = self.getWeight(thisChannel, ev, looseMuons, looseElectrons, jets)
             if syst == "Central":
-                weight = super().getFakeWeight(looseMuons, looseElectrons, 0)
+                weight *= super().getFakeWeight(looseMuons, looseElectrons, 0)
             elif syst == "NonpromptUp":
-                weight = super().getFakeWeight(looseMuons, looseElectrons, 1)
+                weight *= super().getFakeWeight(looseMuons, looseElectrons, 1)
             elif syst == "NonpromptDown":
-                weight = super().getFakeWeight(looseMuons, looseElectrons, -1)
+                weight *= super().getFakeWeight(looseMuons, looseElectrons, -1)
             else:
                 print(f"[NonpromptEstimator::executeEvent] Wrong systematics {syst}")
                 exit(1)
@@ -192,6 +193,23 @@ class MeasConvMatrix(TriLeptonBase):
         else:
             raise NotImplementedError(f"Wrong number of muons (muons.size())")
         
+    def getWeight(self, channel, event, muons, electrons, jets, syst="Central"):
+        # No ID and trigger SF applied since leptons reside in ID sideband
+        weight = 1.
+        if not super().IsDATA:
+            weight *= super().MCweight() * super().GetKFactor()
+            weight *= event.GetTriggerLumi("Full")
+            weight *= super().GetPrefireWeight(0)
+            weight *= super().GetPileUpWeight(super().nPileUp, 0)
+
+            # b-tagging
+            jtp = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
+            vjets = vector[Jet]()
+            for j in jets: vjets.emplace_back(j)
+            weight *= super().mcCorr.GetBTaggingReweight_1a(vjets, jtp)
+        
+        return weight
+
     def getConvLepton(self, electrons, muons):
         if electrons.size() == 1 and muons.size() == 2:
             return electrons.at(0);
