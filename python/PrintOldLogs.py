@@ -10,7 +10,12 @@ if os.path.exists(os.environ['SKFlat_WD']+'/python/UserInfo_'+USER+'.py'):
 else:
   print("No UserInfo file")
   exit(1)
-LogRemoval = int(UserInfo['LogRemoval'])
+
+try:
+    LogRemoval = int(UserInfo['LogRemoval'])
+except:
+    LogRemoval = -1
+
 if (LogRemoval > 0) and (LogRemoval < 3):
     LogRemoval = 3 # safety cut in order to not remove currently running jobs after date change
 
