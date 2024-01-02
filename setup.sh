@@ -41,10 +41,13 @@ elif [[ $HOSTNAME == *"tamsa2"* ]]; then
 elif [[ $HOSTNAME == *"knu"* ]]; then
 
   echo "@@@@ Working on KNU"
-  export SKFlatRunlogDir="/u/user/$USER/scratch/SKFlatRunlog/"
-  export SKFlatOutputDir="/u/user/$USER/scratch/SKFlatOutput/"
+  export SKFlatRunlogDir="/d0/scratch/$USER/SKFlatRunlog/"
+  export SKFlatOutputDir="/d0/scratch/$USER/SKFlatOutput/"
 
 fi
+
+mkdir -p $SKFlatRunlogDir
+mkdir -p $SKFlatOutputDir
 
 alias skout="cd $SKFlatOutputDir/$SKFlatV/"
 

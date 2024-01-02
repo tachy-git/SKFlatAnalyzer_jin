@@ -120,14 +120,11 @@ IsSkimTree = "SkimTree" in args.Analyzer
 if IsSkimTree:
   if args.NMax==0: args.NMax=100 ## Preventing from too heavy IO
   if args.NJobs==1: args.NJobs=0 ## NJobs=0 means NJobs->NFiles
-  if not IsTAMSA:
+  if not (IsTAMSA or IsKNU):
     print "Skimming only possible in SNU"
     exit()
 
 ## Machine-dependent variables
-
-if IsKNU:
-  args.Queue = "cms"
 
 ## Make Sample List
 
@@ -246,11 +243,6 @@ for InputSample in InputSamples:
   this_webdir = webdirpathbase+'/'+base_rundir.replace(SKFlatRunlogDir,'').replace(HOSTNAME+'/',HOSTNAME+'__')
   os.system('mkdir -p '+this_webdir)
 
-  ## If KNU, copy grid cert
-
-  if IsKNU:
-    os.system('cp /tmp/x509up_u'+UID+' '+base_rundir)
-
   ## Get Sample Path
 
   lines_files = []
@@ -326,7 +318,7 @@ for InputSample in InputSamples:
 
   ## Write run script
 
-  if IsKISTI or IsTAMSA:
+  if IsKISTI or IsTAMSA or IsKNU:
 
     commandsfilename = args.Analyzer+'_'+args.Era+'_'+InputSample
     if IsDATA:
@@ -419,7 +411,7 @@ transfer_output_remaps = "hists.root = output/hists_$(Process).root"
 queue {0}
 '''.format(str(NJobs), commandsfilename)
       submit_command.close()
-    elif IsTAMSA:
+    elif IsTAMSA or IsKNU:
       concurrency_limits=''
       if args.NMax:
         concurrency_limits='concurrency_limits = n'+str(args.NMax)+'.'+os.getenv("USER")
@@ -457,7 +449,7 @@ queue {0}
     runfunctionname = "run"
     libdir = (MasterJobDir+'/lib').replace('///','/').replace('//','/')+'/'
     runCfileFullPath = ""
-    if IsKISTI or IsTAMSA:
+    if IsKISTI or IsTAMSA or IsKNU:
       runfunctionname = "run_"+str(it_job)
       runCfileFullPath = base_rundir+'/run_'+str(it_job)+'.C'
     else:
@@ -524,7 +516,7 @@ void {2}(){{
       out.write('  m.SetOutfilePath("'+skimoutdir+skimoutfilename+'");\n')
 
     else:
-      if IsKISTI or IsTAMSA:
+      if IsKISTI or IsTAMSA or IsKNU:
         out.write('  m.SetOutfilePath("hists.root");\n')
       else:
         out.write('  m.SetOutfilePath("'+thisjob_dir+'/hists.root");\n')
@@ -544,28 +536,7 @@ void {2}(){{
 
     out.close()
 
-    if IsKNU:
-      run_commands = open(thisjob_dir+'commands.sh','w')
-      print>>run_commands,'''cd {0}
-cp ../x509up_u{1} /tmp/
-echo "[SKFlat.py] Okay, let's run the analysis"
-root -l -b -q run.C 1>stdout.log 2>stderr.log
-'''.format(thisjob_dir,UID)
-      run_commands.close()
-
-      jobname = 'job_'+str(it_job)+'_'+args.Analyzer
-      cmd = 'qsub -V -q '+args.Queue+' -N '+jobname+' commands.sh'
-
-      if not args.no_exec:
-        cwd = os.getcwd()
-        os.chdir(thisjob_dir)
-        os.system(cmd+' > submitlog.log')
-        os.chdir(cwd)
-      sublog = open(thisjob_dir+'/submitlog.log','a')
-      sublog.write('\nSubmission command was : '+cmd+'\n')
-      sublog.close()
-
-  if IsKISTI or IsTAMSA:
+  if IsKISTI or IsTAMSA or IsKNU:
 
     cwd = os.getcwd()
     os.chdir(base_rundir)
@@ -620,8 +591,6 @@ print '- NJobs = '+str(NJobs)
 print '- Era = '+args.Era
 print '- UserFlags =',
 print Userflags
-if IsKNU:
-  print '- Queue = '+args.Queue
 print '- RunDir = '+base_rundir
 print '- output will be send to : '+FinalOutputPath
 print '##################################################'
@@ -706,7 +675,7 @@ try:
         for it_job in range(0,len(FileRanges)):
 
           thisjob_dir = base_rundir+'/'
-          if IsKISTI or IsTAMSA:
+          if IsKISTI or IsTAMSA or IsKNU:
             thisjob_dir = base_rundir
 
           this_status = ""
@@ -872,7 +841,9 @@ try:
             #### if number of job is 1, we can just move the file, not hadd
             nFiles = len( FileRangesForEachSample[it_sample] )
             if nFiles==1:
-              if IsKISTI or IsTAMSA:
+
+              if IsKISTI or IsTAMSA or IsKNU:
+
                 os.system('echo "nFiles = 1, so skipping hadd and just move the file" >> JobStatus.log')
                 os.system('ls -1 output/*.root >> JobStatus.log')
                 os.system('mv output/hists_0.root '+outputname+'.root')
@@ -882,7 +853,7 @@ try:
                 os.system('mv job_0/hists.root '+outputname+'.root')
 
             else:
-              if IsKISTI or IsTAMSA:
+              if IsKISTI or IsTAMSA or IsKNU:
                 while True:
                   nhadd=int(os.popen("pgrep -x hadd -u $USER |wc -l").read().strip())
                   if nhadd<4: break
@@ -931,16 +902,10 @@ if SendLogToEmail:
   Job finished at {1}
   '''.format(string_JobStartTime,string_ThisTime)
   
-  if IsKNU:
-    JobFinishEmail += 'Queue = '+args.Queue+'\n'
-  
   EmailTitle = '['+HOSTNAME+']'+' Summary of JobID '+str_RandomNumber
   if GotError:
     JobFinishEmail = "#### ERROR OCCURED ####\n"+JobFinishEmail
     JobFinishEmail = ErrorLog+"\n------------------------------------------------\n"+JobFinishEmail
     EmailTitle = '[ERROR] Summary of JobID '+str_RandomNumber
   
-  if IsKNU:
-    SendEmailbyGMail(USER,SKFlatLogEmail,EmailTitle,JobFinishEmail)
-  else:
-    SendEmail(USER,SKFlatLogEmail,EmailTitle,JobFinishEmail)
+  SendEmail(USER,SKFlatLogEmail,EmailTitle,JobFinishEmail)
