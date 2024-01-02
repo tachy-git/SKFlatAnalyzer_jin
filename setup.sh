@@ -75,6 +75,10 @@ rm $SKFlat_WD/tmp/ToDoLists.sh
 CurrentGitBranch=`git branch | grep \* | cut -d ' ' -f2`
 printf "> Current SKFlatAnalyzer branch : "${BRed}$CurrentGitBranch${Color_Off}"\n"
 echo "-----------------------------------------------------------------"
+
 ## Log Dir ##
+python python/PrintOldLogs.py
+source $SKFlat_WD/tmp/OldLogs.sh
+rm $SKFlat_WD/tmp/OldLogs.sh
 echo "* Your Log Directory Usage (ctrl+c to skip)"
 du -sh $SKFlatRunlogDir
