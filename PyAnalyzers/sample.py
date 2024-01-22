@@ -42,7 +42,7 @@ if __name__ == "__main__":
     m.WriteHist()
 
 if __name__ == "__main__":
-    m = DileptonClosure()
+    m = POGDiMuonValidation()
     m.SetTreeName("recoTree/SKFlat")
     m.IsDATA = False
     m.MCSample = "DYJets"
@@ -51,9 +51,9 @@ if __name__ == "__main__":
     m.sumW = 1.545707971038e+12
     m.IsFastSim = False
     m.SetEra("2016preVFP")
-    m.Userflags = vector[TString]()
+    m.Userflags = std.vector[ROOT.TString]()
     m.Userflags.emplace_back("RunDiMu")
-    if not m.AddFile("/home/choij/workspace/DATA/SKFlat/Run2UltraLegacy_v3/2016preVFP/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/220706_092734/0000/SKFlatNtuple_2016preVFP_MC_964.root"): exit(1)
+    if not m.AddFile("/DATA/Users/choij/SKFlat/Run2UltraLegacy_v3/2016preVFP/MC/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/220706_092734/0000/SKFlatNtuple_2016preVFP_MC_679.root"): exit(1)
     m.SetOutfilePath("hists.root")
     m.Init()
     m.initializePyAnalyzer()

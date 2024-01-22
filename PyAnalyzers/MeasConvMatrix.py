@@ -207,7 +207,6 @@ class MeasConvMatrix(TriLeptonBase):
             vjets = vector[Jet]()
             for j in jets: vjets.emplace_back(j)
             weight *= super().mcCorr.GetBTaggingReweight_1a(vjets, jtp)
-        print(weight) 
         return weight
 
     def getConvLepton(self, electrons, muons):

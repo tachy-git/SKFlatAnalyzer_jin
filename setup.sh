@@ -7,11 +7,11 @@ if [[ $HOSTNAME == *"tamsa"* ]]; then
 
   # root configuration
   # Singlarity image
-  if [[ $RELEASE == *"Fedora"* ]]; then
+  if [[ $RELEASE == *"Alma"* ]]; then
     source /opt/conda/bin/activate
-    conda activate torch
-  # using from host
+    conda activate pyg
   else
+    # Host machines
     # temporarily use ROOT and python from LCG environment
     source /cvmfs/sft.cern.ch/lcg/views/LCG_102cuda/x86_64-centos7-gcc8-opt/setup.sh
   fi
@@ -22,15 +22,18 @@ elif [[ $HOSTNAME == *"cms"* ]]; then
   export SKFlatOutputDir="/data6/Users/$USER/SKFlatOutput"
   # root configuration
   source /home/choij/miniconda3/bin/activate
-  conda activate torch
-else
-  echo "@@@@ Working in local"
+  conda activate pyg
+elif [[ $HOSTNAME == "localhost" ]]; then
+  echo "@@@@ Working in localhost"
   export SKFlat_WD="/home/$USER/workspace/SKFlatAnalyzer"
   export SKFlatRunlogDir="/home/$USER/workspace/SKFlatRunlog"
   export SKFlatOutputDir="/home/$USER/workspace/SKFlatOutput"
   # root configuration
   source ~/.conda-activate
-  conda activate torch
+  conda activate pyg
+else
+  echo "Unknown hostname $HOSTNAME"
+  exit 1
 fi
 
 export SKFlat_LIB_PATH=$SKFlat_WD/lib/

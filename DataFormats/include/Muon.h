@@ -109,6 +109,8 @@ public:
   //==== ID
   bool PassID(TString ID) const;
   bool Pass_POGTightWithTightIso() const;
+  bool Pass_POGMediumWithTightIso() const;
+  bool Pass_POGMediumWithLooseIso() const;
   bool Pass_POGHighPtWithLooseTrkIso() const;
   bool Pass_TESTID() const;
   bool Pass_HcToWAVeto() const;
