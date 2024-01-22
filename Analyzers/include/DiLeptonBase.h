@@ -13,6 +13,8 @@ public:
     bool RunSyst;         // systematic run
     vector<TString> ElectronIDs, MuonIDs;
     vector<TString> DblMuTriggers, EMuTriggers;
+    TString isoMuTriggerName;
+    double triggerSafePtCut;
 
     TH2D *hMuonIDSF;
     TH2D *hMu17Leg1_Data, *hMu17Leg1_MC;
