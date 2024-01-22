@@ -208,7 +208,6 @@ void DataPreprocess::executeEvent() {
     }
 
     // start matching for signal sample
-    /*
     if (MatchChargedHiggs && MCSample.Contains("MHc")) {
         // Get charged Higgs mass point
         // e.g. TTToHcToWAToMuMu_MHc-130_MA-90 -> MHc-130 -> 130
@@ -248,8 +247,8 @@ void DataPreprocess::executeEvent() {
             if (! (fabs(parton2.Eta()) < 2.5)) return;
 
             // Find nearest jets
-            Jet *j1 = nullptr; double dR1 = 0.3;
-            Jet *j2 = nullptr; double dR2 = 0.3;
+            Jet *j1 = nullptr; double dR1 = 0.4;
+            Jet *j2 = nullptr; double dR2 = 0.4;
             for (auto &jet: jets) {
                 if (parton1.DeltaR(jet) < dR1) {
                     j1 = &jet;
@@ -319,7 +318,6 @@ void DataPreprocess::executeEvent() {
             return;
         }
     }
-    */
     Events->Fill();
     return;
 }
