@@ -1,5 +1,7 @@
 import ROOT
-from ROOT import gSystem, std
+from ROOT import gSystem
+from ROOT.std import vector
+from ROOT import TString
 from ROOT import DiLeptonBase
 from ROOT import Event, Muon, Jet
 gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
@@ -59,12 +61,12 @@ class POGDiMuonValidation(DiLeptonBase):
             weight = self.getWeight(ev, objects)
             self.fillObjects(channel, objects, weight, syst=scale)
             
-    def defineObjects(self, rawMuons: std.vector[Muon],
-                            rawJets: std.vector[Jet],
+    def defineObjects(self, rawMuons: vector[Muon],
+                            rawJets: vector[Jet],
                             scale: str="Central"):
         # first copy objects
-        allMuons = std.vector[Muon](rawMuons);  assert allMuons is not rawMuons 
-        allJets = std.vector[Jet](rawJets);     assert allJets is not rawJets
+        allMuons = vector[Muon](rawMuons);  assert allMuons is not rawMuons 
+        allJets = vector[Jet](rawJets);     assert allJets is not rawJets
         
         # check the scale argument
         if scale == "MuonEnUp":         allMuons = super().ScaleMuons(allMuons, +1)
@@ -77,8 +79,8 @@ class POGDiMuonValidation(DiLeptonBase):
         muons = super().SelectMuons(allMuons, "POGMediumWithTightIso", 15., 2.4)
         jets = super().SelectJets(allJets, "tight", 20., 2.4)
         
-        muons = std.vector[Muon](sorted(muons, key=lambda x: x.Pt(), reverse=True))
-        jets = std.vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
+        muons = vector[Muon](sorted(muons, key=lambda x: x.Pt(), reverse=True))
+        jets = vector[Jet](sorted(jets, key=lambda x: x.Pt(), reverse=True))
         
         return (muons, jets)
 

@@ -13,7 +13,7 @@ if [[ $HOSTNAME == *"tamsa"* ]]; then
   else
     # Host machines
     # temporarily use ROOT and python from LCG environment
-    source /cvmfs/sft.cern.ch/lcg/views/LCG_102cuda/x86_64-centos7-gcc8-opt/setup.sh
+    source /cvmfs/sft.cern.ch/lcg/views/LCG_104/x86_64-centos7-gcc11-opt/setup.sh
   fi
 elif [[ $HOSTNAME == *"cms"* ]]; then
   echo "@@@@ Working in cms"
