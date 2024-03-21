@@ -385,7 +385,7 @@ for inputSample in inputSampleList:
                     out.write(f"    m.IsFastSim = False\n")
             out.write(f'    m.SetEra("{args.Era}")\n')
             if Userflags:
-                out.write(f'    m.Userflags = vector[TString]()\n')
+                out.write(f'    m.Userflags = std.vector[TString]()\n')
                 for flag in Userflags: out.write(f'    m.Userflags.emplace_back("{flag}")\n')
             for it_file in fileRanges[it_job]:
                 thisFileName = totalFiles[it_file].strip("\n")
@@ -712,7 +712,7 @@ try:
                                 os.system(f'echo "Too many hadd currently (nhadd={nhadd}). Sleep 60s" >> JobStatus.log')
                                 time.sleep(60)
                             print(f"hadd target {outputName}.root")
-                            os.system(f'hadd -f {outputName}.root output/*.root >> JobStatus.log')
+                            os.system(f'singularity exec /data9/Users/choij/Singularity/images/root-6.30.02 hadd -f {outputName}.root output/*.root >> JobStatus.log')
                             os.system('rm output/*.root')
 
                         ## Final Outputpath
