@@ -48,12 +48,13 @@ alias skout="cd $SKFlatOutputDir/$SKFlatV"
 
 export MYBIN=$SKFlat_WD/bin/
 export PYTHONDIR=$SKFlat_WD/python/
-export PATH=${MYBIN}:${PYTHONDIR}:${PATH}
-export PYTHONPATH="${PYTHONPATH}:/${PYTHONDIR}"
+export LHAPDFDIR=$SKFlat_WD/external/lhapdf
+export LHAPDF_DATA_PATH=$LHAPDFDIR/data
+export PATH=${MYBIN}:${PYTHONDIR}:${LHAPDFDIR}/bin:${PATH}
+export PYTHONPATH="${PYTHONPATH}:${PYTHONDIR}"
 
-export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$SKFlat_WD/DataFormats/include/:$SKFlat_WD/AnalyzerTools/include/:$SKFlat_WD/Analyzers/include/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SKFlat_LIB_PATH
-
+#export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$SKFlat_WD/DataFormats/include/:$SKFlat_WD/AnalyzerTools/include/:$SKFlat_WD/Analyzers/include/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SKFlat_LIB_PATH:$LHAPDFDIR/lib
 source $SKFlat_WD/bin/BashColorSets.sh
 
 ## submodules ##

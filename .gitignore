@@ -3,7 +3,7 @@
 *.pcm
 *.d
 *.so
-*_Dict.cxx
+*.cxx
 lib/*.tar.gz
 lib/*.rootmap
 */obj
@@ -11,3 +11,5 @@ lib/*.rootmap
 .vscode/*
 python/UserInfo_*.py
 !python/UserInfo_template.py
+external/lhapdf/*
+build/*
