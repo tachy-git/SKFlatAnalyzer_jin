@@ -26,7 +26,7 @@ parser.add_argument("--userflags", dest="Userflags", default="", help="User pre-
 parser.add_argument("--tagoutput", dest="TagOutput", default="")
 parser.add_argument("--nmax", dest="nmax", default=0, type=int, help="maximum running jobs")
 parser.add_argument("--reduction", dest="Reduction", default=1, type=int)
-parser.add_argument("--memory", dest="Memory", default=0, type=int)
+parser.add_argument("--memory", dest="Memory", default=2048, type=int)
 parser.add_argument("--batchname", dest="BatchName", default="")
 parser.add_argument("--logevery", dest="logEvery", default=1000, type=int)
 args = parser.parse_args()
@@ -168,14 +168,14 @@ for inputSample in inputSampleList:
         logging.info(f"RunDir = {processor.baseRunDir}")
         exit()
     else:
-        processor.submitJobs(args.batchname)
+        processor.submitJobs(args.BatchName)
     
     processorForEachSample[inputSample] = processor    
 
 ## Set output directory
-## if args.Outputdir is not given, use default output directory
+## if args.OutputDir is not given, use default output directory
 finalOutputPath = args.OutputDir
-if not args.Outputdir:
+if not args.OutputDir:
     finalOutputPath = f"{SKFlatOutputDir}/{SKFlatV}/{args.Analyzer}/{args.Era}/"
     for flag in Userflags:
         finalOutputPath += f"{flag}__"
@@ -185,17 +185,17 @@ if not args.Outputdir:
         finalOutputPath = f"/gv0/DATA/SKFlat/{SKFlatV}/{args.Era}"
 os.makedirs(finalOutputPath, exist_ok=True)
 
-logging.info(f"#################################################")
-logging.info(f"Submission Finished")
-logging.info(f"JobID = {randomNumber}")
-logging.info(f"Analyzer = {args.Analyzer}")
-logging.info(f"Skim = {args.Skim}")
-logging.info(f"inputSampleList = {inputSampleList}")
-logging.info(f"njobs = {args.njobs}")
-logging.info(f"Era = {args.Era}")
-logging.info(f"UserFlags = {Userflags}")
-logging.info(f"RunDir = {processorForEachSample[inputSampleList[0]].baseRunDir}")
-logging.info(f"output will be send to {finalOutputPath}")
-logging.info(f"#################################################")
+print(f"#################################################")
+print(f"Submission Finished")
+print(f"JobID = {randomNumber}")
+print(f"Analyzer = {args.Analyzer}")
+print(f"Skim = {args.Skim}")
+print(f"inputSampleList = {inputSampleList}")
+print(f"njobs = {args.njobs}")
+print(f"Era = {args.Era}")
+print(f"UserFlags = {Userflags}")
+print(f"RunDir = {processorForEachSample[inputSampleList[0]].baseRunDir}")
+print(f"output will be send to {finalOutputPath}")
+print(f"#################################################")
 
 ## Submission done. 

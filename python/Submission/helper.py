@@ -152,6 +152,7 @@ class SampleProcessor:
         with open(f"{self.baseRunDir}/{commandsFileName}.sh", "w") as f:
             template = template.replace("[SKFlat_WD]", self.SKFlat_WD)
             template = template.replace("[baseRunDir]", self.baseRunDir)
+            template = template.replace("[masterJobDir]", self.masterJobDir)
             f.write(template)
             
         ## write condor submission script
@@ -159,14 +160,12 @@ class SampleProcessor:
         request_memory = ""
         if self.nmax:
             concurrencyLimits = f"concurrencyLimits = n{self.nmax}.{os.getenv('USER')}"
-        if self.memory:
-            request_memory = f"request_memory = {self.memory}"
         with open(f"script/Templates/condor.sub", "r") as f:
             template = f.read()
         with open(f"{self.baseRunDir}/condor.sub", "w") as f:
             template = template.replace("[commandsFileName]", commandsFileName)
             template = template.replace("[concurrencyLimits]", concurrencyLimits)
-            template = template.replace("[request_memory]", request_memory)
+            template = template.replace("[request_memory]", str(self.memory))
             template = template.replace("[njobs]", str(self.njobs))
             f.write(template)
             

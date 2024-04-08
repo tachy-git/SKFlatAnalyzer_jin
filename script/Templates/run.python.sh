@@ -27,9 +27,9 @@ source /opt/conda/bin/activate
 conda activate pyg
 
 #### modifying LD_LIBRARY_PATH to use libraries in baseRunDir
-export LD_LIBRARY_PATH=$(echo $LD_LIBRARY_PATH|sed 's@'$SKFlat_WD'/lib@{masterJobDir}/lib@')
+export LD_LIBRARY_PATH=$(echo $LD_LIBRARY_PATH|sed 's@'$SKFlat_WD'/lib@[masterJobDir]/lib@')
 
-while [ "$Trial" -lt 3 ]; do
+while [[ "$Trial" -lt 3 ]]; do
     echo "#### running ####"
     echo "python [baseRunDir]/run_${SECTION}.py"
     python [baseRunDir]/run_${SECTION}.py 2> err.log

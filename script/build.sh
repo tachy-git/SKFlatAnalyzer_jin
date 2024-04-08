@@ -1,7 +1,7 @@
 #!/bin/sh
 export SKFlat_BUILDDIR=$SKFlat_WD/build
 
-echo @@@@ Prepare to build SKNanaAnalyzer in $SKNANO_BUILDDIR
+echo @@@@ Prepare to build SKFlatAnalyzer in $SKFlat_BUILDDIR
 rm -rf $SKFlat_BUILDDIR $SKFlat_LIB_PATH
 mkdir $SKFlat_BUILDDIR && cd $SKFlat_BUILDDIR
 

@@ -12,7 +12,8 @@ export PYTHONDIR="$SKFlat_WD/python"
 export PATH=${MYBIN}:${PYTHONDIR}:${PATH}
 export PYTHONPATH="${PYTHONPATH}:${PYTHONDIR}"
 export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$SKFlat_WD/DataFormats/include/:$SKFlat_WD/AnalyzerTools/include/:$SKFlat_WD/Analyzers/include/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SKFlat_LIB_PATH
+export LHAPDFDIR=$SKFlat_WD/external/lhapdf
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SKFlat_LIB_PATH:$LHAPDFDIR/lib
 
 source $SKFlat_WD/bin/BashColorSets.sh
 
@@ -27,9 +28,9 @@ source /opt/conda/bin/activate
 conda activate pyg
 
 #### modifying LD_LIBRARY_PATH to use libraries in baseRunDir
-export LD_LIBRARY_PATH=$(echo $LD_LIBRARY_PATH|sed 's@'$SKFlat_WD'/lib@{masterJobDir}/lib@')
+export LD_LIBRARY_PATH=$(echo $LD_LIBRARY_PATH|sed 's@'$SKFlat_WD'/lib@[masterJobDir]/lib@')
 
-while [ "$Trial" -lt 3 ]; do
+while [[ "$Trial" -lt 3 ]]; do
     echo "#### running ####"
     echo "root -l -b -q [baseRunDir]/run_${SECTION}.C"
     root -l -b -q [baseRunDir]/run_${SECTION}.C 2> err.log
