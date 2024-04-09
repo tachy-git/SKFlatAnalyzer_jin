@@ -51,6 +51,8 @@ class SampleListHandler:
 
 class SampleProcessor:
     def __init__(self, sampleName, **kwargs):
+        self.job_id = kwargs.get("job_id")
+        self.hostname = kwargs.get("hostname")
         self.analyzer = kwargs.get("analyzer")
         self.era = kwargs.get("era")
         self.njobs = kwargs.get("njobs")
@@ -294,6 +296,60 @@ class SampleProcessor:
             condorOptions = f"-batch-name {batchname}"
         os.system(f"condor_submit {condorOptions} condor.sub")
         os.chdir(cwd)
+
+    def postprocess(self, env_vars):
+        ## do nothing for skim
+        if self.skim:
+            return True
+
+        ## hadd files
+        prefix = f"{self.skim}_" if self.skim else ""
+        suffix = f"_{self.dataPeriod}" if self.isDATA else ""
+        output_name = f"{self.analyzer}_{prefix}{self.sampleName}{suffix}"
+        
+        cwd = os.getcwd()
+        os.chdir(self.baseRunDir)
+
+        ## if number of job is 1, hadd is not needed
+        if len(self.fileRanges) == 1:
+            with open("JobStats.log", "a") as f:
+                f.write("nFiles = 1, so skipping hadd and just move the file")
+            shutil.move(f"{output_name}_0.root", f"{output_name}.root")
+        else:
+            while True:
+                nhadd = int(os.popen("pgrep -x hadd -u $USER |wc -l").read().strip())
+                if nhadd < 4:
+                    break
+                with open("JobStatus.log", "a") as f:
+                    f.write(f"Too many had currently (nhadd={nhadd}). Sleep 60s")
+                time.sleep(60)
+            logging.info(f"hadd target {output_name}.root")
+            os.system(f'singularity exec /data9/Users/choij/Singularity/images/root-6.30.02 hadd -f {output_name}.root output/*.root >> JobStatus.log')
+            os.system('rm output/*.root')
+
+        ## move to final output path
+        final_output_path = self.output_dir
+        if not self.output_dir:
+            final_output_path = f"{env_vars['SKFlatOutputDir']}/{env_vars['SKFlatV']}/{self.analyzer}/{self.era}/"
+            for flag in self.userflags:
+                final_output_path += f"{flag}__"
+            if self.isDATA:
+                final_output_path += "/DATA"
+            if self.skim:
+                final_output_path = f"/gv0/DATA/SKFlat/{env_vars['SKFlatV']}/{self.era}"
+        os.makedirs(final_output_path, exist_ok=True)
+        shutil.move(f"{output_name}.root", final_output_path)
+        os.chdir(cwd)
+        return True
     
-    def checkJobStatus(self):
-        return self.isDone, self.isPostJobDone
+    def sendErrorEmail(self):
+        email = f"""#### Job Info ####
+        HOST = {self.hostname}
+        JobID = {self.job_id}
+        Analyzer = {self.analyzer}
+        Era = {self.era}
+        Skim = {self.skim}
+        # of jobs = {self.njobs}
+        input sample =  {self.sampleName}
+        Xsec = {self.xsec}
+        """
