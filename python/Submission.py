@@ -1,6 +1,9 @@
 import os
 import shutil
 import logging
+import datetime
+from CheckJobStatus import CheckJobStatus, GetEventDone, GetLogLastLine, GetJobID
+from TimeTools import GetDatetimeFromMyFormat
 
 class SampleListHandler:
     inputDataSampleList = ["DoubleMuon", "DoubleEG", "SingleMuon", "SingleElectron",
@@ -50,31 +53,33 @@ class SampleListHandler:
             
 
 class SampleProcessor:
-    def __init__(self, sampleName, **kwargs):
-        self.job_id = kwargs.get("job_id")
-        self.hostname = kwargs.get("hostname")
-        self.analyzer = kwargs.get("analyzer")
-        self.era = kwargs.get("era")
-        self.njobs = kwargs.get("njobs")
-        self.userflags = kwargs.get("userflags")
-        self.masterJobDir = kwargs.get("masterJobDir")
-        self.nmax = kwargs.get("nmax")
-        self.memory = kwargs.get("memory")
-        self.SKFlat_WD = kwargs.get("SKFlat_WD")
-        self.SKFlatV = kwargs.get("SKFlatV")
-        self.SAMPLE_DATA_DIR = kwargs.get("SAMPLE_DATA_DIR")
-        self.skimString = kwargs.get("skimString")
-        self.lhapdfpath = kwargs.get("lhapdfpath")
-        self.timestamp = kwargs.get("timestamp")
-        self.reduction = kwargs.get("reduction")
-        self.outputdir = kwargs.get("output_dir")
-        self.isDATA = ":" in sampleName
+    def __init__(self, sample, args, ENVs):
+        self.job_id = ENVs["JobID"]
+        self.hostname = ENVs["HOSTNAME"]
+        self.masterJobDir = ENVs["MasterJobDir"]
+        self.SKFlat_WD = ENVs["SKFlat_WD"]
+        self.SKFlatV = ENVs["SKFlatV"]
+        self.SAMPLE_DATA_DIR = ENVs["SAMPLE_DATA_DIR"]
+        self.jobstarttime = ENVs["jobstarttime"]
+        self.analyzer = args.analyzer
+        self.era = args.era
+        self.njobs = args.njobs
+        self.nmax = args.nmax
+        self.memory = args.memory
+        self.userflags = args.userflags
+        self.skim = args.skim
+        self.reduction = args.reduction
+        self.outputdir = args.output_dir
+        self.timestamp = ENVs["timestamp"]
+        self.isDATA = ":" in sample
+        self.lhapdfpath = f"{ENVs['SKFlat_WD']}/external/lhapdf/lib/libLHAPDF.so"
+        
         if self.isDATA:
-            self.sampleName, self.dataPeriod = sampleName.split(":")
+            self.sampleName, self.dataPeriod = sample.split(":")
             self.baseRunDir += f"_period{self.dataPeriod}"
         else:
-            self.sampleName = sampleName
-        self.baseRunDir = f"{self.masterJobDir}/{self.sampleName}"
+            self.sampleName = sample
+        self.baseRunDir = f"{self.masterJobDir}/{self.sampleName}" 
         
         self.totalFiles = []            
         self.fileRanges = []
@@ -92,8 +97,8 @@ class SampleProcessor:
         ## get sample path
         prefix = ""
         suffix = ""
-        if self.skimString:
-            prefix = f"{self.skimString}_"
+        if self.skim:
+            prefix = f"{self.skim}_"
         if self.isDATA:
             suffix =- f"_{self.dataPeriod}"
         samplePath = f"{self.SAMPLE_DATA_DIR}/ForSNU/{prefix}{self.sampleName}{suffix}.txt" 
@@ -119,6 +124,7 @@ class SampleProcessor:
         for ijob in range(self.njobs - remainder):
             self.fileRanges.append(range(tmpEndLargerJob+(ijob*nfileperjob), tmpEndLargerJob+((ijob+1)*(nfileperjob))))
             nfileCheckSum += len(range(tmpEndLargerJob+(ijob*nfileperjob), tmpEndLargerJob+((ijob+1)*(nfileperjob))))
+        logging.debug(f"prepare run directory for {self.sampleName}")
         logging.debug(f"samplePath: {samplePath}")
         logging.debug(f"nTotalFiles: {nTotalFiles}")
         logging.debug(f"njobs: {self.njobs}")
@@ -297,59 +303,129 @@ class SampleProcessor:
         os.system(f"condor_submit {condorOptions} condor.sub")
         os.chdir(cwd)
 
-    def postprocess(self, env_vars):
-        ## do nothing for skim
-        if self.skim:
-            return True
-
-        ## hadd files
-        prefix = f"{self.skim}_" if self.skim else ""
-        suffix = f"_{self.dataPeriod}" if self.isDATA else ""
-        output_name = f"{self.analyzer}_{prefix}{self.sampleName}{suffix}"
-        
-        cwd = os.getcwd()
-        os.chdir(self.baseRunDir)
-
-        ## if number of job is 1, hadd is not needed
-        if len(self.fileRanges) == 1:
-            with open("JobStats.log", "a") as f:
-                f.write("nFiles = 1, so skipping hadd and just move the file")
-            shutil.move(f"{output_name}_0.root", f"{output_name}.root")
-        else:
-            while True:
-                nhadd = int(os.popen("pgrep -x hadd -u $USER |wc -l").read().strip())
-                if nhadd < 4:
-                    break
-                with open("JobStatus.log", "a") as f:
-                    f.write(f"Too many had currently (nhadd={nhadd}). Sleep 60s")
-                time.sleep(60)
-            logging.info(f"hadd target {output_name}.root")
-            os.system(f'singularity exec /data9/Users/choij/Singularity/images/root-6.30.02 hadd -f {output_name}.root output/*.root >> JobStatus.log')
-            os.system('rm output/*.root')
-
-        ## move to final output path
-        final_output_path = self.output_dir
-        if not self.output_dir:
-            final_output_path = f"{env_vars['SKFlatOutputDir']}/{env_vars['SKFlatV']}/{self.analyzer}/{self.era}/"
-            for flag in self.userflags:
-                final_output_path += f"{flag}__"
-            if self.isDATA:
-                final_output_path += "/DATA"
-            if self.skim:
-                final_output_path = f"/gv0/DATA/SKFlat/{env_vars['SKFlatV']}/{self.era}"
-        os.makedirs(final_output_path, exist_ok=True)
-        shutil.move(f"{output_name}.root", final_output_path)
-        os.chdir(cwd)
-        return True
+class CondorJobHandler:
+    def __init__(self, processor):
+        self.processor = processor
+        self.to_status_log = []
+        self.running = []
+        self.finished = []
+        self.evt_done = 0
+        self.evt_total = 0
+        self.total_evt_runtime = 0
+        self.max_evt_runtime = 0
+        self.max_time_left = 0
+        self.gotError = False
     
-    def sendErrorEmail(self):
-        email = f"""#### Job Info ####
-        HOST = {self.hostname}
-        JobID = {self.job_id}
-        Analyzer = {self.analyzer}
-        Era = {self.era}
-        Skim = {self.skim}
-        # of jobs = {self.njobs}
-        input sample =  {self.sampleName}
-        Xsec = {self.xsec}
-        """
+    def reset(self):
+        self.to_status_log = []
+        self.running = []
+        self.finished = []
+        self.evt_done = 0
+        self.evt_total = 0
+        self.total_evt_runtime = 0
+        self.max_evt_runtime = 0
+        self.max_time_left = 0
+        self.gotError = False
+    
+    def monitorJobStatus(self):
+        # self.isDone = False
+        # is not done in the previous monitoring
+        # monitor again
+        status_log = open(f"{self.processor.baseRunDir}/JobStatus.log", "w")
+        status_log.write(f"Job submitted at {self.processor.jobstarttime}\n")
+        status_log.write(f"Job ID\t| Status\n")
+        self.reset()
+        
+        ## loop over all jobs
+        for iproc, _ in enumerate(self.processor.fileRanges):
+            status = CheckJobStatus(self.processor.baseRunDir, 
+                                    self.processor.analyzer, 
+                                    iproc, 
+                                    self.processor.hostname)
+            if "RUNNING" in status:
+                self.running.append(iproc)
+                out_log = self.RUNNING(iproc, status)
+            elif "FINISHED" in status:
+                self.finished.append(iproc)
+                out_log = self.FINISHED(status)
+            elif "ERROR" in status:
+                status_log.write("#### ERROR OCCURED ####\n")
+                status_log.write(f"{status}\n")
+                out_log = self.ERROR()
+            else:
+                out_log = f"{iproc}\t| {status}"
+            self.to_status_log.append(out_log)
+        
+        for line in self.to_status_log:
+            status_log.write(f"{line}\n")
+        
+        status_log.write("\n=====================================\n")
+        status_log.write(f"HOSTNAME = {self.processor.hostname}\n")
+        status_log.write(f"{len(self.processor.fileRanges)} job submitted\n")
+        status_log.write(f"{len(self.running)} jobs are running\n")
+        status_log.write(f"{len(self.finished)} jobs are finished\n")
+        status_log.write(f"XSEC = {self.processor.xsec}\n")
+        status_log.write(f"eventDone = {self.evt_done}\n")
+        status_log.write(f"eventTotal = {self.evt_total}\n")
+        status_log.write(f"eventLeft = {self.evt_total-self.evt_done}\n")
+        status_log.write(f"totalEventRunTime = {self.total_evt_runtime}\n")
+        status_log.write(f"maxTimeLeft = {self.max_time_left}\n")
+        status_log.write(f"maxEventRunTime = {self.max_evt_runtime}\n")
+        
+        time_per_evt = 1
+        if self.evt_done:    # exist finished events
+            time_per_evt = float(self.total_evt_runtime)/self.evt_done
+        status_log.write(f"Estimated time per event = {time_per_evt}\n")
+        finish_time = datetime.datetime.now() + datetime.timedelta(seconds=self.max_time_left)
+        status_log.write(f"Estimated finish time = {finish_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        status_log.write(f"Last checked at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        status_log.close()
+        
+    def RUNNING(self, iproc, status):
+        out_log = f"{iproc}\t| {status.split()[1]} %"
+        evt_info = status.split()[2].split(":")
+        proc_evt_done, proc_evt_total = int(evt_info[1]), int(evt_info[2])
+        self.evt_done += proc_evt_done
+        self.evt_total += proc_evt_total
+        
+        line_evt_runtime = f"{status.split()[3]} {status.split()[4]}"
+        proc_starttime = GetDatetimeFromMyFormat(line_evt_runtime) 
+        diff = datetime.datetime.now() - proc_starttime
+        proc_evt_runtime = diff.total_seconds()
+        
+        if proc_evt_done == 0: 
+            proc_evt_done = 1
+        proc_time_per_evt = float(proc_evt_runtime)/proc_evt_done
+        proc_time_left = (proc_evt_total - proc_evt_done)*proc_time_per_evt
+        
+        self.total_evt_runtime += proc_evt_runtime
+        self.max_time_left = max(self.max_time_left, proc_time_left)
+        self.max_evt_runtime = max(self.max_evt_runtime, proc_evt_runtime)
+        
+        out_log += f"({proc_time_left:.1}s ran, and {proc_evt_runtime}s left)"
+        return out_log
+    
+    def FINISHED(self, status):
+        evt_info = status.split()[1].split(":")
+        proc_evt_done, proc_evt_total = int(evt_info[2]), int(evt_info[2])
+        self.evt_done += proc_evt_done
+        self.evt_total += proc_evt_total
+        
+        line_evt_runtime = f"{status.split()[2]} {status.split()[3]}"
+        proc_starttime = GetDatetimeFromMyFormat(line_evt_runtime)
+        line_evt_endtime = f"{status.split()[4]} {status.split()[5]}"
+        proc_endtime = GetDatetimeFromMyFormat(line_evt_endtime)
+        diff = proc_endtime - proc_starttime
+        proc_evt_runtime = diff.total_seconds()
+        
+        proc_time_per_evt = float(proc_evt_runtime)/proc_evt_done
+        proc_time_left = (proc_evt_total - proc_evt_done)*proc_time_per_evt
+        
+        self.total_evt_runtime += proc_evt_runtime
+        self.max_time_left = max(self.max_time_left, proc_time_left)
+        self.isDone = True
+        return ""
+    
+    def ERROR(self):
+        self.gotError = True
+        return ""
