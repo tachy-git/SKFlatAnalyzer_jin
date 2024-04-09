@@ -162,7 +162,7 @@ def submission():
         raise e
 
     ## processor holder
-    processorFor = {}
+    processor_holder = {}
     ## loop over samples
     isDATA = False
     for input_sample in input_sample_list:
@@ -191,11 +191,11 @@ def submission():
             logging.info(f"RunDir = {processor.baseRunDir}")
             exit()
         else:
-            processor.submitJobs(args.batchName)
+            processor.submitJobs(args.batchname)
 
         if processor.isDATA:
             isDATA = True
-        processorFor[input_sample] = processor
+        processor_holder[input_sample] = processor
         
     final_output_path = args.output_dir
     if not args.output_dir:
@@ -221,11 +221,11 @@ def submission():
     print(f"output will be send to {final_output_path}")
     print(f"#################################################")
 
-    return processorFor
+    return processor_holder
 
 if __name__ == "__main__":
-    processorFor = submission()
-    print(processorFor)
+    # Job progress: submission -> monitoring -> postprocessing
+    processor_holder = submission()
     
 ## check job log destination
 #sedLogToEmail = False if SKFlatLogEmail  == "" else True
