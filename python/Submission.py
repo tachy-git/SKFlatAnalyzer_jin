@@ -365,7 +365,7 @@ class CondorJobHandler:
         status_log.write(f"{len(self.processor.fileRanges)} job submitted\n")
         status_log.write(f"{len(self.running)} jobs are running\n")
         status_log.write(f"{len(self.finished)} jobs are finished\n")
-        status_log.write(f"XSEC = {self.processor.xsec}\n")
+        status_log.write(f"XSEC = {self.processor.xsec}S\n")
         status_log.write(f"eventDone = {self.evt_done}\n")
         status_log.write(f"eventTotal = {self.evt_total}\n")
         status_log.write(f"eventLeft = {self.evt_total-self.evt_done}\n")
