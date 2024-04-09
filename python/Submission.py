@@ -51,21 +51,21 @@ class SampleListHandler:
 
 class SampleProcessor:
     def __init__(self, sampleName, **kwargs):
-        self.analyzer = kwargs.get("Analyzer")
-        self.era = kwargs.get("Era")
+        self.analyzer = kwargs.get("analyzer")
+        self.era = kwargs.get("era")
         self.njobs = kwargs.get("njobs")
-        self.userflags = kwargs.get("Userflags")
+        self.userflags = kwargs.get("userflags")
         self.masterJobDir = kwargs.get("masterJobDir")
         self.nmax = kwargs.get("nmax")
-        self.memory = kwargs.get("Memory")
+        self.memory = kwargs.get("memory")
         self.SKFlat_WD = kwargs.get("SKFlat_WD")
         self.SKFlatV = kwargs.get("SKFlatV")
         self.SAMPLE_DATA_DIR = kwargs.get("SAMPLE_DATA_DIR")
         self.skimString = kwargs.get("skimString")
         self.lhapdfpath = kwargs.get("lhapdfpath")
         self.timestamp = kwargs.get("timestamp")
-        self.reduction = kwargs.get("Reduction")
-        self.outputdir = kwargs.get("OutputDir")
+        self.reduction = kwargs.get("reduction")
+        self.outputdir = kwargs.get("output_dir")
         self.isDATA = ":" in sampleName
         if self.isDATA:
             self.sampleName, self.dataPeriod = sampleName.split(":")
@@ -88,9 +88,13 @@ class SampleProcessor:
     def prepareRunDirectory(self):
         os.makedirs(f"{self.baseRunDir}/output")
         ## get sample path
-        samplePath = f"{self.SAMPLE_DATA_DIR}/ForSNU/{self.skimString}{self.sampleName}.txt"
+        prefix = ""
+        suffix = ""
+        if self.skimString:
+            prefix = f"{self.skimString}_"
         if self.isDATA:
-            samplePath = f"{self.SAMPLE_DATA_DIR}/ForSNU/{self.skimString}{self.inputSample}_{self.dataPeriod}.txt"
+            suffix =- f"_{self.dataPeriod}"
+        samplePath = f"{self.SAMPLE_DATA_DIR}/ForSNU/{prefix}{self.sampleName}{suffix}.txt" 
         shutil.copy(samplePath, f"{self.baseRunDir}/input_filelist.txt")
         
         ## calculate how many files to be splitted into each jobs
@@ -291,7 +295,5 @@ class SampleProcessor:
         os.system(f"condor_submit {condorOptions} condor.sub")
         os.chdir(cwd)
     
-    def process(self):
-        self.prepareRunDirectory()
-        self.generateSubmissionScripts()
-        self.submitJobs()  
+    def checkJobStatus(self):
+        return self.isDone, self.isPostJobDone
