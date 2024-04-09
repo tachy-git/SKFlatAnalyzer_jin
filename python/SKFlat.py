@@ -3,11 +3,14 @@ import os
 import logging 
 import shutil
 import argparse
-import datetime 
+import time, datetime 
 import random
 import importlib.util
 
 from Submission import SampleListHandler, SampleProcessor
+from CheckJobStatus import *
+from GetXSECTable import *
+from TimeTools import *
 
 def get_timestamp():
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
@@ -15,7 +18,7 @@ def get_timestamp():
     return timestamp, thistime
 
 ## Parse arguments
-## fastsim and tagoutput are depreciated in this version
+## fastsim, tagoutput, queue are depreciated in this version
 def parse_arguments():
     parser = argparse.ArgumentParser(description='SKFlat Command')
     parser.add_argument("--analyzer", "-a", required=True, type=str, help="name of analyzer")
@@ -133,7 +136,7 @@ def generate_master_job_dir(args, env_vars, timestamp):
     master_job_dir += f"__{env_vars['HOSTNAME']}"
     return master_job_dir, random_number
 
-def submission():
+def submission(timestamp):
     args = parse_arguments()
     set_logging_level(args)
     process_era(args)
@@ -144,7 +147,6 @@ def submission():
     
     hostname, sample_hostname = determine_hostname(env_vars)    
     process_jobs_for_skimming(args, hostname)
-    timestamp, job_start_time = get_timestamp()
     
     input_sample_list, string_for_hash = generate_sample_list_and_hash(args)
     master_job_dir, job_id = generate_master_job_dir(args, env_vars, timestamp)
@@ -162,11 +164,13 @@ def submission():
         raise e
 
     ## processor holder
-    processorFor = {}
+    processor_holder = {}
     ## loop over samples
     isDATA = False
     for input_sample in input_sample_list:
         args_dict = {
+            "job_id": job_id,
+            "hostname": env_vars["HOSTNAME"],
             "analyzer": args.analyzer,
             "era": args.era,
             "njobs": args.njobs,
@@ -195,7 +199,7 @@ def submission():
 
         if processor.isDATA:
             isDATA = True
-        processorFor[input_sample] = processor
+        processor_holder[input_sample] = processor
         
     final_output_path = args.output_dir
     if not args.output_dir:
@@ -217,15 +221,189 @@ def submission():
     print(f"njobs = {args.njobs}")
     print(f"Era = {args.era}")
     print(f"UserFlags = {args.userflags}")
-    print(f"RunDir = {processorFor[input_sample_list[0]].baseRunDir}")
+    print(f"RunDir = {processor_holder[input_sample_list[0]].baseRunDir}")
     print(f"output will be send to {final_output_path}")
     print(f"#################################################")
 
-    return processorFor
+    return args, env_vars, processor_holder
+
+def monitor(args, env_vars, processor_holder, job_start_time):
+    all_sample_done = False
+    
+    while not all_sample_done:
+        all_sample_done = True
+        # loop over all samples
+        for processor in processor_holder.values():
+            if processor.isDone: continue
+            
+            all_sample_done = False
+            # This sample was not done in the previous monitoring
+            # monitor again this time
+            isDone = True
+                
+            # write job status until it's done
+            status_log = open(f"{processor.baseRunDir}/JobStatus.log", "w")
+            status_log.write(f"Job submitted at {job_start_time}\n")
+            status_log.write(f"JobNumber\t| Status\n")
+                
+            to_status_log = []
+            running = []
+            finished = []
+            evt_done = 0
+            evt_total = 0
+                
+            total_evt_runtime = 0
+            max_time_left = 0
+            max_evt_runtime = 0
+                
+            file_ranges = processor.fileRanges
+            for ijob, _ in enumerate(file_ranges):
+                status = CheckJobStatus(processor.baseRunDir, args.analyzer, ijob, env_vars['HOSTNAME'])
+
+                if "ERROR" in status:
+                    status_log.write("#### ERROR OCCURED ####\n")
+                    status_log.write(f"{status}\n")
+                    logging.error(f"Error in job {ijob} of {processor.sampleName}")
+                    logging.error(status)
+                    if env_vars["SKFlatLogEmail"]:
+                        processor.sendErrorEmail(status)
+                    exit(1)
+                    
+                if "FINISHED" in status:
+                    finished.append("Finished")
+                    evt_info = status.splie()[1].split(":")
+                    this_evt_done = int(evt_info[2])
+                    this_evt_total = int(evt_info[2])
+                        
+                    evt_done += this_evt_done
+                    evt_total += this_evt_total
+                        
+                    line_evt_runtime = f"{status.split()[2]} {status.split()[3]}"
+                    this_job_starttime = GetDatetimeFromMyFormat(line_evt_runtime)
+                    line_evt_endtime = f"{status.split()[4]} {status.split()[5]}"
+                    this_job_endtime = GetDatetimeFromMyFormat(line_evt_endtime)
+                        
+                    diff = this_job_endtime - this_job_starttime
+                    this_evt_runtime = 86400*diff.days + diff.seconds
+                        
+                    this_time_per_evt = float(this_evt_runtime)/ float(this_evt_done)
+                    this_time_left = (this_evt_total-this_evt_done)*this_time_per_evt
+                        
+                    total_evt_runtime += this_evt_runtime
+                    max_time_left = max(max_time_left, this_time_left)
+                    postprocess(args, processor)
+                elif "RUNNING" in status:
+                    running.append("Running")
+                    isDone = False
+                    out_log = f"{ijob}\t| {status.split()[1]} %"
+                    evt_info = status.split()[2].split(":")
+                        
+                    this_evt_done, this_evt_total = int(evt_info[1]), int(evt_info[2])
+                    evt_done += this_evt_done
+                    evt_total += this_evt_total
+                        
+                    line_evt_runtime = f"{status.split()[3]} {status.split()[4]}"
+                    this_job_starttime = GetDatetimeFromMyFormat(line_evt_runtime)
+                    diff = datetime.datetime.now() - this_job_starttime
+                    this_evt_runtime = 86400*diff.days + diff.seconds
+                        
+                    if this_evt_done == 0: this_evt_done = 1
+                    this_time_per_evt = float(this_evt_runtime) / float(this_evt_done)
+                    this_time_left = (this_evt_total-this_evt_done)*this_time_per_evt
+                        
+                    total_evt_runtime += this_evt_runtime
+                    max_time_left = max(max_time_left, this_time_left)
+                    max_evt_runtime = max(max_evt_runtime, this_evt_runtime)
+                        
+                    out_log += f"({this_time_left:.1f} s ran, and {this_evt_runtime:.1f} s left)"
+                    to_status_log.append(out_log)
+                    running.append("Running")
+                else:
+                    isDone = False
+                    out_log = f"{ijob}\t| {status}"
+                    to_status_log.append(out_log)
+                ## End of ijob loop
+                
+            for line in to_status_log:
+                status_log.write(f"{line}\n")
+            status_log.write("\n=====================================\n")
+            status_log.write(f"HOSTNAME = {env_vars['HOSTNAME']}\n")
+            status_log.write(f"{len(processor.fileRanges)} job submitted\n")
+            status_log.write(f"{len(running)} jobs are running\n")
+            status_log.write(f"{len(finished)} jobs are finished\n")
+            status_log.write(f"XSEC = {processor.xsec}\n")
+            status_log.write(f"event total = {evt_total}\n")
+            status_log.write(f"event done = {evt_done}\n")
+            status_log.write(f"event left = {evt_total-evt_done}\n")
+            status_log.write(f"total event runtime = {total_evt_runtime}\n")
+            status_log.write(f"max time left = {max_time_left}\n")
+            status_log.write(f"max event runtime = {max_evt_runtime}\n")
+                
+            time_per_evt = 1
+            if evt_done:
+                time_per_evt = float(total_evt_runtime) / float(evt_done)
+            estimated_time = datetime.datetime.now() + datetime.timedelta(0, max_time_left)
+            status_log.write(f"time per event = {time_per_evt}\n")
+            status_log.write(f"Estimated finishing time: {estimated_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            status_log.write(f"Last checked at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            status_log.close()
+                
+            # change the status of the sample if finished
+            if isDone:
+                processor.isDone = True
+    
+        if all_sample_done:
+            break
+        
+        
+        
+def postprocess(args, processor):
+    ## hadd files
+    prefix = f"{processor.skim}_" if processor.skim else ""
+    output_name = f"{args.analyzer}_{prefix}{processor.sampleName}"
+    if processor.isDATA:
+        output_name += f"_{processor.dataPeriod}"
+        
+    cwd = os.getcwd()
+    os.chdir(processor.baseRunDir)
+            
+    ## if number of job is 1, hadd is not needed
+    if len(processor.fileRanges) == 1:
+        os.system('echo "nFiles = 1, so skipping hadd and just move the file" >> JobStatus.log')
+        os.system('ls -1 output/*.root >> JobStatus.log')
+        os.system(f"mv {output_name}_0.root {output_name}.root")
+    else:
+        while True:
+            nhadd = int(os.popen("pgrep -x hadd -u $USER |wc -l").read().strip())
+            if nhadd < 4:
+                break
+            os.system(f'echo "Too many hadd currently (nhadd={nhadd}). Sleep 60s" >> JobStatus.log')
+            time.sleep(60)
+        print(f"hadd target {output_name}.root")
+        os.system(f'singularity exec /data9/Users/choij/Singularity/images/root-6.30.02 hadd -f {output_name}.root output/*.root >> JobStatus.log')
+        os.system('rm output/*.root')
+            
+        ## final output path
+        final_output_path = args.output_dir
+        if not args.output_dir:
+            final_output_path = f"{env_vars['SKFlatOutputDir']}/{env_vars['SKFlatV']}/{args.analyzer}/{args.era}/"
+            for flag in args.userflags:
+                final_output_path += f"{flag}__"
+            if processor.isDATA:
+                final_output_path += "/DATA"
+            if processor.skim:
+                final_output_path = f"/gv0/DATA/SKFlat/{env_vars['SKFlatV']}/{args.era}"
+        os.makedirs(final_output_path, exist_ok=True)
+        shutil.move(f"{output_name}.root", final_output_path)
+        os.chdir(cwd)
+        processor.isPostJobDone = True
 
 if __name__ == "__main__":
-    processorFor = submission()
-    print(processorFor)
+    timestamp, job_start_time = get_timestamp()
+    args, env_vars, processor_holder = submission(timestamp)
+    monitor(args, env_vars, processor_holder, job_start_time)
+    postprocess(args, env_vars, processor_holder)
+    
     
 ## check job log destination
 #sedLogToEmail = False if SKFlatLogEmail  == "" else True

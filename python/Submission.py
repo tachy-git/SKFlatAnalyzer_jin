@@ -51,6 +51,8 @@ class SampleListHandler:
 
 class SampleProcessor:
     def __init__(self, sampleName, **kwargs):
+        self.job_id = kwargs.get("job_id")
+        self.hostname = kwargs.get("hostname")
         self.analyzer = kwargs.get("analyzer")
         self.era = kwargs.get("era")
         self.njobs = kwargs.get("njobs")
@@ -295,5 +297,14 @@ class SampleProcessor:
         os.system(f"condor_submit {condorOptions} condor.sub")
         os.chdir(cwd)
     
-    def checkJobStatus(self):
-        return self.isDone, self.isPostJobDone
+    def sendErrorEmail(self):
+        email = f"""#### Job Info ####
+        HOST = {self.hostname}
+        JobID = {self.job_id}
+        Analyzer = {self.analyzer}
+        Era = {self.era}
+        Skim = {self.skim}
+        # of jobs = {self.njobs}
+        input sample =  {self.sampleName}
+        Xsec = {self.xsec}
+        """
