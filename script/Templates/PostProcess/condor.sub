@@ -1,0 +1,10 @@
+universe            = vanilla
+executable          = hadd.sh
+jobbatchname        = hadd.[SAMPLENAME]
++singularityimage   = "/data9/Users/choij/Singularity/images/root-6.30.02"
+requirements        = HasSingularity
+log                 = hadd.log
+output              = hadd.out
+error               = hadd.err
+request_memory      = 4000 M
+queue 1

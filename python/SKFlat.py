@@ -3,12 +3,12 @@ import os
 import argparse
 import logging
 import shutil
-import time, datetime
+import datetime
 import random
 import importlib.util
 
 from Submission import SampleListHandler, SampleProcessor
-from Submission import CondorJobHandler
+from Monitoring import CondorJobHandler
 
 ENVs = {}
 
@@ -123,7 +123,7 @@ def updateMasterJobDir(args):
 def mkdirFinalOutputPath(args, includeDataSample):
     final_output_path = args.output_dir
     if not args.output_dir:
-        final_output_path = f"{ENVs['SKFlatOutputDir']}/{ENVs['SKFlatV']}/{args.analyzer}/{args.era}/"
+        final_output_path = f"{ENVs['SKFlatOutputDir']}/{ENVs['SKFlatV']}/{args.analyzer}/{args.era}"
     for flag in args.userflags:
         final_output_path += f"{flag}__"
     if includeDataSample:
@@ -163,7 +163,7 @@ if __name__ == "__main__":
         raise e
     ## and final output directory
     final_output_path = mkdirFinalOutputPath(args, False) 
-   
+
     ## now submission 
     input_sample_list = generateSampleList(args)
     processor_holder = {}
@@ -206,9 +206,45 @@ if __name__ == "__main__":
     while not isAllSampleDone:
         isAllSampleDone = True
         for sample, processor in processor_holder.items():
-            handler = CondorJobHandler(processor)
-            if not processor.isDone:
-                isAllSampleDone = False
-                handler.monitorJobStatus()
-            else:
-                logging.info(f"Sample {sample} is done")            
+            if processor.isDone:
+                continue
+            
+            isAllSampleDone = False 
+            handler = CondorJobHandler(processor, ENVs["SKFlatLogEmail"])
+            handler.monitorJobStatus()  # Update status flags and JobStatus.log 
+            handler.postProcess(final_output_path)   
+
+            if processor.isError:
+                logging.error(f"Error in {processor.sampleName}")
+                exit(1)
+        
+        if isAllSampleDone:
+            logging.info("All jobs are done")
+            break
+    
+    ## No need to check postprocess if skimming
+    if args.skim:
+        exit()
+    
+    ## Now monitor the postprocesses, waiting for all samples to be hadd and send to final output path
+    isAllPostJobDone = False
+    while not isAllPostJobDone:
+        isAllPostJobDone = True
+        for sample, processor in processor_holder.items():
+            if processor.isPostJobDone:
+                continue
+            if processor.isError:
+                continue
+            
+            isAllPostJobDone = False
+            handler = CondorJobHandler(processor, ENVs["SKFlatLogEmail"])
+            handler.monitorPostProcess()
+            
+            if processor.isError:
+                logging.error(f"Error in {processor.sampleName}")
+                exit(1)
+        
+        if isAllPostJobDone:
+            logging.info("All post processes are done")
+            exit()
+                

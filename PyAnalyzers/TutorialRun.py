@@ -1,7 +1,5 @@
 from ROOT import gSystem
-from ROOT import TLorentzVector
 from ROOT import TutorialBase
-gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
 
 class TutorialRun(TutorialBase):
     def __init__(self):
