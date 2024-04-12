@@ -72,7 +72,9 @@ class SampleProcessor:
         self.python = args.python
         self.isDATA = ":" in sample
         self.lhapdfpath = f"{ENVs['SKFlat_WD']}/external/lhapdf/lib/libLHAPDF.so"
-        
+        self.sampleName = ""
+        self.dataPeriod = ""
+
         if self.isDATA:
             self.sampleName, self.dataPeriod = sample.split(":")
             self.baseRunDir = f"{self.masterJobDir}/{self.sampleName}_period{self.dataPeriod}"

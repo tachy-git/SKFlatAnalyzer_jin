@@ -124,8 +124,10 @@ def mkdirFinalOutputPath(args, includeDataSample):
     final_output_path = args.output_dir
     if not args.output_dir:
         final_output_path = f"{ENVs['SKFlatOutputDir']}/{ENVs['SKFlatV']}/{args.analyzer}/{args.era}"
+    flags = ""
     for flag in args.userflags:
-        final_output_path = os.path.join(final_output_path, f"{flag}__")
+        flags += f"{flag}__"
+    final_output_path = os.path.join(final_output_path, flags)
     if includeDataSample:
         final_output_path = os.path.join(final_output_path, "DATA")
     if args.skim:

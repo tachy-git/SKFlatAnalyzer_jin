@@ -166,7 +166,11 @@ xsec = {self.processor.xsec}"""
     def monitorPostProcess(self):
         # check if hadd.log exists
         if os.path.exists(f"{self.processor.baseRunDir}/hadd.log"):
-            logging.info(f"Postprocessing finished for {self.processor.sampleName}")
+            if self.processor.dataPeriod:
+                logname = f"{self.processor.sampleName}_{self.processor.dataPeriod}"
+            else:
+                logname = self.processor.sampleName
+            logging.info(f"Postprocessing finished for {logname}")
             time.sleep(1)
             while True:
                 try:
