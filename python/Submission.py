@@ -75,10 +75,10 @@ class SampleProcessor:
         
         if self.isDATA:
             self.sampleName, self.dataPeriod = sample.split(":")
-            self.baseRunDir += f"_period{self.dataPeriod}"
+            self.baseRunDir = f"{self.masterJobDir}/{self.sampleName}_period{self.dataPeriod}"
         else:
             self.sampleName = sample
-        self.baseRunDir = f"{self.masterJobDir}/{self.sampleName}" 
+            self.baseRunDir = f"{self.masterJobDir}/{self.sampleName}" 
         
         self.totalFiles = []            
         self.fileRanges = []
@@ -100,7 +100,7 @@ class SampleProcessor:
         if self.skim:
             prefix = f"{self.skim}_"
         if self.isDATA:
-            suffix =- f"_{self.dataPeriod}"
+            suffix = f"_{self.dataPeriod}"
         samplePath = f"{self.SAMPLE_DATA_DIR}/ForSNU/{prefix}{self.sampleName}{suffix}.txt" 
         shutil.copy(samplePath, f"{self.baseRunDir}/input_filelist.txt")
         

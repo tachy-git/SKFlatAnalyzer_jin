@@ -125,9 +125,9 @@ def mkdirFinalOutputPath(args, includeDataSample):
     if not args.output_dir:
         final_output_path = f"{ENVs['SKFlatOutputDir']}/{ENVs['SKFlatV']}/{args.analyzer}/{args.era}"
     for flag in args.userflags:
-        final_output_path += f"{flag}__"
+        final_output_path = os.path.join(final_output_path, f"{flag}__")
     if includeDataSample:
-        final_output_path += "/DATA"
+        final_output_path = os.path.join(final_output_path, "DATA")
     if args.skim:
         final_output_path = f"/gv0/DATA/SKFlat/{ENVs['SKFlatV']}/{args.era}"
     os.makedirs(final_output_path, exist_ok=True)
@@ -161,13 +161,12 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error(f"Error in making master job directory: {e}")
         raise e
-    ## and final output directory
-    final_output_path = mkdirFinalOutputPath(args, False) 
 
     ## now submission 
     input_sample_list = generateSampleList(args)
     processor_holder = {}
     includeDataSample = False
+    includeMCSample = True
     for sample in input_sample_list:
         processor = SampleProcessor(sample, args, ENVs)
         processor.prepareRunDirectory()
@@ -181,8 +180,10 @@ if __name__ == "__main__":
         
         if processor.isDATA:
             includeDataSample = True
+            includeMCSample = False
         processor_holder[sample] = processor
     
+    final_output_path = mkdirFinalOutputPath(args, not includeMCSample)
     print(f"#################################################")
     print(f"Submission Finished")
     print(f"JobID = {job_id}")
@@ -209,7 +210,8 @@ if __name__ == "__main__":
             if processor.isDone:
                 continue
             
-            isAllSampleDone = False 
+            isAllSampleDone = False
+            final_output_path = mkdirFinalOutputPath(args, processor.isDATA)
             handler = CondorJobHandler(processor, ENVs["SKFlatLogEmail"])
             handler.monitorJobStatus()  # Update status flags and JobStatus.log 
             handler.postProcess(final_output_path)   

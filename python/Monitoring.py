@@ -19,6 +19,7 @@ class CondorJobHandler:
         self.max_evt_runtime = 0
         self.max_time_left = 0
         self.err_log = []
+        self.jobbatchname = ""
     
     def reset(self):
         self.to_status_log = []
@@ -29,7 +30,8 @@ class CondorJobHandler:
         self.total_evt_runtime = 0
         self.max_evt_runtime = 0
         self.max_time_left = 0
-        self.gotError = False
+        self.err_log = []
+        self.jobbatchname = ""
     
     def monitorJobStatus(self):
         # self.isDone = False
@@ -99,7 +101,7 @@ class CondorJobHandler:
                 cwd = os.getcwd()
                 os.chdir(self.processor.baseRunDir)
                 os.system(f"condor_submit postprocess.sub")
-                logging.info(f"Postprocessing submitted for {self.processor.sampleName}")
+                logging.info(f"Postprocessing submitted for {self.jobbatchname}")
                 os.chdir(cwd)
             self.processor.isDone = True
         else:
@@ -142,10 +144,13 @@ xsec = {self.processor.xsec}"""
         with open(f"script/Templates/PostProcess/condor.sub", "r") as f:
             template = f.read()
         with open(f"{self.processor.baseRunDir}/postprocess.sub", "w") as f:
-            template = template.replace("[SAMPLENAME]", self.processor.sampleName)
+            self.jobbatchname = f"{self.processor.era}_{self.processor.analyzer}_{self.processor.sampleName}"
+            if self.processor.isDATA:
+                self.jobbatchname += f"_{self.processor.dataPeriod}"
+            template = template.replace("[SAMPLENAME]", self.jobbatchname)
             f.write(template)
         
-        output_name = f"{self.processor.analyzer}_{self.processor.skim}{self.processor.sampleName}"
+        output_name = f"{self.processor.analyzer}_{self.processor.sampleName}"
         if self.processor.isDATA:
             output_name += f"_{self.processor.dataPeriod}"
         with open(f"script/Templates/PostProcess/hadd.sh", "r") as f:
