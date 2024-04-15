@@ -22,5 +22,6 @@
 #pragma link C++ class TriLeptonBase+;
 #pragma link C++ class DataPreprocess+;
 #pragma link C++ class TutorialBase+;
+#pragma link C++ class ElectronOptimization+;
 
 #endif

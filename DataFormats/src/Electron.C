@@ -427,7 +427,7 @@ bool Electron::Pass_HcToWABaseline() const {
   if (! PassConversionVeto()) return false;
   if (! (NMissingHits() < 2)) return false;
   if (! (fabs(dZ()) < 0.1)) return false;
-  if(! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 4.)) return false;
+  if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 4.)) return false;
   return true;
 }
 
