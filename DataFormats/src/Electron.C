@@ -156,6 +156,7 @@ bool Electron::PassID(TString ID) const{
   if(ID=="passHEEPID2018Prompt") return passHEEP2018Prompt();
   if(ID=="passMVAID_noIso_WP80") return passMVAID_noIso_WP80();
   if(ID=="passMVAID_noIso_WP90") return passMVAID_noIso_WP90();
+  if(ID=="passMVAID_noIso_WPLoose") return passMVAID_noIso_WPLoose();
   if(ID=="passMVAID_iso_WP80") return passMVAID_iso_WP80();
   if(ID=="passMVAID_iso_WP90") return passMVAID_iso_WP90();
   //==== Customized
@@ -175,6 +176,7 @@ bool Electron::PassID(TString ID) const{
   if(ID=="HcToWATight18") return Pass_HcToWATight18();
   if(ID=="HcToWALoose18") return Pass_HcToWALoose18();
   if(ID=="HcToWAVeto18") return Pass_HcToWAVeto18();
+  if(ID=="HcToWAVeto") return Pass_HcToWAVeto();
   if(ID=="HNLoosest") return Pass_HNLoosest(); // OR of VETO IDs
 
   cout << "[Electron::PassID] No id : " << ID << endl;
@@ -428,6 +430,17 @@ bool Electron::Pass_HcToWABaseline() const {
   if (! (NMissingHits() < 2)) return false;
   if (! (fabs(dZ()) < 0.1)) return false;
   if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 4.)) return false;
+  return true;
+}
+
+bool Electron::Pass_HcToWAVeto() const {
+  if (! Pass_CaloIdL_TrackIdL_IsoVL()) return false;
+  if (! PassConversionVeto()) return false;
+  if (! (NMissingHits() < 2)) return false;
+  if (! (fabs(dZ()) < 0.1)) return false;
+  if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 6.)) return false;
+  if (! (MVANoIso() > -0.8)) return false;
+  if (! (MiniRelIso() < 0.6)) return false;
   return true;
 }
 

@@ -1,4 +1,6 @@
 #!/bin/sh
+source /data6/Users/choij/SKFlatAnalyzer/setup.sh
+
 export SKFlat_BUILDDIR=$SKFlat_WD/build
 
 echo @@@@ Prepare to build SKFlatAnalyzer in $SKFlat_BUILDDIR

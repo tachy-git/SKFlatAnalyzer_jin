@@ -114,6 +114,7 @@ public:
   inline bool passTightID()  const {return PassSelector(POG_CB_TIGHT); }
   inline bool passMVAID_noIso_WP80() const {return PassSelector(POG_MVA_NOISO_WP80); }
   inline bool passMVAID_noIso_WP90() const {return PassSelector(POG_MVA_NOISO_WP90); }
+  inline bool passMVAID_noIso_WPLoose() const {return PassSelector(POG_MVA_NOISO_WPLOOSE); }
   inline bool passMVAID_iso_WP80() const {return PassSelector(POG_MVA_ISO_WP80); }
   inline bool passMVAID_iso_WP90() const {return PassSelector(POG_MVA_ISO_WP90); }
   inline bool passHEEPID() const {return PassSelector(POG_HEEP); }
@@ -136,6 +137,7 @@ public:
   bool Pass_CutBasedVeto() const;
   bool Pass_CaloIdL_TrackIdL_IsoVL() const;
   bool Pass_HcToWABaseline() const;
+  bool Pass_HcToWAVeto() const;
   bool Pass_HcToWA(TString era, TString wp) const;
   bool Pass_HcToWATight16a() const;
   bool Pass_HcToWALoose16a() const;

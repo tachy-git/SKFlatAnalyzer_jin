@@ -164,7 +164,7 @@ xsec = {self.processor.xsec}"""
         os.chmod(f"{self.processor.baseRunDir}/hadd.sh", 0o755)
     
     def monitorPostProcess(self):
-        # check if hadd.log exists
+        # check if no file in output directory
         if os.path.exists(f"{self.processor.baseRunDir}/hadd.log"):
             if self.processor.dataPeriod:
                 logname = f"{self.processor.sampleName}_{self.processor.dataPeriod}"
