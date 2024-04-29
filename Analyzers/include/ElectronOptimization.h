@@ -8,7 +8,7 @@ private:
     TTree *Events;
     unsigned int nElectrons;
     float genWeight;
-    float ptCorr[20];
+    float Pt[20];
     float scEta[20];
     float MVANoIso[20];
     float MiniRelIso[20];

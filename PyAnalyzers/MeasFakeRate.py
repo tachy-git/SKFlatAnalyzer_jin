@@ -397,6 +397,7 @@ class MeasFakeRate(DiLeptonBase):
                 else:                        npvweight = self.getNPVReweight(super().nPV, trigSuffix)
                 for idx, mu in enumerate(tightMuons, start=1):
                     super().FillHist(f"{self.channel}_{trigSuffix}/tight/{syst}/muons/{idx}/pt", mu.Pt(), weight*npvweight, 300, 0., 300.)
+    }
                     super().FillHist(f"{self.channel}_{trigSuffix}/tight/{syst}/muons/{idx}/eta", mu.Eta(), weight*npvweight, 48, -2.4, 2.4)
                     super().FillHist(f"{self.channel}_{trigSuffix}/tight/{syst}/muons/{idx}/phi", mu.Phi(), weight*npvweight, 64, -3.2, 3.2)
                     super().FillHist(f"{self.channel}_{trigSuffix}/tight/{syst}/muons/{idx}/mass", mu.M(), weight*npvweight, 10, 0., 1.)

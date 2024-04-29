@@ -10,7 +10,7 @@ void ElectronOptimization::initializeAnalyzer() {
     // Link Tree Contents
     Events = new TTree("Events", "Events");
     Events->Branch("nElectrons", &nElectrons);
-    Events->Branch("ptCorr", ptCorr, "ptCorr[nElectrons]/F");
+    Events->Branch("Pt", Pt, "Pt[nElectrons]/F");
     Events->Branch("scEta", scEta, "scEta[nElectrons]/F");
     Events->Branch("MVANoIso", MVANoIso, "MVANoIso[nElectrons]/F");
     Events->Branch("MiniRelIso", MiniRelIso, "MiniRelIso[nElectrons]/F");
@@ -89,7 +89,7 @@ void ElectronOptimization::executeEvent() {
                 continue;
             nearest_jet = j;
         }
-        ptCorr[i]     = el.Pt() * (1.+max(0., el.MiniRelIso()-0.1));
+        Pt[i]         = el.Pt();
         scEta[i]      = el.scEta();
         MVANoIso[i]   = el.MVANoIso();
         MiniRelIso[i] = el.MiniRelIso();
