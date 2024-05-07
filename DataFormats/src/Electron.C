@@ -429,7 +429,7 @@ bool Electron::Pass_HcToWABaseline() const {
   if (! PassConversionVeto()) return false;
   if (! (NMissingHits() < 2)) return false;
   if (! (fabs(dZ()) < 0.1)) return false;
-  if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 4.)) return false;
+  if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 6.)) return false;
   return true;
 }
 
@@ -447,10 +447,12 @@ bool Electron::Pass_HcToWAVeto() const {
 bool Electron::Pass_HcToWA(TString era, TString wp) const{
   if (wp == "tight") {
     if (! passMVAID_noIso_WP90()) return false;
+    if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 4.)) return false;
     if (! (MiniRelIso() < 0.1)) return false;
   }
   else if (wp == "loose") {
     float cutA, cutB, cutC;
+    /*
     if      (era == "2016a") { cutA = 0.96; cutB = 0.93; cutC = 0.85; }
     else if (era == "2016b") { cutA = 0.96; cutB = 0.93; cutC = 0.85; }
     else if (era == "2017")  { cutA = 0.94; cutB = 0.79; cutC = 0.5;  }
@@ -459,19 +461,30 @@ bool Electron::Pass_HcToWA(TString era, TString wp) const{
       cerr << "[Electron] Wrong era " << era << endl;
       exit(EXIT_FAILURE);
     }
+    */
+    if      (era == "2016a") { cutA = 0.96; cutB = 0.94; cutC = 0.5; }
+    else if (era == "2016b") { cutA = 0.96; cutB = 0.94; cutC = 0.5; }
+    else if (era == "2017")  { cutA = 0.98; cutB = 0.96; cutC = 0.7; }
+    else if (era == "2017")  { cutA = 0.98; cutB = 0.96; cutC = 0.7; }
+    else {
+      cerr << "[Electron] Wrong era " << era << endl;
+      exit(EXIT_FAILURE);
+    }
 
-    if (fabs(scEta()) < 0.8) { if (! (MVANoIso() > cutA)) return false; }
-    else if (fabs(scEta()) < 1.47) { if (! (MVANoIso() > cutB)) return false; }
-    else if (fabs(scEta()) < 2.5) { if (! (MVANoIso() > cutC)) return false; }
+    bool passMVANoIsoCut = false;
+    if (fabs(scEta()) < 0.8)       { if (MVANoIso() > cutA) passMVANoIsoCut = true; }
+    else if (fabs(scEta()) < 1.47) { if (MVANoIso() > cutB) passMVANoIsoCut = true; }
+    else if (fabs(scEta()) < 2.5)  { if (MVANoIso() > cutC) passMVANoIsoCut = true; }
     else {
       cerr << "[Electron::Pass_HcToWAMVA] Wrong scEta value " << scEta() << endl;
       cerr << "[Electron::Pass_HcToWAMVA] should be in [-2.5, 2.5]" << endl;
     }
-     if (! (MiniRelIso() < 0.4)) return false;
+    if (! (passMVAID_noIso_WP90() || passMVANoIsoCut)) return false;
+    if (! (MiniRelIso() < 0.6)) return false;
   }
   else if (wp == "veto") {
     if (! (MVANoIso() > -0.8)) return false;
-    if (! (MiniRelIso() < 0.4)) return false;
+    if (! (MiniRelIso() < 0.6)) return false;
   }
   else {
     cerr << "[Electron::Pass_HcToWA] Wrong WP " << wp << endl;

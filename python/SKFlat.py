@@ -3,6 +3,7 @@ import os
 import argparse
 import logging
 import shutil
+import time
 import datetime
 import random
 import importlib.util
@@ -88,10 +89,10 @@ def processUserInfo():
         raise FileNotFoundError(f"UserInfo file not found: {path_userinfo}")
         
 def processIOForSkimming(args):
-    if args.skim:
+    if "SkimTree" in args.analyzer:
         if args.nmax == 0: args.nmax = 100  # preventing from too heavy IO
         if args.njobs == 1: args.njobs = 0  # njobs =0 means njobs -> nfiles
-        if not "TAMSA" in ENVs['HOSTNAME']:
+        if not "TAMSA" in ENVs['HOSTNAME'].upper():
             raise ValueError("Skimming is only possible in SNU")
 
 def generateSampleList(args):
@@ -130,7 +131,7 @@ def mkdirFinalOutputPath(args, includeDataSample):
     final_output_path = os.path.join(final_output_path, flags)
     if includeDataSample:
         final_output_path = os.path.join(final_output_path, "DATA")
-    if args.skim:
+    if "SkimTree" in args.analyzer:
         final_output_path = f"/gv0/DATA/SKFlat/{ENVs['SKFlatV']}/{args.era}"
     os.makedirs(final_output_path, exist_ok=True)
     return final_output_path
@@ -221,13 +222,13 @@ if __name__ == "__main__":
             if processor.isError:
                 logging.error(f"Error in {processor.sampleName}")
                 exit(1)
-        
+        time.sleep(20) 
         if isAllSampleDone:
             logging.info("All jobs are done")
             break
     
     ## No need to check postprocess if skimming
-    if args.skim:
+    if "SkimTree" in args.analyzer:
         exit()
     
     ## Now monitor the postprocesses, waiting for all samples to be hadd and send to final output path
@@ -247,6 +248,7 @@ if __name__ == "__main__":
             if processor.isError:
                 logging.error(f"Error in {processor.sampleName}")
                 exit(1)
+        time.sleep(20)
         
         if isAllPostJobDone:
             logging.info("All post processes are done")

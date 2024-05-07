@@ -94,7 +94,7 @@ class CondorJobHandler:
             self.processor.isError = True
         elif len(self.processor.fileRanges) == len(self.finished):
             # no need to hadd files if skimming
-            if self.processor.skim:
+            if "SkimTree" in self.processor.analyzer:
                 logging.info(f"Skimmed output files are ready in {final_output_path}")
             else:    
                 self.preparePostProcessing(final_output_path)

@@ -211,15 +211,15 @@ class SampleProcessor:
                     out.write(f"    m.IsFastSim = False\n")
                 out.write(f'    m.SetEra("{self.era}")\n')
                 if self.userflags:
-                    out.write(f'    m.Userflags = std.vector[TString]()\n')
+                    out.write(f'    m.Userflags = vector[TString]()\n')
                     for flag in self.userflags: 
                         out.write(f'    m.Userflags.emplace_back("{flag}")\n')
                 for ifile in self.fileRanges[ijob]:
                     thisFileName = self.totalFiles[ifile].strip("\n")
                     out.write(f'    if not m.AddFile("{thisFileName}"): exit(1)\n')
-                if self.skim:
+                if "SkimTree" in self.analyzer:
                     skimOutDir = f"/gv0/DATA/SKFlat/{self.SKFlatV}/{self.era}"
-                    if self.outputDir:
+                    if self.outputdir:
                         skimOutDir = f"{self.outputdir}/{self.SKFlatV}/{self.era}"
                     skimOutFileName = ""
                     if self.isDATA:
@@ -265,7 +265,7 @@ class SampleProcessor:
                 for ifile in self.fileRanges[ijob]:
                     thisFileName = self.totalFiles[ifile].strip("\n")
                     out.write(f'    if(!m.AddFile("{thisFileName}")) exit(EIO);\n')
-                if self.skim:
+                if "SkimTree" in self.analyzer:
                     skimOutDir = f"/gv0/DATA/SKFlat/{self.SKFlatV}/{self.era}"
                     if self.outputDir:
                         skimOutDir = f"{self.outputDir}/{self.SKFlatV}/{self.era}"

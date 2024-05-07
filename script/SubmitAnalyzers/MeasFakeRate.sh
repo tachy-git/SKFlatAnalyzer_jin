@@ -42,7 +42,7 @@ elif [[ $ERA == "2017" ]]; then
         echo "Wrong channel $CHANNEL"
         exit 1
     fi
-    SKFlat.py -a MeasFakeRateV4 -i $DATASTREAM                     -n 10 -e $ERA --userflags $CHANNEL,RunSyst --python &
+    SKFlat.py -a MeasFakeRateV4 -i $DATASTREAM                     -n 10 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
     SKFlat.py -a MeasFakeRateV4 -i TTLJ_powheg                     -n 30 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
     SKFlat.py -a MeasFakeRateV4 -i TTLL_powheg                     -n 20 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
     SKFlat.py -a MeasFakeRateV4 -i WJets_MG                        -n 20 -e $ERA --memory $MEMORY --userflags $CHANNEL,RunSyst --python &
