@@ -123,7 +123,7 @@ void TriLeptonBase::initializeAnalyzer() {
         fMuFR->Close();
 
         // electron fake rate
-        TFile* fElFR = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL_qcd.root");
+        TFile* fElFR = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL_qcd_v4_1.root");
         hElFR = (TH2D*)fElFR->Get("fakerate");
         hElFR->SetDirectory(0);
         fElFR->Close();
@@ -135,7 +135,7 @@ void TriLeptonBase::initializeAnalyzer() {
         fMuFR->Close();
 
         // electron fake rate
-        TFile* fElFR = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL.root");
+        TFile* fElFR = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL_v4_1.root");
         hElFR = (TH2D*)fElFR->Get("fakerate");
         hElFR->SetDirectory(0);
         fElFR->Close();
