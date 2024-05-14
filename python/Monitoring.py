@@ -171,7 +171,8 @@ xsec = {self.processor.xsec}"""
             else:
                 logname = self.processor.sampleName
             logging.info(f"Postprocessing finished for {logname}")
-            time.sleep(1)
+            
+            # check error log
             while True:
                 try:
                     with open(f"{self.processor.baseRunDir}/hadd.err", "r") as f:
@@ -183,6 +184,7 @@ xsec = {self.processor.xsec}"""
                                 self.err_log.append(line)
                     break
                 except:
+                    time.sleep(10)
                     continue
             
             if self.err_log:
