@@ -989,6 +989,17 @@ std::vector<Jet> AnalyzerCore::SelectJets(const std::vector<Jet>& jets, TString 
 
 }
 
+std::vector<Jet> AnalyzerCore::SelectBJets(const std::vector<Jet>& jets, JetTagging::Tagger tagger, JetTagging::WP wp) {
+    std::vector<Jet> out;
+    for (const auto &jet: jets) {
+        const double btagScore = jet.GetTaggerResult(tagger);
+        if (btagScore > mcCorr->GetJetTaggingCutValue(tagger, wp)) {
+            out.push_back(jet);
+        }
+    }
+    return out;
+}
+
 std::vector<FatJet> AnalyzerCore::SelectFatJets(const std::vector<FatJet>& jets, TString id, double ptmin, double fetamax){
 
   std::vector<FatJet> out;
@@ -2215,6 +2226,16 @@ void AnalyzerCore::FillHist(TString histname, double value, double weight, int n
 
   this_hist->Fill(value, weight);
 
+}
+
+void AnalyzerCore::FillHist(TString histname, double value, double weight, vector<double> &xbins) {
+  TH1D *this_hist = GetHist1D(histname);
+  if ( !this_hist) {
+    this_hist = new TH1D(histname, "", xbins.size()-1, xbins.data());
+    this_hist->SetDirectory(NULL);
+    maphist_TH1D[histname] = this_hist;
+  }
+  this_hist->Fill(value, weight);
 }
 
 void AnalyzerCore::FillHist(TString histname,

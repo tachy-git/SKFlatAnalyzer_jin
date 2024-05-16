@@ -1,5 +1,5 @@
 #!/bin/sh
-source /data6/Users/choij/SKFlatAnalyzer/setup.sh
+#source /data6/Users/choij/SKFlatAnalyzer/setup.sh
 
 export SKFlat_BUILDDIR=$SKFlat_WD/build
 

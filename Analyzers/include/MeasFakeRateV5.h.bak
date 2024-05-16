@@ -1,0 +1,70 @@
+#ifndef MeasFakeRateV5_h
+#define MeasFakeRateV5_h
+
+#include "AnalyzerCore.h"
+#include "NonpromptParameter.h"
+
+class IDContainer {
+public:
+    IDContainer() { Tight = Loose = Veto = "";}
+    void SetIDs(const TString TightID, const TString LooseID, const TString VetoID) {
+        Tight = TightID;
+        Loose = LooseID;
+        Veto = VetoID;
+    }
+    TString GetTightID() const { return Tight; }
+    TString GetLooseID() const { return Loose; }
+    TString GetVetoID()  const { return Veto; }
+private:
+    TString Tight;
+    TString Loose;
+    TString Veto;
+};
+
+class MeasFakeRateV5 : public AnalyzerCore {
+public:
+    MeasFakeRateV5();
+    ~MeasFakeRateV5();
+
+    // Userflags
+    bool MeasFakeMu, MeasFakeMu8, MeasFakeMu17;
+    bool MeasFakeEl, MeasFakeEl8, MeasFakeEl12, MeasFakeEl23;
+    bool RunSyst, RunSystSimple;
+
+    // ID Definitions
+    IDContainer *MuonIDs, *ElectronIDs;
+
+    // Trigger Definitions?
+    TString isoSglLepTrig;
+    double trigSafePtCut;
+    
+    // To reuse the containers
+    vector<Muon> rawMuons;
+    vector<Electron> rawElectrons;
+    vector<Jet> rawJets;
+    vector<Gen> truth;
+
+    // for nPV reweighting
+    TH1D *hNPVData, *hNPVMC;
+
+    // systematic variations
+    vector<TString> systematics;
+    vector<TString> weightVariations;
+    vector<TString> scaleVariations;
+    vector<TString> selectionVariations;
+
+    void initializeAnalyzer();
+    void executeEvent();
+    void executeEventWith(NonpromptParameter &param);
+    
+    double getEventWeight(const NonpromptParameter &param, Event &ev, vector<Muon> &muons, vector<Electron> &electrons, vector<Jet> &jets);
+    double getNPVReweight(const unsigned int nPV);
+    //void FillObjects(const TString &channel, const Event &ev,
+    //                                         const vector<Muon> &muons, 
+    //                                        const vector<Jet> jets,
+    //                                        const double weight);
+    TString FindBin(double ptcorr, double abseta, const double* ptcorr_edges, int nptcorr, const double* abseta_edges, int nabseta);
+};
+
+#endif
+

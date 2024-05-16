@@ -104,9 +104,8 @@ public:
 
 
   std::vector<Jet> SelectJets(const std::vector<Jet>& jets, TString id, double ptmin, double fetamax);
-
+  std::vector<Jet> SelectBJets(const std::vector<Jet>& jets, JetTagging::Tagger tagger, JetTagging::WP wp);
   std::vector<FatJet> SelectFatJets(const std::vector<FatJet>& jets, TString id, double ptmin, double fetamax);
-
   //==================
   //==== Systematics
   //==================
@@ -232,6 +231,7 @@ public:
 
   void FillHist(TString histname, double value, double weight, int n_bin, double x_min, double x_max);
   void FillHist(TString histname, double value, double weight, int n_bin, double *xbins);
+  void FillHist(TString histname, double value, double weight, vector<double> &xbins);
   void FillHist(TString histname,
                 double value_x, double value_y,
                 double weight,

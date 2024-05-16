@@ -10,7 +10,7 @@ class MeasConversion(TriLeptonBase):
     def __init__(self):
         super().__init__()
         # at this point, TriLeptonBase::initializeAnalyzer has not been activate
-        
+
     def initializePyAnalyzer(self):
         super().initializeAnalyzer()
         

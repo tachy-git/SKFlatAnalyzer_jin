@@ -6,6 +6,7 @@
 #pragma link C++ nestedclasses;
 
 #pragma link C++ class AnalyzerParameter+;
+#pragma link C++ class NonpromptParameter+;
 #pragma link C++ class FakeBackgroundEstimator+;
 #pragma link C++ class CFBackgroundEstimator+;
 #pragma link C++ class MCCorrection+;
