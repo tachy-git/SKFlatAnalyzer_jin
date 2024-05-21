@@ -110,25 +110,26 @@ void MeasFakeRateV2::initializeAnalyzer() {
 
     // link histograms
     TString PUPath = TString(getenv("DATA_DIR")) + "/" + GetEra() + "/PileUp";
-    TFile *fNPVData, *fNPVMC;
+    TFile *fNPVData = nullptr;
+    TFile *fNPVMC = nullptr;;
     if (MeasFakeMu8) {
-        fNPVData = new TFile(PUPath+"/NPVMuon_DATA.root");
-        fNPVMC   = new TFile(PUPath+"/NPVMuon_MC.root");
+        fNPVData = TFile::Open(PUPath+"/NPVMuon_DATA.root");
+        fNPVMC   = TFile::Open(PUPath+"/NPVMuon_MC.root");
         hNPVData = (TH1D*)fNPVData->Get("Inclusive_Mu8/loose/central/nPV"); hNPVData->SetDirectory(0);
         hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Mu8/loose/central/nPV"); hNPVMC->SetDirectory(0);
     } else if (MeasFakeMu17) {
-        fNPVData = new TFile(PUPath+"/NPVMuon_DATA.root");
-        fNPVMC   = new TFile(PUPath+"/NPVMuon_MC.root");
+        fNPVData = TFile::Open(PUPath+"/NPVMuon_DATA.root");
+        fNPVMC   = TFile::Open(PUPath+"/NPVMuon_MC.root");
         hNPVData = (TH1D*)fNPVData->Get("Inclusive_Mu17/loose/central/nPV"); hNPVData->SetDirectory(0);
         hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Mu17/loose/central/nPV"); hNPVMC->SetDirectory(0);
     } else if (MeasFakeEl12) {
-        fNPVData = new TFile(PUPath+"/NPVElectron_DATA.root");
-        fNPVMC   = new TFile(PUPath+"/NPVElectron_MC.root");
+        fNPVData = TFile::Open(PUPath+"/NPVElectron_DATA.root");
+        fNPVMC   = TFile::Open(PUPath+"/NPVElectron_MC.root");
         hNPVData = (TH1D*)fNPVData->Get("Inclusive_Ele12/loose/central/nPV"); hNPVData->SetDirectory(0);
         hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Ele12/loose/central/nPV"); hNPVMC->SetDirectory(0);
     } else if (MeasFakeEl23) {
-        fNPVData = new TFile(PUPath+"/NPVElectron_DATA.root");
-        fNPVMC   = new TFile(PUPath+"/NPVElectron_MC.root");
+        fNPVData = TFile::Open(PUPath+"/NPVElectron_DATA.root");
+        fNPVMC   = TFile::Open(PUPath+"/NPVElectron_MC.root");
         hNPVData = (TH1D*)fNPVData->Get("Inclusive_Ele23/loose/central/nPV"); hNPVData->SetDirectory(0);
         hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Ele23/loose/central/nPV"); hNPVMC->SetDirectory(0);
     } else {
@@ -138,6 +139,10 @@ void MeasFakeRateV2::initializeAnalyzer() {
     fNPVData->Close();
     fNPVMC->Close();
 
+    if (!hNPVData || !hNPVMC) {
+        cerr << "[MeasFakeRateV2::initializeAnalyzer] Failed to retrieve histogrm from files" << endl;
+        exit(EXIT_FAILURE);
+    }
     // scale histograms
     hNPVData->Scale(1./hNPVData->Integral());
     hNPVMC->Scale(1./hNPVMC->Integral());
