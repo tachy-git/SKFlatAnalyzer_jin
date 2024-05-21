@@ -1,5 +1,8 @@
 #!/bin/sh
-source /data6/Users/choij/SKFlatAnalyzer/setup.sh
+# check hostname
+if [[ "$HOSTNAME" == "tamsa"* ]]; then
+    source /data6/Users/choij/SKFlatAnalyzer/setup.sh
+fi
 
 export SKFlat_BUILDDIR=$SKFlat_WD/build
 

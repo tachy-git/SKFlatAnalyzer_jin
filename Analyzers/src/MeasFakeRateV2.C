@@ -18,6 +18,7 @@ void MeasFakeRateV2::initializeAnalyzer() {
     RunSystSimple = HasFlag("RunSystSimple"); // Only check the effect of the selection variations
 
     // binnings
+    cout <<  "Setting binning" << endl;
     if (MeasFakeMu) {
         ptcorr_bins = {10., 15., 20., 30., 50., 100., 200.};
         abseta_bins = {0., 0.9, 1.6, 2.4};
@@ -30,6 +31,7 @@ void MeasFakeRateV2::initializeAnalyzer() {
     }
 
     // ID settings
+    cout << "Setting IDs" << endl;
     if (DataEra == "2016preVFP") {
         MuID.SetIDs("HcToWATight", "HcToWALoose", "HcToWAVeto");
         ElID.SetIDs("HcToWATight16a", "HcToWALoose16a", "HcToWAVeto16a");
@@ -48,6 +50,7 @@ void MeasFakeRateV2::initializeAnalyzer() {
     }
 
     // Trigger Settings
+    cout << "Setting triggers" << endl;
     if (MeasFakeMu8) {
        isoSglLepTrig = "HLT_Mu8_TrkIsoVVL_v";
        trigSafePtCut = 10.;
@@ -110,28 +113,29 @@ void MeasFakeRateV2::initializeAnalyzer() {
 
     // link histograms
     TString PUPath = TString(getenv("DATA_DIR")) + "/" + GetEra() + "/PileUp";
+    cout << "Linking histograms from " << PUPath << endl;
     TFile *fNPVData = nullptr;
     TFile *fNPVMC = nullptr;;
     if (MeasFakeMu8) {
         fNPVData = TFile::Open(PUPath+"/NPVMuon_DATA.root");
         fNPVMC   = TFile::Open(PUPath+"/NPVMuon_MC.root");
-        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Mu8/loose/central/nPV"); hNPVData->SetDirectory(0);
-        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Mu8/loose/central/nPV"); hNPVMC->SetDirectory(0);
+        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Mu8/loose/Central/nPV"); hNPVData->SetDirectory(0);
+        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Mu8/loose/Central/nPV"); hNPVMC->SetDirectory(0);
     } else if (MeasFakeMu17) {
         fNPVData = TFile::Open(PUPath+"/NPVMuon_DATA.root");
         fNPVMC   = TFile::Open(PUPath+"/NPVMuon_MC.root");
-        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Mu17/loose/central/nPV"); hNPVData->SetDirectory(0);
-        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Mu17/loose/central/nPV"); hNPVMC->SetDirectory(0);
+        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Mu17/loose/Central/nPV"); hNPVData->SetDirectory(0);
+        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Mu17/loose/Central/nPV"); hNPVMC->SetDirectory(0);
     } else if (MeasFakeEl12) {
         fNPVData = TFile::Open(PUPath+"/NPVElectron_DATA.root");
         fNPVMC   = TFile::Open(PUPath+"/NPVElectron_MC.root");
-        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Ele12/loose/central/nPV"); hNPVData->SetDirectory(0);
-        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Ele12/loose/central/nPV"); hNPVMC->SetDirectory(0);
+        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Ele12/loose/Central/nPV"); hNPVData->SetDirectory(0);
+        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Ele12/loose/Central/nPV"); hNPVMC->SetDirectory(0);
     } else if (MeasFakeEl23) {
         fNPVData = TFile::Open(PUPath+"/NPVElectron_DATA.root");
         fNPVMC   = TFile::Open(PUPath+"/NPVElectron_MC.root");
-        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Ele23/loose/central/nPV"); hNPVData->SetDirectory(0);
-        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Ele23/loose/central/nPV"); hNPVMC->SetDirectory(0);
+        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Ele23/loose/Central/nPV"); hNPVData->SetDirectory(0);
+        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Ele23/loose/Central/nPV"); hNPVMC->SetDirectory(0);
     } else {
         cerr << "[MeasFakeRateV5::initializeAnalyzer] No path specified by userflags" << endl;
         exit(EXIT_FAILURE);
@@ -404,12 +408,27 @@ TString MeasFakeRateV2::FindBin(const double ptcorr, const double abseta) {
     if (ptcorr_idx == -1)
         ptcorr_idx = ptcorr_bins.size()-2;
 
-    TString formattedString = TString::Format("ptcorr_%dto%d_abseta_%fto%f",
+    // for eta bins, we will use EB1, EB2, EE
+    TString etaBin = "";
+    if (abseta_idx == 0) {
+        etaBin = "EB1";
+    } else if (abseta_idx == 1) {
+        etaBin = "EB2";
+    } else if (abseta_idx == 2){
+        etaBin = "EE";
+    } else {
+        cerr << "[MeasFakeRateV5::FindBin] Wrong abseta index " << abseta_idx << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    TString formattedString = TString::Format("ptcorr_%dto%d_%s",
                                               static_cast<int>(ptcorr_bins.at(ptcorr_idx)),
                                               static_cast<int>(ptcorr_bins.at(ptcorr_idx+1)),
-                                              abseta_bins.at(abseta_idx),
-                                              abseta_bins.at(abseta_idx+1));
+                                              etaBin.Data());
     formattedString.ReplaceAll(".", "p");
+    // for debug
+    cout << "ptcorr: " << ptcorr << " abseta: " << abseta << " bin: " << formattedString << endl;
+
     return formattedString;
 }
 
