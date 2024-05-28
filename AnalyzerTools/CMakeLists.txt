@@ -8,9 +8,10 @@ include_directories(${LHAPDF_INCLUDE_DIR})
 
 # Generate the ROOT dictionary before defining the library
 file(GLOB HEADERS include/*.h)
+list(FILTER HEADERS EXCLUDE REGEX "AnalyzerTools_LinkDef.h")
 ROOT_GENERATE_DICTIONARY(G__AnalyzerTools 
     ${HEADERS}
-    LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/include/AnalyzerTools_LinkDef.hpp
+    LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/include/AnalyzerTools_LinkDef.h
 )
 
 # Define the library with source files and the generated dictionary

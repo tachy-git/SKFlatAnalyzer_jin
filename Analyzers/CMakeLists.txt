@@ -10,9 +10,10 @@ include_directories(${GEScaleSyst_DIR})
 
 # Generate the ROOT dictionary before defining the library
 file(GLOB HEADERS include/*.h)
+list(FILTER HEADERS EXCLUDE REGEX "Analyzers_LinkDef.h")
 ROOT_GENERATE_DICTIONARY(G__Analyzers 
     ${HEADERS}
-    LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/include/Analyzers_LinkDef.hpp
+    LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/include/Analyzers_LinkDef.h
 )
 
 # Define the library with source files and the generated dictionary

@@ -3,9 +3,10 @@ include_directories(${ROOT_INCLUDE_DIRS})
 
 # Generate the ROOT dictionary before defining the library
 file(GLOB HEADERS include/*.h)
+list(FILTER HEADERS EXCLUDE REGEX "DataFormats_LinkDef.h")
 ROOT_GENERATE_DICTIONARY(G__DataFormats 
     ${HEADERS}
-    LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/include/DataFormats_LinkDef.hpp
+    LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/include/DataFormats_LinkDef.h
 )
 
 # Define the library with source files and the generated dictionary
