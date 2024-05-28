@@ -318,7 +318,7 @@ TString MeasFakeRateV2::SelectEvent(const vector<Muon> &muons, const vector<Muon
         if (! (jets.size() > 0)) return channel;
         bool existAwayJet = false;
         for (const auto &j: jets) {
-            if (j.DeltaR(muons.at(0)) > 0.7)
+            if (j.DeltaR(electrons.at(0)) > 0.7)
                 existAwayJet = true;
         }
         if (! existAwayJet) return channel;
