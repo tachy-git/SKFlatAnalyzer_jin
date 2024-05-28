@@ -295,7 +295,7 @@ TString MeasFakeRateV2::SelectEvent(const vector<Muon> &muons, const vector<Muon
     if (MeasFakeMu) {
         if (! (SglMu || DblMu)) return channel;
         if (! (muons.at(0).Pt() > trigSafePtCut)) return channel;
-        if (! (jets.size() == 1)) return channel;
+        if (! (jets.size() > 0)) return channel;
         if (! (jets.at(0).DeltaR(muons.at(0)) > 0.8)) return channel;
         if (DblMu) {
             const Particle ZCand = muons.at(0) + muons.at(1);
@@ -309,7 +309,7 @@ TString MeasFakeRateV2::SelectEvent(const vector<Muon> &muons, const vector<Muon
     } else if (MeasFakeEl) {
         if (! (SglEl || DblEl)) return channel;
         if (! (electrons.at(0).Pt() > trigSafePtCut)) return channel;
-        if (! (jets.size() == 1)) return channel;
+        if (! (jets.size() > 0)) return channel;
         if (! (jets.at(0).DeltaR(electrons.at(0)) > 0.8)) return channel;
         if (DblEl) {
             const Particle ZCand = electrons.at(0) + electrons.at(1);
@@ -444,6 +444,7 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
     if (MeasFakeMu && channel == "Inclusive") {
         const Muon &mu = muons.at(0);
         const double mT = MT(mu, METv);
+        const double mTfix = TMath::Sqrt(2.*35.*METv.Pt()*(1.-TMath::Cos(mu.DeltaPhi(METv))));
         const double ptcorr = mu.Pt()*(1.+max(0., mu.MiniRelIso()-0.1));
         const double abseta = fabs(mu.Eta());
         const TString thisbin = FindBin(ptcorr, abseta);
@@ -454,6 +455,7 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         FillHist(channel+"/"+prefix+"/muon/ptcorr", ptcorr, weight, ptcorr_bins);
         FillHist(channel+"/"+prefix+"/muon/abseta", abseta, weight, abseta_bins);
         FillHist(channel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
+        FillHist(channel+"/"+prefix+"/MTfix", mTfix, weight, 500, 0., 500.);
         FillHist(channel+"/"+prefix+"/MET", METv.Pt(), weight, 500, 0., 500.);
         FillHist(channel+"/"+prefix+"/nJets", jets.size(), weight, 10, 0., 10.);
         FillHist(channel+"/"+prefix+"/nBJets", bjets.size(), weight, 5, 0., 5.);
@@ -464,6 +466,7 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         FillHist(thisbin+"/"+channel+"/"+prefix+"/muon/ptcorr", ptcorr, weight, 200, 0., 200.);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/muon/abseta", abseta, weight, 24, 0., 2.4);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
+        FillHist(thisbin+"/"+channel+"/"+prefix+"/MTfix", mTfix, weight, 500, 0., 500.);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MET", METv.Pt(), weight, 500, 0., 500.);
     } else if (MeasFakeMu && channel == "ZEnriched") {
         const Particle ZCand = muons.at(0) + muons.at(1);
@@ -484,6 +487,7 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
     } else if (MeasFakeEl && channel == "Inclusive") {
         const Electron &el = electrons.at(0);
         const double mT = MT(el, METv);
+        const double mTfix = TMath::Sqrt(2.*35.*METv.Pt()*(1.-TMath::Cos(el.DeltaPhi(METv))));
         const double ptcorr = el.Pt()*(1.+max(0., el.MiniRelIso()-0.1));
         const double abseta = fabs(el.scEta());
         const TString thisbin = FindBin(ptcorr, abseta);
@@ -494,6 +498,7 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         FillHist(channel+"/"+prefix+"/electron/ptcorr", ptcorr, weight, ptcorr_bins);
         FillHist(channel+"/"+prefix+"/electron/abseta", abseta, weight, abseta_bins);
         FillHist(channel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
+        FillHist(channel+"/"+prefix+"/MTfix", mTfix, weight, 500, 0., 500.);
         FillHist(channel+"/"+prefix+"/MET", METv.Pt(), weight, 500, 0., 500.);
         FillHist(channel+"/"+prefix+"/nJets", jets.size(), weight, 10, 0., 10.);
         FillHist(channel+"/"+prefix+"/nBJets", bjets.size(), weight, 5, 0., 5.);
@@ -503,6 +508,7 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         FillHist(thisbin+"/"+channel+"/"+prefix+"/electron/ptcorr", ptcorr, weight, ptcorr_bins);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/electron/abseta", abseta, weight, abseta_bins);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
+        FillHist(thisbin+"/"+channel+"/"+prefix+"/MTfix", mTfix, weight, 500, 0., 500.);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MET", METv.Pt(), weight, 500, 0., 500.);
     } else if (MeasFakeEl && channel == "ZEnriched") {
         const Particle ZCand = electrons.at(0) + electrons.at(1);    
