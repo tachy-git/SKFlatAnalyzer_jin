@@ -10,10 +10,11 @@ void MeasFakeRateV2::initializeAnalyzer() {
     // Userflags
     MeasFakeMu8 = HasFlag("MeasFakeMu8");
     MeasFakeMu17 = HasFlag("MeasFakeMu17");
+    MeasFakeEl8 = HasFlag("MeasFakeEl8");
     MeasFakeEl12 = HasFlag("MeasFakeEl12");
     MeasFakeEl23 = HasFlag("MeasFakeEl23");
     MeasFakeMu = MeasFakeMu8 || MeasFakeMu17;
-    MeasFakeEl = MeasFakeEl12 || MeasFakeEl23;
+    MeasFakeEl = MeasFakeEl8 ||  MeasFakeEl12 || MeasFakeEl23;
     RunSyst = HasFlag("RunSyst");
     RunSystSimple = HasFlag("RunSystSimple"); // Only check the effect of the selection variations
 
@@ -26,7 +27,7 @@ void MeasFakeRateV2::initializeAnalyzer() {
         ptcorr_bins = {10., 15., 20., 25., 35., 50., 100., 200.};
         abseta_bins = {0., 0.8, 1.479, 2.5};
     } else {
-        cerr << "[MeasFakeRateV5::initializeAnalyzer] No path specified by userflags" << endl;
+        cerr << "[MeasFakeRateV2::initializeAnalyzer] No path specified by userflags" << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -45,7 +46,7 @@ void MeasFakeRateV2::initializeAnalyzer() {
         MuID.SetIDs("HcToWATight", "HcToWALoose", "HcToWAVeto");
         ElID.SetIDs("HcToWATight18", "HcToWALoose18", "HcToWAVeto18");
     } else {
-        cerr << "[MeasFakeRateV5::initializeAnalzyer] Wrong era " << DataEra << endl;
+        cerr << "[MeasFakeRateV2::initializeAnalzyer] Wrong era " << DataEra << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -57,6 +58,9 @@ void MeasFakeRateV2::initializeAnalyzer() {
     } else if (MeasFakeMu17) {
        isoSglLepTrig = "HLT_Mu17_TrkIsoVVL_v";
        trigSafePtCut = 20.;
+    } else if (MeasFakeEl8) {
+       isoSglLepTrig = "HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v";
+       trigSafePtCut = 10.;
     } else if (MeasFakeEl12) {
        isoSglLepTrig = "HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v";
        trigSafePtCut = 15.;
@@ -64,7 +68,7 @@ void MeasFakeRateV2::initializeAnalyzer() {
        isoSglLepTrig = "HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v";
        trigSafePtCut = 25.;
     } else {
-       cerr << "[MeasFakeRateV5::initializeAnalyzer] No trigger specified by userflags" << endl;
+       cerr << "[MeasFakeRateV2::initializeAnalyzer] No trigger specified by userflags" << endl;
        exit(EXIT_FAILURE);
     }
 
@@ -126,6 +130,11 @@ void MeasFakeRateV2::initializeAnalyzer() {
         fNPVMC   = TFile::Open(PUPath+"/NPVMuon_MC.root");
         hNPVData = (TH1D*)fNPVData->Get("Inclusive_Mu17/loose/Central/nPV"); hNPVData->SetDirectory(0);
         hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Mu17/loose/Central/nPV"); hNPVMC->SetDirectory(0);
+    } else if (MeasFakeEl8) {
+        fNPVData = TFile::Open(PUPath+"/NPVElectron_DATA.root");
+        fNPVMC   = TFile::Open(PUPath+"/NPVElectron_MC.root");
+        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Ele8/loose/Central/nPV"); hNPVData->SetDirectory(0);
+        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Ele8/loose/Central/nPV"); hNPVMC->SetDirectory(0); 
     } else if (MeasFakeEl12) {
         fNPVData = TFile::Open(PUPath+"/NPVElectron_DATA.root");
         fNPVMC   = TFile::Open(PUPath+"/NPVElectron_MC.root");
@@ -137,7 +146,7 @@ void MeasFakeRateV2::initializeAnalyzer() {
         hNPVData = (TH1D*)fNPVData->Get("Inclusive_Ele23/loose/Central/nPV"); hNPVData->SetDirectory(0);
         hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Ele23/loose/Central/nPV"); hNPVMC->SetDirectory(0);
     } else {
-        cerr << "[MeasFakeRateV5::initializeAnalyzer] No path specified by userflags" << endl;
+        cerr << "[MeasFakeRateV2::initializeAnalyzer] No path specified by userflags" << endl;
         exit(EXIT_FAILURE);
     }
     fNPVData->Close();
@@ -204,14 +213,14 @@ void MeasFakeRateV2::executeEventFrom(NonpromptParameter &param) {
         baseMuID = MuID.GetTightID();
         baseElID = ElID.GetTightID();
     } else {
-        cerr << "[MeasFakeRateV5::executeEventWith] Wrong ID " << param.GetID() << endl;
+        cerr << "[MeasFakeRateV2::executeEventWith] Wrong ID " << param.GetID() << endl;
         exit(EXIT_FAILURE);
     }
     
     vector<Muon> vetoMuons = SelectMuons(allMuons, MuID.GetVetoID(), 10., 2.4);
     vector<Muon> muons = SelectMuons(allMuons, baseMuID, 10., 2.4);
-    vector<Electron> vetoElectrons = SelectElectrons(allElectrons, ElID.GetVetoID(), 15., 2.5);
-    vector<Electron> electrons = SelectElectrons(allElectrons, baseElID, 15., 2.5);
+    vector<Electron> vetoElectrons = SelectElectrons(allElectrons, ElID.GetVetoID(), 10., 2.5);
+    vector<Electron> electrons = SelectElectrons(allElectrons, baseElID, 10., 2.5);
 
     // apply selection variations to jet pt cut
     const double jetPtCut = GetJetPtCut(param.GetSelection());
@@ -268,14 +277,14 @@ void MeasFakeRateV2::ApplyScaleVariation(vector<Muon> &muons, vector<Electron> &
     } else if (scale == "JetResDown") {
         jets = SmearJets(jets, -1);
     } else {
-        cerr << "[MeasFakeRateV5::executeEventWith] Wrong scale variation " << scale << endl;
+        cerr << "[MeasFakeRateV2::executeEventWith] Wrong scale variation " << scale << endl;
         exit(EXIT_FAILURE);
     }
 }
 
 double MeasFakeRateV2::GetJetPtCut(const TString &selection) {
     if (selection == "MotherJetPtUp") {
-        return 50.;
+        return 60.;
     } else if (selection == "MotherJetPtDown") {
         return 30.;
     } else {
@@ -430,7 +439,7 @@ TString MeasFakeRateV2::FindBin(const double ptcorr, const double abseta) {
     } else if (abseta_idx == 2){
         etaBin = "EE";
     } else {
-        cerr << "[MeasFakeRateV5::FindBin] Wrong abseta index " << abseta_idx << endl;
+        cerr << "[MeasFakeRateV2::FindBin] Wrong abseta index " << abseta_idx << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -481,6 +490,21 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MTfix", mTfix, weight, 500, 0., 500.);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MET", METv.Pt(), weight, 500, 0., 500.);
+        
+        // Fill subchannel
+        TString subchannel = "";
+        if (mT < 25.) {
+            subchannel = "QCDEnriched";
+        } else if (mT > 60.) {
+            subchannel = "WEnriched";
+        } else {
+            return;
+        }
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/muon/pt", mu.Pt(), weight, 200, 0., 200.);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/muon/eta", mu.Eta(), weight, 48, -2.4, 2.4);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/muon/ptcorr", ptcorr, weight, 200, 0., 200.);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/muon/abseta", abseta, weight, 24, 0., 2.4);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
     } else if (MeasFakeMu && channel == "ZEnriched") {
         const Particle ZCand = muons.at(0) + muons.at(1);
         FillHist(channel+"/"+prefix+"/ZCand/mass", ZCand.M(), weight, 40, 75., 115.);
@@ -506,7 +530,7 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         const TString thisbin = FindBin(ptcorr, abseta);
         
         FillHist(channel+"/"+prefix+"/electron/pt", el.Pt(), weight, 300, 0., 300.);
-        FillHist(channel+"/"+prefix+"/electron/eta", el.Eta(), weight, 48, -2.4, 2.4);
+        FillHist(channel+"/"+prefix+"/electron/eta", el.Eta(), weight, 50, -254, 2.5);
         FillHist(channel+"/"+prefix+"/electron/phi", el.Phi(), weight, 64, -3.2, 3.2);
         FillHist(channel+"/"+prefix+"/electron/ptcorr", ptcorr, weight, ptcorr_bins);
         FillHist(channel+"/"+prefix+"/electron/abseta", abseta, weight, abseta_bins);
@@ -523,6 +547,21 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MTfix", mTfix, weight, 500, 0., 500.);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MET", METv.Pt(), weight, 500, 0., 500.);
+
+        // Fill subchannel
+        TString subchannel = "";
+        if (mT < 25.) {
+            subchannel = "QCDEnriched";
+        } else if (mT > 60.) {
+            subchannel = "WEnriched";
+        } else {
+            return;
+        }
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/electron/pt", el.Pt(), weight, 300, 0., 300.);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/electron/eta", el.Eta(), weight, 50, -2.5, 2.5);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/electron/ptcorr", ptcorr, weight, 300, 0., 300.);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/electron/abseta", abseta, weight, 25, 0., 2.5);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
     } else if (MeasFakeEl && channel == "ZEnriched") {
         const Particle ZCand = electrons.at(0) + electrons.at(1);    
         FillHist(channel+"/"+prefix+"/ZCand/mass", ZCand.M(), weight, 40, 75., 115.);
@@ -530,17 +569,17 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         FillHist(channel+"/"+prefix+"/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.);
         FillHist(channel+"/"+prefix+"/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2);
         FillHist(channel+"/"+prefix+"/electrons/1/pt", electrons.at(0).Pt(), weight, 300, 0., 300.);
-        FillHist(channel+"/"+prefix+"/electrons/1/eta", electrons.at(0).Eta(), weight, 48, -2.4, 2.4);
+        FillHist(channel+"/"+prefix+"/electrons/1/eta", electrons.at(0).Eta(), weight, 50, -2.5, 2.5);
         FillHist(channel+"/"+prefix+"/electrons/1/phi", electrons.at(0).Phi(), weight, 64, -3.2, 3.2);
         FillHist(channel+"/"+prefix+"/electrons/2/pt", electrons.at(1).Pt(), weight, 300, 0., 300.);
-        FillHist(channel+"/"+prefix+"/electrons/2/eta", electrons.at(1).Eta(), weight, 48, -2.4, 2.4);
+        FillHist(channel+"/"+prefix+"/electrons/2/eta", electrons.at(1).Eta(), weight, 50, -2.5, 2.5);
         FillHist(channel+"/"+prefix+"/electrons/2/phi", electrons.at(1).Phi(), weight, 64, -3.2, 3.2);
         FillHist(channel+"/"+prefix+"/nJets", jets.size(), weight, 10, 0., 10.);
         FillHist(channel+"/"+prefix+"/nBJets", bjets.size(), weight, 5, 0., 5.);
         FillHist(channel+"/"+prefix+"/nPV", nPV, weight, 70, 0., 70.);
         FillHist(channel+"/"+prefix+"/nPU", nPileUp, weight, 70, 0., 70.);
     } else {
-        cerr << "[MeasFakeRateV5::FillObjects] Wrong channel " << channel << endl;
+        cerr << "[MeasFakeRateV2::FillObjects] Wrong channel " << channel << endl;
         exit(EXIT_FAILURE);
     }
 }

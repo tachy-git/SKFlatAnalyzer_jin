@@ -280,4 +280,3 @@ bool Event::IsPDForTrigger(TString trig, TString PD){
 void Event::SetMET(double pt, double phi){
   j_METVector.SetPtEtaPhiE(pt, 0, phi, pt);
 }
-

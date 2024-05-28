@@ -28,7 +28,7 @@ public:
 
     // Userflags
     bool MeasFakeMu, MeasFakeMu8, MeasFakeMu17;
-    bool MeasFakeEl, MeasFakeEl12, MeasFakeEl23;
+    bool MeasFakeEl, MeasFakeEl8, MeasFakeEl12, MeasFakeEl23;
     bool RunSyst, RunSystSimple;
     
     // binnings
