@@ -296,28 +296,41 @@ TString MeasFakeRateV2::SelectEvent(const vector<Muon> &muons, const vector<Muon
         if (! (SglMu || DblMu)) return channel;
         if (! (muons.at(0).Pt() > trigSafePtCut)) return channel;
         if (! (jets.size() > 0)) return channel;
-        if (! (jets.at(0).DeltaR(muons.at(0)) > 0.8)) return channel;
-        if (DblMu) {
+        bool existAwayJet = false;
+        for (const auto &j: jets) {
+            if (j.DeltaR(muons.at(0)) > 0.7)
+                existAwayJet = true;
+        }
+        if (! existAwayJet) return channel;
+
+        // Divide channel by lepton multiplicity
+        if (SglMu) {
+            channel = "Inclusive";
+        } else { // DblMu
             const Particle ZCand = muons.at(0) + muons.at(1);
             const bool isOnZ = (fabs(ZCand.M() - 91.2) < 15.);
             if (! isOnZ) return channel;
             channel = "ZEnriched";
-        } else { // SglMu
-            channel = "Inclusive";
-
         }
     } else if (MeasFakeEl) {
         if (! (SglEl || DblEl)) return channel;
         if (! (electrons.at(0).Pt() > trigSafePtCut)) return channel;
         if (! (jets.size() > 0)) return channel;
-        if (! (jets.at(0).DeltaR(electrons.at(0)) > 0.8)) return channel;
-        if (DblEl) {
+        bool existAwayJet = false;
+        for (const auto &j: jets) {
+            if (j.DeltaR(muons.at(0)) > 0.7)
+                existAwayJet = true;
+        }
+        if (! existAwayJet) return channel;
+
+        // Divide channel by lepton multiplicity
+        if (SglEl) {
+            channel = "Inclusive";
+        } else { // DblEl
             const Particle ZCand = electrons.at(0) + electrons.at(1);
             const bool isOnZ = (fabs(ZCand.M() - 91.2) < 15.);
             if (! isOnZ) return channel;
             channel = "ZEnriched";
-        } else { // SglEl
-            channel = "Inclusive";
         }
     }
     return channel;
