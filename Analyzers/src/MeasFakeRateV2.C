@@ -305,15 +305,17 @@ TString MeasFakeRateV2::SelectEvent(const vector<Muon> &muons, const vector<Muon
         if (! (SglMu || DblMu)) return channel;
         if (! (muons.at(0).Pt() > trigSafePtCut)) return channel;
         if (! (jets.size() > 0)) return channel;
-        bool existAwayJet = false;
-        for (const auto &j: jets) {
-            if (j.DeltaR(muons.at(0)) > 0.7)
-                existAwayJet = true;
-        }
-        if (! existAwayJet) return channel;
 
         // Divide channel by lepton multiplicity
         if (SglMu) {
+            bool existAwayJet = false;
+            for (const auto &j: jets) {
+                if (j.DeltaR(muons.at(0)) > 0.7) {
+                    existAwayJet = true;
+                    break;
+                }
+            }
+            if (! existAwayJet) return channel;
             channel = "Inclusive";
         } else { // DblMu
             const Particle ZCand = muons.at(0) + muons.at(1);
@@ -325,15 +327,17 @@ TString MeasFakeRateV2::SelectEvent(const vector<Muon> &muons, const vector<Muon
         if (! (SglEl || DblEl)) return channel;
         if (! (electrons.at(0).Pt() > trigSafePtCut)) return channel;
         if (! (jets.size() > 0)) return channel;
-        bool existAwayJet = false;
-        for (const auto &j: jets) {
-            if (j.DeltaR(electrons.at(0)) > 0.7)
-                existAwayJet = true;
-        }
-        if (! existAwayJet) return channel;
 
         // Divide channel by lepton multiplicity
         if (SglEl) {
+            bool existAwayJet = false;
+            for (const auto &j: jets) {
+                if (j.DeltaR(electrons.at(0)) > 0.7) {
+                    existAwayJet = true;
+                    break;
+                }
+            }
+            if (! existAwayJet) return channel;
             channel = "Inclusive";
         } else { // DblEl
             const Particle ZCand = electrons.at(0) + electrons.at(1);
@@ -476,8 +480,8 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         FillHist(channel+"/"+prefix+"/muon/phi", mu.Phi(), weight, 64, -3.2, 3.2);
         FillHist(channel+"/"+prefix+"/muon/ptcorr", ptcorr, weight, ptcorr_bins);
         FillHist(channel+"/"+prefix+"/muon/abseta", abseta, weight, abseta_bins);
-        FillHist(channel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
-        FillHist(channel+"/"+prefix+"/MTfix", mTfix, weight, 500, 0., 500.);
+        FillHist(channel+"/"+prefix+"/MT", mT, weight, 600, 0., 300.);
+        FillHist(channel+"/"+prefix+"/MTfix", mTfix, weight, 600, 0., 300.);
         FillHist(channel+"/"+prefix+"/MET", METv.Pt(), weight, 500, 0., 500.);
         FillHist(channel+"/"+prefix+"/nJets", jets.size(), weight, 10, 0., 10.);
         FillHist(channel+"/"+prefix+"/nBJets", bjets.size(), weight, 5, 0., 5.);
@@ -488,8 +492,8 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         FillHist(thisbin+"/"+channel+"/"+prefix+"/muon/ptcorr", ptcorr, weight, 200, 0., 200.);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/muon/abseta", abseta, weight, 24, 0., 2.4);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
-        FillHist(thisbin+"/"+channel+"/"+prefix+"/MTfix", mTfix, weight, 500, 0., 500.);
-        FillHist(thisbin+"/"+channel+"/"+prefix+"/MET", METv.Pt(), weight, 500, 0., 500.);
+        FillHist(thisbin+"/"+channel+"/"+prefix+"/MTfix", mTfix, weight, 600, 0., 300.);
+        FillHist(thisbin+"/"+channel+"/"+prefix+"/MET", METv.Pt(), weight, 600, 0., 300.);
         
         // Fill subchannel
         TString subchannel = "";
@@ -534,8 +538,8 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         FillHist(channel+"/"+prefix+"/electron/phi", el.Phi(), weight, 64, -3.2, 3.2);
         FillHist(channel+"/"+prefix+"/electron/ptcorr", ptcorr, weight, ptcorr_bins);
         FillHist(channel+"/"+prefix+"/electron/abseta", abseta, weight, abseta_bins);
-        FillHist(channel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
-        FillHist(channel+"/"+prefix+"/MTfix", mTfix, weight, 500, 0., 500.);
+        FillHist(channel+"/"+prefix+"/MT", mT, weight, 600, 0., 300.);
+        FillHist(channel+"/"+prefix+"/MTfix", mTfix, weight, 600, 0., 300.);
         FillHist(channel+"/"+prefix+"/MET", METv.Pt(), weight, 500, 0., 500.);
         FillHist(channel+"/"+prefix+"/nJets", jets.size(), weight, 10, 0., 10.);
         FillHist(channel+"/"+prefix+"/nBJets", bjets.size(), weight, 5, 0., 5.);
@@ -544,8 +548,8 @@ void MeasFakeRateV2::FillObjects(const TString &channel,
         FillHist(channel+"/"+prefix+"/MTvsMET", mT, METv.Pt(), weight, 500, 0., 500., 500, 0., 500.);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/electron/ptcorr", ptcorr, weight, ptcorr_bins);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/electron/abseta", abseta, weight, abseta_bins);
-        FillHist(thisbin+"/"+channel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
-        FillHist(thisbin+"/"+channel+"/"+prefix+"/MTfix", mTfix, weight, 500, 0., 500.);
+        FillHist(thisbin+"/"+channel+"/"+prefix+"/MT", mT, weight, 600, 0., 300.);
+        FillHist(thisbin+"/"+channel+"/"+prefix+"/MTfix", mTfix, weight, 600, 0., 300.);
         FillHist(thisbin+"/"+channel+"/"+prefix+"/MET", METv.Pt(), weight, 500, 0., 500.);
 
         // Fill subchannel

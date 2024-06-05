@@ -73,5 +73,5 @@ CurrentGitBranch=`git branch | grep \* | cut -d ' ' -f2`
 printf "> Current SKFlatAnalyzer branch : "${BRed}$CurrentGitBranch${Color_Off}"\n"
 echo "-----------------------------------------------------------------"
 ## Log Dir ##
-echo "* Your Log Directory Usage (ctrl+c to skip)"
-du -sh $SKFlatRunlogDir
+# echo "* Your Log Directory Usage (ctrl+c to skip)"
+# du -sh $SKFlatRunlogDir
