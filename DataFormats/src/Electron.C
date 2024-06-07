@@ -429,7 +429,7 @@ bool Electron::Pass_HcToWABaseline() const {
   if (! PassConversionVeto()) return false;
   if (! (NMissingHits() < 2)) return false;
   if (! (fabs(dZ()) < 0.1)) return false;
-  if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 4.)) return false;
+  if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 6.)) return false;
   return true;
 }
 
@@ -438,9 +438,9 @@ bool Electron::Pass_HcToWAVeto() const {
   if (! PassConversionVeto()) return false;
   if (! (NMissingHits() < 2)) return false;
   if (! (fabs(dZ()) < 0.1)) return false;
-  if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 4.)) return false;
+  if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 6.)) return false;
   if (! (MVANoIso() > -0.8)) return false;
-  if (! (MiniRelIso() < 0.4)) return false;
+  if (! (MiniRelIso() < 0.6)) return false;
   return true;
 }
 
@@ -489,11 +489,11 @@ bool Electron::Pass_HcToWA(TString era, TString wp) const{
       cerr << "[Electron::Pass_HcToWAMVA] should be in [-2.5, 2.5]" << endl;
     }
     if (! (passMVAID_noIso_WP90() || passMVANoIsoCut)) return false;
-    if (! (MiniRelIso() < 0.4)) return false;
+    if (! (MiniRelIso() < 0.6)) return false;
   }
   else if (wp == "veto") {
     if (! (MVANoIso() > -0.8)) return false;
-    if (! (MiniRelIso() < 0.4)) return false;
+    if (! (MiniRelIso() < 0.6)) return false;
   }
   else {
     cerr << "[Electron::Pass_HcToWA] Wrong WP " << wp << endl;
