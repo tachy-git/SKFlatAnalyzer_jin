@@ -166,17 +166,16 @@ bool Electron::PassID(TString ID) const{
   if(ID=="TEST") return Pass_TESTID();
   if(ID=="HcToWATight16a") return Pass_HcToWATight16a();
   if(ID=="HcToWALoose16a") return Pass_HcToWALoose16a();
-  if(ID=="HcToWAVeto16a") return Pass_HcToWAVeto16a();
+  if(ID=="HcToWAVeto16a" || ID=="HcToWAVeto") return Pass_HcToWAVeto16a();
   if(ID=="HcToWATight16b") return Pass_HcToWATight16b();
   if(ID=="HcToWALoose16b") return Pass_HcToWALoose16b();
-  if(ID=="HcToWAVeto16b") return Pass_HcToWAVeto16b();
+  if(ID=="HcToWAVeto16b" || ID=="HcToWAVeto") return Pass_HcToWAVeto16b();
   if(ID=="HcToWATight17") return Pass_HcToWATight17();
   if(ID=="HcToWALoose17") return Pass_HcToWALoose17();
-  if(ID=="HcToWAVeto17") return Pass_HcToWAVeto17();
+  if(ID=="HcToWAVeto17" || ID=="HcToWAVeto") return Pass_HcToWAVeto17();
   if(ID=="HcToWATight18") return Pass_HcToWATight18();
   if(ID=="HcToWALoose18") return Pass_HcToWALoose18();
-  if(ID=="HcToWAVeto18") return Pass_HcToWAVeto18();
-  if(ID=="HcToWAVeto") return Pass_HcToWAVeto();
+  if(ID=="HcToWAVeto18" || ID=="HcToWAVeto") return Pass_HcToWAVeto18();
   if(ID=="HNLoosest") return Pass_HNLoosest(); // OR of VETO IDs
 
   cout << "[Electron::PassID] No id : " << ID << endl;
@@ -429,18 +428,6 @@ bool Electron::Pass_HcToWABaseline() const {
   if (! PassConversionVeto()) return false;
   if (! (NMissingHits() < 2)) return false;
   if (! (fabs(dZ()) < 0.1)) return false;
-  if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 6.)) return false;
-  return true;
-}
-
-bool Electron::Pass_HcToWAVeto() const {
-  if (! Pass_CaloIdL_TrackIdL_IsoVL()) return false;
-  if (! PassConversionVeto()) return false;
-  if (! (NMissingHits() < 2)) return false;
-  if (! (fabs(dZ()) < 0.1)) return false;
-  if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 6.)) return false;
-  if (! (MVANoIso() > -0.8)) return false;
-  if (! (MiniRelIso() < 0.6)) return false;
   return true;
 }
 
@@ -462,37 +449,29 @@ bool Electron::Pass_HcToWA(TString era, TString wp) const{
       exit(EXIT_FAILURE);
     }
     */
-	if      (era == "2016a") { cutA = 0.96; cutB = 0.93; cutC = 0.7; }
-    else if (era == "2016b") { cutA = 0.96; cutB = 0.93; cutC = 0.7; }
-    else if (era == "2017")  { cutA = 0.95; cutB = 0.82; cutC = 0.6;  }
-    else if (era == "2018")  { cutA = 0.95; cutB = 0.82; cutC = 0.6;  }
+	if      (era == "2016a") { cutA = 0.985; cutB = 0.96; cutC = 0.75; }
+    else if (era == "2016b") { cutA = 0.985; cutB = 0.96; cutC = 0.75; }
+    else if (era == "2017")  { cutA = 0.985; cutB = 0.96; cutC = 0.85;  }
+    else if (era == "2018")  { cutA = 0.985; cutB = 0.96; cutC = 0.85;  }
     else {
       cerr << "[Electron] Wrong era " << era << endl;
       exit(EXIT_FAILURE);
     }
-    /*
-    if      (era == "2016a") { cutA = 0.98; cutB = 0.96; cutC = 0.7; }
-    else if (era == "2016b") { cutA = 0.98; cutB = 0.96; cutC = 0.7; }
-    else if (era == "2017")  { cutA = 0.98; cutB = 0.96; cutC = 0.7; }
-    else if (era == "2018")  { cutA = 0.98; cutB = 0.96; cutC = 0.7; }
-    else {
-      cerr << "[Electron] Wrong era " << era << endl;
-      exit(EXIT_FAILURE);
-    }
-    */
     bool passMVANoIsoCut = false;
     if (fabs(scEta()) < 0.8)       { if (MVANoIso() > cutA) passMVANoIsoCut = true; }
-    else if (fabs(scEta()) < 1.47) { if (MVANoIso() > cutB) passMVANoIsoCut = true; }
+    else if (fabs(scEta()) < 1.479) { if (MVANoIso() > cutB) passMVANoIsoCut = true; }
     else if (fabs(scEta()) < 2.5)  { if (MVANoIso() > cutC) passMVANoIsoCut = true; }
     else {
       cerr << "[Electron::Pass_HcToWAMVA] Wrong scEta value " << scEta() << endl;
       cerr << "[Electron::Pass_HcToWAMVA] should be in [-2.5, 2.5]" << endl;
     }
     if (! (passMVAID_noIso_WP90() || passMVANoIsoCut)) return false;
-    if (! (MiniRelIso() < 0.6)) return false;
+    if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 6.)) return false;
+    if (! (MiniRelIso() < 0.4)) return false;
   }
   else if (wp == "veto") {
-    if (! (MVANoIso() > -0.8)) return false;
+    if (! ((MVANoIso() > -0.8) || passMVAID_noIso_WP90())) return false;
+    if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 6.)) return false;
     if (! (MiniRelIso() < 0.6)) return false;
   }
   else {

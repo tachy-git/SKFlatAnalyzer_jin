@@ -137,7 +137,6 @@ public:
   bool Pass_CutBasedVeto() const;
   bool Pass_CaloIdL_TrackIdL_IsoVL() const;
   bool Pass_HcToWABaseline() const;
-  bool Pass_HcToWAVeto() const;
   bool Pass_HcToWA(TString era, TString wp) const;
   bool Pass_HcToWATight16a() const;
   bool Pass_HcToWALoose16a() const;
