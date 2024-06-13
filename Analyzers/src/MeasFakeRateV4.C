@@ -2,7 +2,7 @@
 
 MeasFakeRateV4::MeasFakeRateV4() {}
 MeasFakeRateV4::~MeasFakeRateV4() {
-    delete hNPV_SF;
+    if (RunSyst) delete hNPV_SF;
 }
 
 void MeasFakeRateV4::initializeAnalyzer() {

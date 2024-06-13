@@ -6,26 +6,21 @@ https://jskim.web.cern.ch/jskim/SKFlat/Manual/Manual_SKFlat.pdf
 
 ## Where to put the analyzer
 TAMSA 1/2 : /data6/Users/$USER/
-
-KISTI : ~/ # home directory
-
-KNU :  ~/scartch/
+Only supports for TAMSA server now.
 
 ## First time setup
 Before clone the repository, it is a good strategy to fork from the upstream repository.
 ```bash
 #### When first time git clone, use the option "--recursive" to initiate the submodules
-# git clone --recursive git@github.com:CMSSNU/SKFlatAnalyzer.git
 git clone --recursive git@github.com:<gitaccount>/SKFlatAnalyzer.git
 cd SKFlatAnalyzer
-
-#### add your remote repo
-git remote add upstream git@github.com:choij1589/SKFlatAnalyzer.git
-git checkout devParticleNet
 
 #### First time setup script
 source bin/FirstTimeSetup.sh 
 source setup.sh
+
+#### Install lhapdf if needed
+./script/build_lhapdf.sh
 
 #### You have to edit user info
 #### First, copy the temply using the command below
@@ -37,12 +32,11 @@ Compile
 > Compiliation should be done inside the singularity image to match with the environments.
 
 ```bash
-#### better restart a new shell and enter singularity image before setup.sh
-singularity shell /data6/Users/choij/Singularity/torch200
-source setup.sh
-make clean
-make
-exit
+#### Basic build
+./script/build.sh
+
+#### Using singularity image
+singularity exec /data9/Users/choij/Singularity/images/cuda11.8 script/build.sh
 
 #### Now, run setup script.
 #### This should be done for every new shell
