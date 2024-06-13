@@ -2,8 +2,7 @@
 
 MeasFakeRateV4::MeasFakeRateV4() {}
 MeasFakeRateV4::~MeasFakeRateV4() {
-    delete hNPVData;
-    delete hNPVMC;
+    delete hNPV_SF;
 }
 
 void MeasFakeRateV4::initializeAnalyzer() {
@@ -117,48 +116,35 @@ void MeasFakeRateV4::initializeAnalyzer() {
 
     // link histograms
     TString PUPath = TString(getenv("DATA_DIR")) + "/" + GetEra() + "/PileUp";
-    cout << "Linking histograms from " << PUPath << endl;
-    TFile *fNPVData = nullptr;
-    TFile *fNPVMC = nullptr;;
-    if (MeasFakeMu8) {
-        fNPVData = TFile::Open(PUPath+"/NPVMuon_DATA.root");
-        fNPVMC   = TFile::Open(PUPath+"/NPVMuon_MC.root");
-        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Mu8/loose/Central/nPV"); hNPVData->SetDirectory(0);
-        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Mu8/loose/Central/nPV"); hNPVMC->SetDirectory(0);
-    } else if (MeasFakeMu17) {
-        fNPVData = TFile::Open(PUPath+"/NPVMuon_DATA.root");
-        fNPVMC   = TFile::Open(PUPath+"/NPVMuon_MC.root");
-        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Mu17/loose/Central/nPV"); hNPVData->SetDirectory(0);
-        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Mu17/loose/Central/nPV"); hNPVMC->SetDirectory(0);
-    } else if (MeasFakeEl8) {
-        fNPVData = TFile::Open(PUPath+"/NPVElectron_DATA.root");
-        fNPVMC   = TFile::Open(PUPath+"/NPVElectron_MC.root");
-        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Ele8/loose/Central/nPV"); hNPVData->SetDirectory(0);
-        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Ele8/loose/Central/nPV"); hNPVMC->SetDirectory(0); 
-    } else if (MeasFakeEl12) {
-        fNPVData = TFile::Open(PUPath+"/NPVElectron_DATA.root");
-        fNPVMC   = TFile::Open(PUPath+"/NPVElectron_MC.root");
-        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Ele12/loose/Central/nPV"); hNPVData->SetDirectory(0);
-        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Ele12/loose/Central/nPV"); hNPVMC->SetDirectory(0);
-    } else if (MeasFakeEl23) {
-        fNPVData = TFile::Open(PUPath+"/NPVElectron_DATA.root");
-        fNPVMC   = TFile::Open(PUPath+"/NPVElectron_MC.root");
-        hNPVData = (TH1D*)fNPVData->Get("Inclusive_Ele23/loose/Central/nPV"); hNPVData->SetDirectory(0);
-        hNPVMC = (TH1D*)fNPVMC->Get("Inclusive_Ele23/loose/Central/nPV"); hNPVMC->SetDirectory(0);
-    } else {
-        cerr << "[MeasFakeRateV4::initializeAnalyzer] No path specified by userflags" << endl;
-        exit(EXIT_FAILURE);
-    }
-    fNPVData->Close();
-    fNPVMC->Close();
+    cout << "Linking NPV scale factor histograms from " << PUPath << endl;
+    if (RunSyst) {
+        TFile *fNPV = nullptr;
+        if (MeasFakeMu8) {
+            fNPV = TFile::Open(PUPath+"/NPV_MeasFakeMu8.root");
+            hNPV_SF = (TH1D*)fNPV->Get("NPV_SF"); hNPV_SF->SetDirectory(0);
+        } else if (MeasFakeMu17) {
+            fNPV = TFile::Open(PUPath+"/NPV_MeasFakeMu17.root");
+            hNPV_SF = (TH1D*)fNPV->Get("NPV_SF"); hNPV_SF->SetDirectory(0);
+        } else if (MeasFakeEl8) {
+            fNPV = TFile::Open(PUPath+"/NPV_MeasFakeEl8.root");
+            hNPV_SF = (TH1D*)fNPV->Get("NPV_SF"); hNPV_SF->SetDirectory(0);
+        } else if (MeasFakeEl12) {
+            fNPV = TFile::Open(PUPath+"/NPV_MeasFakeEl12.root");
+            hNPV_SF = (TH1D*)fNPV->Get("NPV_SF"); hNPV_SF->SetDirectory(0);
+        } else if (MeasFakeEl23) {
+            fNPV = TFile::Open(PUPath+"/NPV_MeasFakeEl23.root");
+            hNPV_SF = (TH1D*)fNPV->Get("NPV_SF"); hNPV_SF->SetDirectory(0);
+        } else {
+            cerr << "[MeasFakeRateV4::initializeAnalyzer] No path specified by userflags" << endl;
+            exit(EXIT_FAILURE);
+        }
+        fNPV->Close();
 
-    if (!hNPVData || !hNPVMC) {
-        cerr << "[MeasFakeRateV4::initializeAnalyzer] Failed to retrieve histogrm from files" << endl;
-        exit(EXIT_FAILURE);
+        if (!hNPV_SF) {
+            cerr << "[MeasFakeRateV4::initializeAnalyzer] Failed to retrieve histogrm from files" << endl;
+            exit(EXIT_FAILURE);
+        }
     }
-    // scale histograms
-    hNPVData->Scale(1./hNPVData->Integral());
-    hNPVMC->Scale(1./hNPVMC->Integral());
 }
 
 void MeasFakeRateV4::executeEvent() {
@@ -391,7 +377,8 @@ double MeasFakeRateV4::GetEventWeight(const NonpromptParameter &param, Event &ev
         if (param.GetSyst() == "PileupReweight") {
             weight *= GetPileUpWeight(nPileUp, 0);
         } else {
-            weight *= GetNPVReweight(nPV);
+            if (! RunSystSimple) 
+                weight *= GetNPVReweight(nPV);
         }
         if (param.GetSelection() == "RequireHeavyTag") {
             JetTagging::Parameters jtp = JetTagging::Parameters(JetTagging::DeepJet,
@@ -406,14 +393,12 @@ double MeasFakeRateV4::GetEventWeight(const NonpromptParameter &param, Event &ev
 
 double MeasFakeRateV4::GetNPVReweight(unsigned int nPV) {
     nPV = max(1, min(int(nPV), 69));
-    const unsigned int bin = hNPVData->FindBin(nPV);
+    const unsigned int bin = hNPV_SF->FindBin(nPV);
+    double this_sf = hNPV_SF->GetBinContent(bin);
+    this_sf = fabs(this_sf-1.) < 0.5 ? this_sf : 1.;
     // for 2016a and 2016b, some bins (nPV > 60) are empty...
     // almost no event would be affected by this bins, just apply 1
-    if (hNPVMC->GetBinContent(bin) == 0) {
-        return 1.;
-    } else {
-        return hNPVData->GetBinContent(bin) / hNPVMC->GetBinContent(bin);
-    }
+    return this_sf;
 }
 
 TString MeasFakeRateV4::FindBin(const double ptcorr, const double abseta) {

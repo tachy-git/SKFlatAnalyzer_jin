@@ -54,7 +54,7 @@ public:
     vector<TString> selectionVariations;
 
     // for nPV reweighting
-    TH1D *hNPVData, *hNPVMC;
+    TH1D* hNPV_SF;
 
     // functions to use
     void initializeAnalyzer();
