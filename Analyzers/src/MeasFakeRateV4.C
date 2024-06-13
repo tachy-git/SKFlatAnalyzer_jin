@@ -497,7 +497,7 @@ void MeasFakeRateV4::FillObjects(const TString &channel,
         
         // Fill subchannel
         TString subchannel = "";
-        if (mT < 25.) {
+        if (mT < 25. && METv.Pt() < 25.) {
             subchannel = "QCDEnriched";
         } else if (mT > 60.) {
             subchannel = "WEnriched";
@@ -508,7 +508,8 @@ void MeasFakeRateV4::FillObjects(const TString &channel,
         FillHist(thisbin+"/"+subchannel+"/"+prefix+"/muon/eta", mu.Eta(), weight, 48, -2.4, 2.4);
         FillHist(thisbin+"/"+subchannel+"/"+prefix+"/muon/ptcorr", ptcorr, weight, 200, 0., 200.);
         FillHist(thisbin+"/"+subchannel+"/"+prefix+"/muon/abseta", abseta, weight, 24, 0., 2.4);
-        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/MT", mT, weight, 300, 0., 300.);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/MET", METv.Pt(), weight, 300, 0., 300.);
     } else if (MeasFakeMu && channel == "ZEnriched") {
         const Particle ZCand = muons.at(0) + muons.at(1);
         FillHist(channel+"/"+prefix+"/ZCand/mass", ZCand.M(), weight, 40, 75., 115.);
@@ -554,7 +555,7 @@ void MeasFakeRateV4::FillObjects(const TString &channel,
 
         // Fill subchannel
         TString subchannel = "";
-        if (mT < 25.) {
+        if (mT < 25. && METv.Pt() < 25.) {
             subchannel = "QCDEnriched";
         } else if (mT > 60.) {
             subchannel = "WEnriched";
@@ -565,7 +566,8 @@ void MeasFakeRateV4::FillObjects(const TString &channel,
         FillHist(thisbin+"/"+subchannel+"/"+prefix+"/electron/eta", el.Eta(), weight, 50, -2.5, 2.5);
         FillHist(thisbin+"/"+subchannel+"/"+prefix+"/electron/ptcorr", ptcorr, weight, 300, 0., 300.);
         FillHist(thisbin+"/"+subchannel+"/"+prefix+"/electron/abseta", abseta, weight, 25, 0., 2.5);
-        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/MT", mT, weight, 500, 0., 500.);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/MT", mT, weight, 300, 0., 300.);
+        FillHist(thisbin+"/"+subchannel+"/"+prefix+"/MET", METv.Pt(), weight, 300, 0., 300.);
     } else if (MeasFakeEl && channel == "ZEnriched") {
         const Particle ZCand = electrons.at(0) + electrons.at(1);    
         FillHist(channel+"/"+prefix+"/ZCand/mass", ZCand.M(), weight, 40, 75., 115.);

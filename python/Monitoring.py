@@ -61,6 +61,7 @@ class CondorJobHandler:
                 out_log = f"{iproc}\t| {status}"
             logging.debug(f"{self.processor.sampleName} - {status}: {out_log}")
             self.to_status_log.append(out_log)
+            time.sleep(1)
         
         for line in self.to_status_log:
             status_log.write(f"{line}\n")
@@ -182,6 +183,7 @@ xsec = {self.processor.xsec}"""
                             else:
                                 logging.error(f"{self.processor.sampleName} - {line}")
                                 self.err_log.append(line)
+                    time.sleep(1)
                     break
                 except:
                     time.sleep(10)

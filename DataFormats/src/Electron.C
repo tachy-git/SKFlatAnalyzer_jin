@@ -449,8 +449,8 @@ bool Electron::Pass_HcToWA(TString era, TString wp) const{
       exit(EXIT_FAILURE);
     }
     */
-	if      (era == "2016a") { cutA = 0.985; cutB = 0.96; cutC = 0.75; }
-    else if (era == "2016b") { cutA = 0.985; cutB = 0.96; cutC = 0.75; }
+	if      (era == "2016a") { cutA = 0.985; cutB = 0.98; cutC = 0.75; }
+    else if (era == "2016b") { cutA = 0.985; cutB = 0.98; cutC = 0.75; }
     else if (era == "2017")  { cutA = 0.985; cutB = 0.96; cutC = 0.85;  }
     else if (era == "2018")  { cutA = 0.985; cutB = 0.96; cutC = 0.85;  }
     else {

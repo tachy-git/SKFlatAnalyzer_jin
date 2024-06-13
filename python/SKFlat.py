@@ -222,7 +222,9 @@ if __name__ == "__main__":
             if processor.isError:
                 logging.error(f"Error in {processor.sampleName}")
                 exit(1)
-        time.sleep(10) 
+            time.sleep(1)
+        time.sleep(10)
+
         if isAllSampleDone:
             logging.info("All jobs are done")
             break
@@ -248,6 +250,7 @@ if __name__ == "__main__":
             if processor.isError:
                 logging.error(f"Error in {processor.sampleName}")
                 exit(1)
+            time.sleep(1)
         time.sleep(10)
         
         if isAllPostJobDone:

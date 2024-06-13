@@ -11,8 +11,7 @@ if [ "$NFILES" -eq 1 ]; then
 else
     hadd -f [OUTPUTNAME].root output/hists_*.root >> JobStatus.log
     rm output/*.root
+    mv [OUTPUTNAME].root [FINALOUTPUTPATH]
 fi
 
-# Move the final output
-mv [OUTPUTNAME].root [FINALOUTPUTPATH]
 echo "FINISHED hadd and moved the final output to [FINALOUTPUTPATH]"
