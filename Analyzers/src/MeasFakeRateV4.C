@@ -115,9 +115,9 @@ void MeasFakeRateV4::initializeAnalyzer() {
     }
 
     // link histograms
-    TString PUPath = TString(getenv("DATA_DIR")) + "/" + GetEra() + "/PileUp";
-    cout << "Linking NPV scale factor histograms from " << PUPath << endl;
     if (RunSyst) {
+        TString PUPath = TString(getenv("DATA_DIR")) + "/" + GetEra() + "/PileUp";
+        cout << "Linking NPV scale factor histograms from " << PUPath << endl;
         TFile *fNPV = nullptr;
         if (MeasFakeMu8) {
             fNPV = TFile::Open(PUPath+"/NPV_MeasFakeMu8.root");
@@ -376,9 +376,9 @@ double MeasFakeRateV4::GetEventWeight(const NonpromptParameter &param, Event &ev
         // nPV reweight
         if (param.GetSyst() == "PileupReweight") {
             weight *= GetPileUpWeight(nPileUp, 0);
+        } else if (RunSyst) {
+            weight *= GetNPVReweight(nPV);
         } else {
-            if (! RunSystSimple) 
-                weight *= GetNPVReweight(nPV);
         }
         if (param.GetSelection() == "RequireHeavyTag") {
             JetTagging::Parameters jtp = JetTagging::Parameters(JetTagging::DeepJet,
@@ -438,7 +438,7 @@ TString MeasFakeRateV4::FindBin(const double ptcorr, const double abseta) {
                                               etaBin.Data());
     formattedString.ReplaceAll(".", "p");
     // for debug
-    cout << "ptcorr: " << ptcorr << " abseta: " << abseta << " bin: " << formattedString << endl;
+    // cout << "ptcorr: " << ptcorr << " abseta: " << abseta << " bin: " << formattedString << endl;
 
     return formattedString;
 }

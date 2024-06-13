@@ -55,6 +55,8 @@ def processEra(args):
 def processUserflags(args):
     if args.userflags != "":
         args.userflags = args.userflags.replace(' ', '').split(",")
+        # remove blank flags
+        args.userflags = [flag for flag in args.userflags if flag and flag.strip()]
     else:
         args.userflags = []
 
