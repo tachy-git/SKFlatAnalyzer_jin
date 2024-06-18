@@ -219,7 +219,9 @@ void MeasFakeRateV4::executeEventFrom(NonpromptParameter &param) {
     // event selection
     TString channel = "";
     if (param.GetSelection() == "RequireHeavyTag") {
-        channel = SelectEvent(muons, vetoMuons, electrons, vetoElectrons, bjets);
+        // Only require existence of bjets
+        if (bjets.size() == 0) return;
+        channel = SelectEvent(muons, vetoMuons, electrons, vetoElectrons, jets);
     } else {
         channel = SelectEvent(muons, vetoMuons, electrons, vetoElectrons, jets);
     }
