@@ -118,25 +118,25 @@ void TriLeptonBase::initializeAnalyzer() {
     // muon fake rate
     if (FakeStudy) {
         TFile* fMuFR = new TFile(muonIDpath+"/fakerate_qcd_TopHNT_TopHNL.root");
-        hMuFR = (TH2D*)fMuFR->Get("fakerate - (QCD_MuEnriched)");
+        hMuFR = (TH2D*)fMuFR->Get("fake rate - (QCD_MuEnriched)");
         hMuFR->SetDirectory(0);
         fMuFR->Close();
 
         // electron fake rate
-        TFile* fElFR = new TFile(eleIDPath+"/fakerate_qcd_TopHNT_TopHNL_qcd.root");
-        hElFR = (TH2D*)fElFR->Get("fakerate - (QCD_EMEnriched)");
+        TFile* fElFR = new TFile(eleIDPath+"/fakerate_qcd_TopHNT_TopHNL.root");
+        hElFR = (TH2D*)fElFR->Get("fake rate - (QCD_EMEnriched)");
         hElFR->SetDirectory(0);
         fElFR->Close();
     }
     else {
         TFile* fMuFR = new TFile(muonIDpath+"/fakerate_TopHNT_TopHNL.root");
-        hMuFR = (TH2D*)fMuFR->Get("fakerate - (Central)");
+        hMuFR = (TH2D*)fMuFR->Get("fake rate - (Central)");
         hMuFR->SetDirectory(0);
         fMuFR->Close();
 
         // electron fake rate
         TFile* fElFR = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL.root");
-        hElFR = (TH2D*)fElFR->Get("fakerate - (Central)");
+        hElFR = (TH2D*)fElFR->Get("fake rate - (Central)");
         hElFR->SetDirectory(0);
         fElFR->Close();
     }
