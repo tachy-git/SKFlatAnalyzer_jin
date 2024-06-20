@@ -211,7 +211,7 @@ void MeasFakeRateV4::executeEventFrom(NonpromptParameter &param) {
     // apply selection variations to jet pt cut
     const double jetPtCut = GetJetPtCut(param.GetSelection());
     vector<Jet> jets = SelectJets(allJets, "tight", jetPtCut, 2.4);
-    jets = JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4);
+    //jets = JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4);
     vector<Jet> bjets = SelectBJets(jets, JetTagging::DeepJet, JetTagging::Medium);
     // end of object definitions, scale and selection variations
     // HeavyTag will be set on SelectEvent function

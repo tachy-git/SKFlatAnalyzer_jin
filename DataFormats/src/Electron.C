@@ -449,8 +449,8 @@ bool Electron::Pass_HcToWA(TString era, TString wp) const{
       exit(EXIT_FAILURE);
     }
     */
-	if      (era == "2016a") { cutA = 0.985; cutB = 0.98; cutC = 0.75; }
-    else if (era == "2016b") { cutA = 0.985; cutB = 0.98; cutC = 0.75; }
+	if      (era == "2016a") { cutA = 0.985; cutB = 0.96; cutC = 0.85; }
+    else if (era == "2016b") { cutA = 0.985; cutB = 0.96; cutC = 0.85; }
     else if (era == "2017")  { cutA = 0.985; cutB = 0.96; cutC = 0.85;  }
     else if (era == "2018")  { cutA = 0.985; cutB = 0.96; cutC = 0.85;  }
     else {
@@ -472,7 +472,7 @@ bool Electron::Pass_HcToWA(TString era, TString wp) const{
   else if (wp == "veto") {
     if (! ((MVANoIso() > -0.8) || passMVAID_noIso_WP90())) return false;
     if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 6.)) return false;
-    if (! (MiniRelIso() < 0.6)) return false;
+    if (! (MiniRelIso() < 0.4)) return false;
   }
   else {
     cerr << "[Electron::Pass_HcToWA] Wrong WP " << wp << endl;

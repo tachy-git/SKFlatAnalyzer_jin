@@ -1,15 +1,18 @@
 import os
 import logging
 import time, datetime
+import asyncio
 from CheckJobStatus import CheckJobStatus
 from TimeTools import GetDatetimeFromMyFormat
-from SendEmail import SendEmail
+from SendEmail import SendEmail, SendTelegramMsg
 
 
 class CondorJobHandler:
-    def __init__(self, processor, log_email):
+    def __init__(self, processor, log_email, telegram_id=None, telegram_token=None):
         self.processor = processor
         self.log_email = log_email
+        self.telegram_id = telegram_id
+        self.telegram_token = telegram_token
         self.to_status_log = []
         self.running = []
         self.finished = []
@@ -125,8 +128,11 @@ Skim = {self.processor.skim}
 # of jobs = {self.processor.njobs}
 input sample = {self.processor.sampleName}
 xsec = {self.processor.xsec}"""
-        SendEmail(os.environ['USER'], self.log_email, title, email)
-    
+        if self.telegram_id is None:
+            SendEmail(os.environ['USER'], self.log_email, title, email)
+        else:
+            asyncio.run(SendTelegramMsg(self.telegram_id, self.telegram_token, email))
+
     def sendFinishMail(self):
         title = f"[{self.processor.hostname}] Summary of JobID {self.processor.job_id}"
         email = f"""
@@ -139,7 +145,10 @@ Skim = {self.processor.skim}
 # of jobs = {self.processor.njobs}
 input sample = {self.processor.sampleName}
 xsec = {self.processor.xsec}"""
-        SendEmail(os.environ['USER'], self.log_email, title, email) 
+        if self.telegram_id is None:
+            SendEmail(os.environ['USER'], self.log_email, title, email)
+        else:
+            asyncio.run(SendTelegramMsg(self.telegram_id, self.telegram_token, email))
     
     def preparePostProcessing(self, final_output_path):
         with open(f"script/Templates/PostProcess/condor.sub", "r") as f:

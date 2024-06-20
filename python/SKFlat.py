@@ -87,6 +87,8 @@ def processUserInfo():
         spec.loader.exec_module(user_info)
         ENVs["SKFlatLogEmail"] = user_info.UserInfo["SKFlatLogEmail"]
         ENVs["SKFlatLogWebDir"] = user_info.UserInfo["SKFlatLogWebDir"]
+        ENVs["SKFlatTelegramToken"] = user_info.UserInfo["SKFlatTelegramToken"]
+        ENVs["SKFlatTelegramId"] = user_info.UserInfo["SKFlatTelegramId"]
     except:
         raise FileNotFoundError(f"UserInfo file not found: {path_userinfo}")
         
@@ -217,7 +219,10 @@ if __name__ == "__main__":
             
             isAllSampleDone = False
             final_output_path = mkdirFinalOutputPath(args, processor.isDATA)
-            handler = CondorJobHandler(processor, ENVs["SKFlatLogEmail"])
+            if ENVs["SKFlatTelegramId"]:
+                handler = CondorJobHandler(processor, "", ENVs["SKFlatTelegramId"], ENVs["SKFlatTelegramToken"])
+            else:
+                handler = CondorJobHandler(processor, ENVs["SKFlatLogEmail"])
             handler.monitorJobStatus()  # Update status flags and JobStatus.log 
             handler.postProcess(final_output_path)   
 
@@ -246,7 +251,10 @@ if __name__ == "__main__":
                 continue
             
             isAllPostJobDone = False
-            handler = CondorJobHandler(processor, ENVs["SKFlatLogEmail"])
+            if ENVs["SKFlatTelegramId"]:
+                handler = CondorJobHandler(processor, "", ENVs["SKFlatTelegramId"], ENVs["SKFlatTelegramToken"])
+            else:
+                handler = CondorJobHandler(processor, ENVs["SKFlatLogEmail"])
             handler.monitorPostProcess()
             
             if processor.isError:
