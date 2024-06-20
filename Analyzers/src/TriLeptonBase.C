@@ -117,14 +117,14 @@ void TriLeptonBase::initializeAnalyzer() {
 
     // muon fake rate
     if (FakeStudy) {
-        TFile* fMuFR = new TFile(muonIDpath+"/fakerate_TopHNT_TopHNL_qcd.root");
-        hMuFR = (TH2D*)fMuFR->Get("fakerate");
+        TFile* fMuFR = new TFile(muonIDpath+"/fakerate_qcd_TopHNT_TopHNL.root");
+        hMuFR = (TH2D*)fMuFR->Get("fakerate (Central)");
         hMuFR->SetDirectory(0);
         fMuFR->Close();
 
         // electron fake rate
-        TFile* fElFR = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL_qcd_v4_1.root");
-        hElFR = (TH2D*)fElFR->Get("fakerate");
+        TFile* fElFR = new TFile(eleIDPath+"/fakerate_qcd_TopHNT_TopHNL_qcd.root");
+        hElFR = (TH2D*)fElFR->Get("fakerate (Central)");
         hElFR->SetDirectory(0);
         fElFR->Close();
     }
@@ -135,7 +135,7 @@ void TriLeptonBase::initializeAnalyzer() {
         fMuFR->Close();
 
         // electron fake rate
-        TFile* fElFR = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL_v4_1.root");
+        TFile* fElFR = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL.root");
         hElFR = (TH2D*)fElFR->Get("fakerate");
         hElFR->SetDirectory(0);
         fElFR->Close();
@@ -672,7 +672,7 @@ double TriLeptonBase::getMuonFakeProb(const Muon &mu, int sys) {
 double TriLeptonBase::getElectronFakeProb(const Electron &ele, int sys) {
     double ptCorr = ele.Pt()*(1.+max(0., ele.MiniRelIso()-0.1));
     double absEta = fabs(ele.scEta());
-    if (ptCorr < 10.) ptCorr = 10.;
+    if (ptCorr < 15.) ptCorr = 15.;
     if (ptCorr > 50.) ptCorr = 49.9;
     if (absEta > 2.5) absEta = 2.499;
     int thisBin = hElFR->FindBin(absEta, ptCorr);

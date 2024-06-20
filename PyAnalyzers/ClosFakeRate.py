@@ -7,7 +7,6 @@ from ROOT import TString
 from ROOT.std import vector
 from ROOT.JetTagging import Parameters as jParameters
 from ROOT import Lepton, Muon , Electron, Jet
-gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
 
 
 class ClosFakeRate(TriLeptonBase):
@@ -52,12 +51,7 @@ class ClosFakeRate(TriLeptonBase):
         else:
             # not all leptons are tight
             fakeWeight = super().getFakeWeight(looseMuons, looseElectrons, 0)
-            fakeWeightUp = super().getFakeWeight(looseMuons, looseElectrons, 1)
-            fakeWeightDown = super().getFakeWeight(looseMuons, looseElectrons, -1)
-            
             self.fillObjects(thisChannel, objects, weight*fakeWeight, syst="Central")
-            self.fillObjects(thisChannel, objects, weight*fakeWeightUp, syst="NonpromptUp")
-            self.fillObjects(thisChannel, objects, weight*fakeWeightDown, syst="NonpromptDown") 
 
     def fillObjects(self, channel, objects, weight, syst):
         muons = objects["muons"]
