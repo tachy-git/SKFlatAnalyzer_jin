@@ -466,12 +466,12 @@ bool Electron::Pass_HcToWA(TString era, TString wp) const{
       cerr << "[Electron::Pass_HcToWAMVA] should be in [-2.5, 2.5]" << endl;
     }
     if (! (passMVAID_noIso_WP90() || passMVANoIsoCut)) return false;
-    if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 6.)) return false;
+    if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 8.)) return false;
     if (! (MiniRelIso() < 0.4)) return false;
   }
   else if (wp == "veto") {
     if (! ((MVANoIso() > -0.8) || passMVAID_noIso_WP90())) return false;
-    if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 6.)) return false;
+    if (! (IP3Derr() != 0 && fabs(IP3D()/IP3Derr()) < 8.)) return false;
     if (! (MiniRelIso() < 0.4)) return false;
   }
   else {
