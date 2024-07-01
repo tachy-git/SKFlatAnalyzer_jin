@@ -25,7 +25,6 @@ class MatrixEstimator(TriLeptonBase):
         if super().Skim1E2Mu: self.channel = "Skim1E2Mu"
         if super().Skim3Mu: self.channel = "Skim3Mu"
 
-        self.systematics = ["Central", "NonpromptUp", "NonpromptDown"]
         self.signalStrings = ["MHc-160_MA-85", "MHc-130_MA-90", "MHc-100_MA-95"]
         self.backgroundStrings = ["nonprompt", "diboson", "ttZ"]
     
@@ -56,19 +55,10 @@ class MatrixEstimator(TriLeptonBase):
                    "data": data,
                    "scores": scores
                     }
-        for syst in self.systematics:
-            if syst == "Central":
-                weight = super().getFakeWeight(looseMuons, looseElectrons, 0)
-            elif syst == "NonpromptUp":
-                weight = super().getFakeWeight(looseMuons, looseElectrons, 1)
-            elif syst == "NonpromptDown":
-                weight = super().getFakeWeight(looseMuons, looseElectrons, -1)
-            else:
-                raise NotImplementedError(f"[MatrixEstimator::executeEvent] Wrong systematics {syst}")
-            self.FillObjects(thisChannel, objects, weight, syst)
+        weight = super().getFakeWeight(looseMuons, looseElectrons, 0)
+        self.FillObjects(thisChannel, rawMuons, rawElectrons, rawJets)
         
-        
-    def defineObjects(self, rawMuons, rawElectrons, rawJets, syst="Central"):
+    def defineObjects(self, rawMuons, rawElectrons, rawJets):
         # first copy objects
         allMuons = rawMuons
         allElectrons = rawElectrons
@@ -213,7 +203,7 @@ class MatrixEstimator(TriLeptonBase):
             scores[f"{sig}_vs_{bkg}"] = getGraphScore(self.models[f"{sig}_vs_{bkg}"], data)
         return data, scores
     
-    def FillObjects(self, channel, objects, weight, syst):
+    def FillObjects(self, channel, objects, weight):
         muons = objects["muons"]
         electrons = objects["electrons"]
         jets = objects["jets"]
@@ -225,124 +215,124 @@ class MatrixEstimator(TriLeptonBase):
         
         ## fill base observables
         for idx, mu in enumerate(muons, start=1):
-            super().FillHist(f"{channel}/{syst}/muons/{idx}/pt", mu.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/muons/{idx}/eta", mu.Eta(), weight, 48, -2.4, 2.4)
-            super().FillHist(f"{channel}/{syst}/muons/{idx}/phi", mu.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/muons/{idx}/mass", mu.M(), weight, 10, 0., 1.)
+            super().FillHist(f"{channel}/Central/muons/{idx}/pt", mu.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/muons/{idx}/eta", mu.Eta(), weight, 48, -2.4, 2.4)
+            super().FillHist(f"{channel}/Central/muons/{idx}/phi", mu.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/muons/{idx}/mass", mu.M(), weight, 10, 0., 1.)
         for idx, ele in enumerate(electrons, start=1):
-            super().FillHist(f"{channel}/{syst}/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
-            super().FillHist(f"{channel}/{syst}/electrons/{idx}/Phi", ele.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
+            super().FillHist(f"{channel}/Central/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
+            super().FillHist(f"{channel}/Central/electrons/{idx}/Phi", ele.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
         for idx, jet in enumerate(jets, start=1):
-            super().FillHist(f"{channel}/{syst}/jets/{idx}/pt", jet.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/jets/{idx}/eta", jet.Eta(), weight, 48, -2.4, 2.4)
-            super().FillHist(f"{channel}/{syst}/jets/{idx}/phi", jet.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/jets/{idx}/mass", jet.M(), weight, 100, 0., 100.)
+            super().FillHist(f"{channel}/Central/jets/{idx}/pt", jet.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/jets/{idx}/eta", jet.Eta(), weight, 48, -2.4, 2.4)
+            super().FillHist(f"{channel}/Central/jets/{idx}/phi", jet.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/jets/{idx}/mass", jet.M(), weight, 100, 0., 100.)
         for idx, bjet in enumerate(bjets, start=1):
-            super().FillHist(f"{channel}/{syst}/bjets/{idx}/pt", bjet.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/bjets/{idx}/eta", bjet.Eta(), weight, 48, -2.4, 2.4)
-            super().FillHist(f"{channel}/{syst}/bjets/{idx}/phi", bjet.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/bjets/{idx}/mass", bjet.M(), weight, 100, 0., 100.)
-        super().FillHist(f"{channel}/{syst}/jets/size", jets.size(), weight, 20, 0., 20.)
-        super().FillHist(f"{channel}/{syst}/bjets/size", bjets.size(), weight, 15, 0., 15.)
-        super().FillHist(f"{channel}/{syst}/METv/pt", METv.Pt(), weight, 300, 0., 300.)
-        super().FillHist(f"{channel}/{syst}/METv/phi", METv.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/bjets/{idx}/pt", bjet.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/bjets/{idx}/eta", bjet.Eta(), weight, 48, -2.4, 2.4)
+            super().FillHist(f"{channel}/Central/bjets/{idx}/phi", bjet.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/bjets/{idx}/mass", bjet.M(), weight, 100, 0., 100.)
+        super().FillHist(f"{channel}/Central/jets/size", jets.size(), weight, 20, 0., 20.)
+        super().FillHist(f"{channel}/Central/bjets/size", bjets.size(), weight, 15, 0., 15.)
+        super().FillHist(f"{channel}/Central/METv/pt", METv.Pt(), weight, 300, 0., 300.)
+        super().FillHist(f"{channel}/Central/METv/phi", METv.Phi(), weight, 64, -3.2, 3.2)
         
         # Fill discrimination variable
         if "1E2Mu" in channel:
             pair = pairs
-            super().FillHist(f"{channel}/{syst}/pair/pt", pair.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/pair/eta", pair.Eta(), weight, 100, -5., 5.)
-            super().FillHist(f"{channel}/{syst}/pair/phi", pair.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/pair/mass", pair.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/Central/pair/pt", pair.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/pair/eta", pair.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/Central/pair/phi", pair.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/pair/mass", pair.M(), weight, 200, 0., 200.)
         else:
             pair1, pair2 = pairs
-            super().FillHist(f"{channel}/{syst}/stack/pt", pair1.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/stack/eta", pair1.Eta(), weight, 100, -5., 5.)
-            super().FillHist(f"{channel}/{syst}/stack/phi", pair1.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/stack/mass", pair1.M(), weight, 200, 0., 200.)
-            super().FillHist(f"{channel}/{syst}/stack/pt", pair2.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/stack/eta", pair2.Eta(), weight, 100, -5., 5.)
-            super().FillHist(f"{channel}/{syst}/stack/phi", pair2.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/stack/mass", pair2.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/Central/stack/pt", pair1.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/stack/eta", pair1.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/Central/stack/phi", pair1.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/stack/mass", pair1.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/Central/stack/pt", pair2.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/stack/eta", pair2.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/Central/stack/phi", pair2.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/stack/mass", pair2.M(), weight, 200, 0., 200.)
         
         # Fill ZCands
         if "1E2Mu" in channel:
             ZCand = pairs       # pairs == pair
-            super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
-            super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/Central/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/Central/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
         else:
             pair1, pair2 = pairs
             mZ = 91.2
             if abs(pair1.M() - mZ) < abs(pair2.M() - mZ): ZCand, nZCand = pair1, pair2
             else:                                         ZCand, nZCand = pair2, pair1
-            super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
-            super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
-            super().FillHist(f"{channel}/{syst}/nZCand/pt", nZCand.Pt(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/nZCand/eta", nZCand.Eta(), weight, 100, -5., 5.)
-            super().FillHist(f"{channel}/{syst}/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/{syst}/nZCand/mass", nZCand.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/Central/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/Central/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/Central/nZCand/pt", nZCand.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/nZCand/eta", nZCand.Eta(), weight, 100, -5., 5.)
+            super().FillHist(f"{channel}/Central/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/nZCand/mass", nZCand.M(), weight, 200, 0., 200.)
          
         # Fill graph inputs
         for idx, mu in enumerate(muons, start=1):
-            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/energy", mu.E(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/px", mu.Px(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/py", mu.Py(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/pz", mu.Pz(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/charge", mu.Charge(), weight, 3, -1, 2) 
+            super().FillHist(f"{channel}/Central/inputs/muons/{idx}/energy", mu.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/inputs/muons/{idx}/px", mu.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/inputs/muons/{idx}/py", mu.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/inputs/muons/{idx}/pz", mu.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/inputs/muons/{idx}/charge", mu.Charge(), weight, 3, -1, 2) 
         for idx, ele in enumerate(electrons, start=1):
-            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/energy", ele.E(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/px", ele.Px(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/py", ele.Py(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/pz", ele.Pz(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/charge", ele.Charge(), weight, 3, -1, 2) 
+            super().FillHist(f"{channel}/Central/inputs/electrons/{idx}/energy", ele.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/inputs/electrons/{idx}/px", ele.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/inputs/electrons/{idx}/py", ele.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/inputs/electrons/{idx}/pz", ele.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/inputs/electrons/{idx}/charge", ele.Charge(), weight, 3, -1, 2) 
         for idx, jet in enumerate(jets, start=1):
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/energy", jet.E(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/px", jet.Px(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/py", jet.Py(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/pz", jet.Pz(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/charge", jet.Charge(), weight, 200, -1, 1)
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/btagScore", jet.GetTaggerResult(3), weight, 100, 0., 1.)
-        super().FillHist(f"{channel}/{syst}/inputs/METv/energy", METv.E(), weight, 300, 0., 300.)
-        super().FillHist(f"{channel}/{syst}/inputs/METv/px", METv.Px(), weight, 500, -250, 250)
-        super().FillHist(f"{channel}/{syst}/inputs/METv/py", METv.Py(), weight, 500, -250, 250)
-        super().FillHist(f"{channel}/{syst}/inputs/METv/pz", METv.Pz(), weight, 500, -250, 250) 
-        super().FillHist(f"{channel}/{syst}/inputs/Nj", jets.size(), weight, 20, 0., 20.)
-        super().FillHist(f"{channel}/{syst}/inputs/Nb", bjets.size(), weight, 20, 0., 20.)
-        super().FillHist(f"{channel}/{syst}/inputs/MET", METv.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/energy", jet.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/px", jet.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/py", jet.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/pz", jet.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/charge", jet.Charge(), weight, 200, -1, 1)
+            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/btagScore", jet.GetTaggerResult(3), weight, 100, 0., 1.)
+        super().FillHist(f"{channel}/Central/inputs/METv/energy", METv.E(), weight, 300, 0., 300.)
+        super().FillHist(f"{channel}/Central/inputs/METv/px", METv.Px(), weight, 500, -250, 250)
+        super().FillHist(f"{channel}/Central/inputs/METv/py", METv.Py(), weight, 500, -250, 250)
+        super().FillHist(f"{channel}/Central/inputs/METv/pz", METv.Pz(), weight, 500, -250, 250) 
+        super().FillHist(f"{channel}/Central/inputs/Nj", jets.size(), weight, 20, 0., 20.)
+        super().FillHist(f"{channel}/Central/inputs/Nb", bjets.size(), weight, 20, 0., 20.)
+        super().FillHist(f"{channel}/Central/inputs/MET", METv.Pt(), weight, 300, 0., 300.)
         for idx, lep in enumerate(list(electrons)+list(muons), start=1):
-            super().FillHist(f"{channel}/{syst}/inputs/MT{idx}", (lep+METv).Mt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/inputs/MT{idx}", (lep+METv).Mt(), weight, 300, 0., 300.)
         
         # Fill signal dependent distributions 
         for signal in self.signalStrings:
             if "1E2Mu" in channel:
                 ACand = pairs
-                super().FillHist(f"{channel}/{syst}/{signal}/ACand/pt", ACand.Pt(), weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/{signal}/ACand/eta", ACand.Eta(), weight, 100, -5., 5.)
-                super().FillHist(f"{channel}/{syst}/{signal}/ACand/phi", ACand.Phi(), weight, 64, -3.2, 3.2)
-                super().FillHist(f"{channel}/{syst}/{signal}/ACand/mass", ACand.M(), weight, 200, 0., 200.)
+                super().FillHist(f"{channel}/Central/{signal}/ACand/pt", ACand.Pt(), weight, 300, 0., 300.)
+                super().FillHist(f"{channel}/Central/{signal}/ACand/eta", ACand.Eta(), weight, 100, -5., 5.)
+                super().FillHist(f"{channel}/Central/{signal}/ACand/phi", ACand.Phi(), weight, 64, -3.2, 3.2)
+                super().FillHist(f"{channel}/Central/{signal}/ACand/mass", ACand.M(), weight, 200, 0., 200.)
             else:
                 pair1, pair2 = pairs
                 mA = int(signal.split("_")[1].split("-")[1]) 
                 if abs(pair1.M() - mA) < abs(pair2.M() - mA): ACand, nACand = pair1, pair2
                 else:                                         ACand, nACand = pair2, pair2
-                super().FillHist(f"{channel}/{syst}/{signal}/ACand/pt", ACand.Pt(), weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/{signal}/ACand/eta", ACand.Eta(), weight, 100, -5., 5.)
-                super().FillHist(f"{channel}/{syst}/{signal}/ACand/phi", ACand.Phi(), weight, 64, -3.2, 3.2)
-                super().FillHist(f"{channel}/{syst}/{signal}/ACand/mass", ACand.M(), weight, 200, 0., 200.)
-                super().FillHist(f"{channel}/{syst}/{signal}/nACand/pt", nACand.Pt(), weight, 300, 0., 300.)
-                super().FillHist(f"{channel}/{syst}/{signal}/nACand/eta", nACand.Eta(), weight, 100, -5., 5.)
-                super().FillHist(f"{channel}/{syst}/{signal}/nACand/phi", nACand.Phi(), weight, 64, -3.2, 3.2)
-                super().FillHist(f"{channel}/{syst}/{signal}/nACand/mass", nACand.M(), weight, 300, 0., 300.)
+                super().FillHist(f"{channel}/Central/{signal}/ACand/pt", ACand.Pt(), weight, 300, 0., 300.)
+                super().FillHist(f"{channel}/Central/{signal}/ACand/eta", ACand.Eta(), weight, 100, -5., 5.)
+                super().FillHist(f"{channel}/Central/{signal}/ACand/phi", ACand.Phi(), weight, 64, -3.2, 3.2)
+                super().FillHist(f"{channel}/Central/{signal}/ACand/mass", ACand.M(), weight, 200, 0., 200.)
+                super().FillHist(f"{channel}/Central/{signal}/nACand/pt", nACand.Pt(), weight, 300, 0., 300.)
+                super().FillHist(f"{channel}/Central/{signal}/nACand/eta", nACand.Eta(), weight, 100, -5., 5.)
+                super().FillHist(f"{channel}/Central/{signal}/nACand/phi", nACand.Phi(), weight, 64, -3.2, 3.2)
+                super().FillHist(f"{channel}/Central/{signal}/nACand/mass", nACand.M(), weight, 300, 0., 300.)
             
             score_nonprompt = scores[f"{signal}_vs_nonprompt"]
             score_diboson = scores[f"{signal}_vs_diboson"]
             score_ttZ    = scores[f"{signal}_vs_ttZ"]
-            super().FillHist(f"{channel}/{syst}/{signal}/score_nonprompt", score_nonprompt, weight, 100, 0., 1.)
-            super().FillHist(f"{channel}/{syst}/{signal}/score_diboson", score_diboson, weight, 100, 0., 1.)
-            super().FillHist(f"{channel}/{syst}/{signal}/score_ttZ", score_ttZ, weight, 100, 0., 1.)
+            super().FillHist(f"{channel}/Central/{signal}/score_nonprompt", score_nonprompt, weight, 100, 0., 1.)
+            super().FillHist(f"{channel}/Central/{signal}/score_diboson", score_diboson, weight, 100, 0., 1.)
+            super().FillHist(f"{channel}/Central/{signal}/score_ttZ", score_ttZ, weight, 100, 0., 1.)
