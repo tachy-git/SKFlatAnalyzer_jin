@@ -56,7 +56,7 @@ class MatrixEstimator(TriLeptonBase):
                    "scores": scores
                     }
         weight = super().getFakeWeight(looseMuons, looseElectrons, 0)
-        self.FillObjects(thisChannel, rawMuons, rawElectrons, rawJets)
+        self.FillObjects(thisChannel, objects, weight)
         
     def defineObjects(self, rawMuons, rawElectrons, rawJets):
         # first copy objects

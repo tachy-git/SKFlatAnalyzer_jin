@@ -38,17 +38,17 @@ SKFlat.py -a PromptEstimator -i TTG --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --u
 SKFlat.py -a PromptEstimator -i TTTT --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
 SKFlat.py -a PromptEstimator -i VBF_HToZZTo4L --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
 SKFlat.py -a PromptEstimator -i GluGluHToZZTo4L --skim SkimTree_SS2lOR3l -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-70_MA-15 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python & 
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-70_MA-40 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-70_MA-65 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-100_MA-15 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-100_MA-60 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-100_MA-95 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-130_MA-15 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-130_MA-55 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-130_MA-90 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-130_MA-125 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-160_MA-15 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python & 
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-160_MA-85 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-160_MA-120 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
-SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-160_MA-155 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-70_MA-15 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python & 
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-70_MA-40 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-70_MA-65 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-100_MA-15 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-100_MA-60 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-100_MA-95 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-130_MA-15 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-130_MA-55 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-130_MA-90 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-130_MA-125 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-160_MA-15 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python & 
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-160_MA-85 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-160_MA-120 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
+#SKFlat.py -a PromptEstimator -i TTToHcToWAToMuMu_MHc-160_MA-155 -n 10 -e ${ERA} --userflags $CHANNEL,RunSyst --memory $MEMORY --python &
