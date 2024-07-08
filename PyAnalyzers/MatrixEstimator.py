@@ -67,9 +67,9 @@ class MatrixEstimator(TriLeptonBase):
         vetoMuons = super().SelectMuons(allMuons, super().MuonIDs[2], 10., 2.4)
         looseMuons = super().SelectMuons(vetoMuons, super().MuonIDs[1], 10., 2.4)
         tightMuons = super().SelectMuons(looseMuons, super().MuonIDs[0], 10., 2.4)
-        vetoElectrons = super().SelectElectrons(allElectrons, super().ElectronIDs[2], 10., 2.5)
-        looseElectrons = super().SelectElectrons(vetoElectrons, super().ElectronIDs[1], 10., 2.5)
-        tightElectrons = super().SelectElectrons(looseElectrons, super().ElectronIDs[0], 10., 2.5)
+        vetoElectrons = super().SelectElectrons(allElectrons, super().ElectronIDs[2], 15., 2.5)
+        looseElectrons = super().SelectElectrons(vetoElectrons, super().ElectronIDs[1], 15., 2.5)
+        tightElectrons = super().SelectElectrons(looseElectrons, super().ElectronIDs[0], 15., 2.5)
         jets = super().SelectJets(allJets, "tight", 20., 2.4)
         jets = super().JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4)
         bjets = vector[Jet]()
@@ -105,25 +105,25 @@ class MatrixEstimator(TriLeptonBase):
             if tightMuons.size() == looseMuons.size(): return None
        
         # for conversion samples
-        if super().MCSample in ["DYJets_MG", "DYJets10to50_MG", "TTG", "WWG"]:
+        #if super().MCSample in ["DYJets_MG", "DYJets10to50_MG", "TTG", "WWG"]:
             # at least one conversion lepton should exist
             # internal conversion: 4, 5
             # external conversion: -5, -6
-            convMuons = vector[Muon]()
-            fakeMuons = vector[Muon]()
-            convElectrons = vector[Electron]()
-            for mu in looseMuons:
-                if super().GetLeptonType(mu, truth) in [4, 5, -5, -6]: convMuons.emplace_back(mu)
-                if super().GetLeptonType(mu, truth) in [-1, -2, -3, -4]: fakeMuons.emplace_back(mu)
-            for ele in looseElectrons:
-                if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
-            if self.channel == "Skim1E2Mu":
-                # remove hadronic contribution
-                if not fakeMuons.size() == 0: return None
-                if not convElectrons.size() == 1: return None
-            if self.channel == "Skim3Mu":
-                if not fakeMuons.size() == 0: return None
-                if not convMuons.size() == 1: return None
+            #convMuons = vector[Muon]()
+            #fakeMuons = vector[Muon]()
+            #convElectrons = vector[Electron]()
+            #for mu in looseMuons:
+            #    if super().GetLeptonType(mu, truth) in [4, 5, -5, -6]: convMuons.emplace_back(mu)
+            #    if super().GetLeptonType(mu, truth) in [-1, -2, -3, -4]: fakeMuons.emplace_back(mu)
+            #for ele in looseElectrons:
+            #    if super().GetLeptonType(ele, truth) in [4, 5, -5, -6]: convElectrons.emplace_back(ele)
+            #if self.channel == "Skim1E2Mu":
+            #    # remove hadronic contribution
+            #    if not fakeMuons.size() == 0: return None
+            #    if not convElectrons.size() == 1: return None
+            #if self.channel == "Skim3Mu":
+            #    if not fakeMuons.size() == 0: return None
+            #    if not convMuons.size() == 1: return None
 
         ## 1E2Mu baseline
         ## 1. pass EMuTriggers
@@ -193,7 +193,7 @@ class MatrixEstimator(TriLeptonBase):
                 pair2 = mu1 + mu3
             return (pair1, pair2)
         else:
-            raise NotImplementedError(f"[PromptEstimator::makePair] wrong no. of muons {muons.size}")
+            raise ValueError(f"[PromptEstimator::makePair] wrong no. of muons {muons.size}")
         
     #### Get scores for each event
     def evalScore(self, muons, electrons, jets, bjets, METv):
@@ -222,18 +222,20 @@ class MatrixEstimator(TriLeptonBase):
         for idx, ele in enumerate(electrons, start=1):
             super().FillHist(f"{channel}/Central/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/Central/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
-            super().FillHist(f"{channel}/Central/electrons/{idx}/Phi", ele.Phi(), weight, 64, -3.2, 3.2)
+            super().FillHist(f"{channel}/Central/electrons/{idx}/phi", ele.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/Central/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
         for idx, jet in enumerate(jets, start=1):
             super().FillHist(f"{channel}/Central/jets/{idx}/pt", jet.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/Central/jets/{idx}/eta", jet.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/Central/jets/{idx}/phi", jet.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/Central/jets/{idx}/mass", jet.M(), weight, 100, 0., 100.)
+            super().FillHist(f"{channel}/Central/jets/{idx}/btagScore", jet.GetTaggerResult(3), weight, 100, 0., 1.)
         for idx, bjet in enumerate(bjets, start=1):
             super().FillHist(f"{channel}/Central/bjets/{idx}/pt", bjet.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/Central/bjets/{idx}/eta", bjet.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/Central/bjets/{idx}/phi", bjet.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/Central/bjets/{idx}/mass", bjet.M(), weight, 100, 0., 100.)
+            super().FillHist(f"{channel}/Central/bjets/{idx}/btagScore", bjet.GetTaggerResult(3), weight, 100, 0., 1.)
         super().FillHist(f"{channel}/Central/jets/size", jets.size(), weight, 20, 0., 20.)
         super().FillHist(f"{channel}/Central/bjets/size", bjets.size(), weight, 15, 0., 15.)
         super().FillHist(f"{channel}/Central/METv/pt", METv.Pt(), weight, 300, 0., 300.)
