@@ -1,10 +1,8 @@
-from ROOT import gSystem
 from ROOT import TriLeptonBase
 from ROOT import TString
 from ROOT.std import vector
 from ROOT.JetTagging import Parameters as jParameters
 from ROOT import Lepton, Muon, Electron, Jet, Particle
-#gSystem.Load("/cvmfs/cms.cern.ch/slc7_amd64_gcc900/external/lhapdf/6.2.3/lib/libLHAPDF.so")
 
 from itertools import product
 from MLTools.helpers import loadModels
@@ -103,18 +101,22 @@ class PromptEstimator(TriLeptonBase):
                 self.FillObjects(thisChannel, objects, weight, syst)
 
     def defineObjects(self, rawMuons, rawElectrons, rawJets, syst="Central"):
-        # first copy objects
-        allMuons = rawMuons
-        allElectrons = rawElectrons
-        allJets = rawJets
-        
+        # first hard copy objects
+        allMuons = vector[Muon]()
+        allElectrons = vector[Electron]()
+        allJets = vector[Jet]()
+
+        for mu in rawMuons: allMuons.emplace_back(mu)
+        for ele in rawElectrons: allElectrons.emplace_back(ele)
+        for jet in rawJets: allJets.emplace_back(jet)
+
         # check the syst argument
         if not syst in self.systematics:
-            print(f"[PromptEstimator::defineObjects] Wrong systematics {syst}")
+            raise KeyError(f"[PromptEstimator::defineObjects] Wrong systematics {syst}")
         if syst == "MuonEnUp":         allMuons = super().ScaleMuons(allMuons, +1)
         if syst == "MuonEnDown":       allMuons = super().ScaleMuons(allMuons, -1)
         if syst == "ElectronResUp":    allElectrons = super().SmearElectrons(allElectrons, +1)
-        if syst == "ElectronsResDown": allElectrons = super().SmearElectrons(allElectrons, -1)
+        if syst == "ElectronResDown":  allElectrons = super().SmearElectrons(allElectrons, -1)
         if syst == "ElectronEnUp":     allElectrons = super().ScaleElectrons(allElectrons, +1)
         if syst == "ElectronEnDown":   allElectrons = super().ScaleElectrons(allElectrons, -1)
         if syst == "JetResUp":         allJets = super().SmearJets(allJets, +1)
@@ -258,8 +260,7 @@ class PromptEstimator(TriLeptonBase):
     def getWeight(self, channel, event, muons, electrons, jets, syst="Central"):
         weight = 1.
         if not syst in self.systematics:
-            print(f"[PromptEstimator::getWeight] Wrong systematic {syst}")
-            exit(1)
+            raise KeyError(f"[PromptEstimator::getWeight] Wrong systematic {syst}")
 
         if not super().IsDATA:
             weight *= super().MCweight() * super().GetKFactor()
