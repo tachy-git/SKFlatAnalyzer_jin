@@ -4,7 +4,7 @@ import time, datetime
 import asyncio
 from CheckJobStatus import CheckJobStatus
 from TimeTools import GetDatetimeFromMyFormat
-from SendEmail import SendEmail, SendTelegramMsg
+from SendEmail import SendEmail
 
 
 class CondorJobHandler:
@@ -128,10 +128,7 @@ Skim = {self.processor.skim}
 # of jobs = {self.processor.njobs}
 input sample = {self.processor.sampleName}
 xsec = {self.processor.xsec}"""
-        if self.telegram_id is None:
-            SendEmail(os.environ['USER'], self.log_email, title, email)
-        else:
-            asyncio.run(SendTelegramMsg(self.telegram_id, self.telegram_token, email))
+        SendEmail(os.environ['USER'], self.log_email, title, email)
 
     def sendFinishMail(self):
         title = f"[{self.processor.hostname}] Summary of JobID {self.processor.job_id}"
@@ -145,10 +142,7 @@ Skim = {self.processor.skim}
 # of jobs = {self.processor.njobs}
 input sample = {self.processor.sampleName}
 xsec = {self.processor.xsec}"""
-        if self.telegram_id is None:
-            SendEmail(os.environ['USER'], self.log_email, title, email)
-        else:
-            asyncio.run(SendTelegramMsg(self.telegram_id, self.telegram_token, email))
+        SendEmail(os.environ['USER'], self.log_email, title, email)
     
     def preparePostProcessing(self, final_output_path):
         with open(f"script/Templates/PostProcess/condor.sub", "r") as f:
@@ -176,27 +170,35 @@ xsec = {self.processor.xsec}"""
     def monitorPostProcess(self):
         # check if no file in output directory
         if os.path.exists(f"{self.processor.baseRunDir}/hadd.log"):
-            if self.processor.dataPeriod:
-                logname = f"{self.processor.sampleName}_{self.processor.dataPeriod}"
-            else:
-                logname = self.processor.sampleName
-            logging.info(f"Postprocessing finished for {logname}")
+            os.system(f"condor_wait {self.processor.baseRunDir}/hadd.log")
+            #if self.processor.dataPeriod:
+            #    logname = f"{self.processor.sampleName}_{self.processor.dataPeriod}"
+            #else:
+            #    logname = self.processor.sampleName
+            #logging.info(f"Postprocessing finished for {logname}")
             
             # check error log
-            while True:
-                try:
-                    with open(f"{self.processor.baseRunDir}/hadd.err", "r") as f:
-                        for line in f.readlines():
-                            if "WARNING" in line:
-                                continue
-                            else:
-                                logging.error(f"{self.processor.sampleName} - {line}")
-                                self.err_log.append(line)
-                    time.sleep(1)
-                    break
-                except:
-                    time.sleep(10)
-                    continue
+            with open(f"{self.processor.baseRunDir}/hadd.err", "r") as f:
+                for line in f.readlines():
+                    if "WARNING" in line:
+                        continue
+                    else:
+                        logging.error(f"{self.processor.sampleName} - {line}")
+                        self.error_log.append(line)
+            #while True:
+            #    try:
+            #        with open(f"{self.processor.baseRunDir}/hadd.err", "r") as f:
+            #            for line in f.readlines():
+            #                if "WARNING" in line:
+            #                    continue
+            #                else:
+            #                    logging.error(f"{self.processor.sampleName} - {line}")
+            #                    self.err_log.append(line)
+            #        time.sleep(1)
+            #        break
+            #    except:
+            #        time.sleep(10)
+            #        continue
             
             if self.err_log:
                 self.sendErrorMail()
