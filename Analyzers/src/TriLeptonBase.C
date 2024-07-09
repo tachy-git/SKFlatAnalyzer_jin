@@ -161,8 +161,8 @@ void TriLeptonBase::executeEvent() {
 
     vector<Muon> vetoMuons = SelectMuons(rawMuons, MuonIDs.at(2), 10., 2.4);
     vector<Muon> tightMuons = SelectMuons(vetoMuons, MuonIDs.at(0), 10., 2.4);
-    vector<Electron> vetoElectrons = SelectElectrons(rawElectrons, ElectronIDs.at(2), 10., 2.5);
-    vector<Electron> tightElectrons = SelectElectrons(vetoElectrons, ElectronIDs.at(0), 10., 2.5);
+    vector<Electron> vetoElectrons = SelectElectrons(rawElectrons, ElectronIDs.at(2), 15., 2.5);
+    vector<Electron> tightElectrons = SelectElectrons(vetoElectrons, ElectronIDs.at(0), 15., 2.5);
     vector<Jet> jets = SelectJets(rawJets, "tight", 20., 2.4);
     jets = JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4);
     vector<Jet> bjets;

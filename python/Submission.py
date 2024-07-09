@@ -145,7 +145,7 @@ class SampleProcessor:
                 for line in f:
                     if line.startswith("#"): continue
                     words = line.split()
-                    thisSample, self.dasName, self.xsec, self.sumSign, self.sumW = words[:-1]
+                    thisSample, self.dasName, self.xsec, _, self.sumSign, self.sumW = tuple(words)
                     assert self.sampleName == thisSample
                     break
             
