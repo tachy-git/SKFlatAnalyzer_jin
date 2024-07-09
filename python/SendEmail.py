@@ -1,4 +1,3 @@
-import telegram
 import smtplib
 from email.mime.text import MIMEText
 
@@ -27,7 +26,3 @@ def SendEmailbyGMail(From,To,Subject,Content):
   s.sendmail(From, [To], msg.as_string())
   s.quit()
 
-
-async def SendTelegramMsg(telegram_id, telegram_token, msg):
-    bot = telegram.Bot(telegram_token)
-    await bot.send_message(text=text, chat_id=telegram_id)

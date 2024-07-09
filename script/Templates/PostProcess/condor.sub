@@ -1,7 +1,7 @@
 universe            = vanilla
 executable          = hadd.sh
 jobbatchname        = hadd.[SAMPLENAME]
-+singularityimage   = "/data9/Users/choij/Singularity/images/root-6.32.00"
++singularityimage   = "/data9/Users/choij/Singularity/images/root-6.30.04"
 requirements        = HasSingularity
 log                 = hadd.log
 output              = hadd.out

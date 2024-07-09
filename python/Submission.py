@@ -241,7 +241,7 @@ class SampleProcessor:
                 out.write(f"    m.SwitchToTempDir()\n")
                 out.write(f"    m.Loop()\n")
                 out.write(f"    m.WriteHist()\n")
-                out.write(f"    del m\n")
+                #out.write(f"    del m\n")
                 out.close()
             else:
                 out = open(runScriptFullPath, "w")
