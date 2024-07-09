@@ -302,7 +302,7 @@ class PromptEstimator(TriLeptonBase):
             weight *= w_pileup             # print(f"w_pileup: {w_pileup}")
             weight *= w_muonIDSF           # print(f"muonID: {w_muonIDSF}")
             weight *= w_eleIDSF;           # print(syst, w_eleIDSF)
-            weight *= w_trigSF        # print(f"muontrig: {w_dblMuTrigSF}")
+            weight *= w_trigSF             # print(f"muontrig: {w_dblMuTrigSF}")
 
             # b-tagging
             jtp = jParameters(3, 1, 0, 1)    # DeepJet, Medium, incl, mujets
