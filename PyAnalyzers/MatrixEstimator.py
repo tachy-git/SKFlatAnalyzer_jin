@@ -217,27 +217,53 @@ class MatrixEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/Central/muons/{idx}/eta", mu.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/Central/muons/{idx}/phi", mu.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/Central/muons/{idx}/mass", mu.M(), weight, 10, 0., 1.)
+            super().FillHist(f"{channel}/Central/muons/{idx}/energy", mu.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/muons/{idx}/px", mu.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/muons/{idx}/py", mu.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/muons/{idx}/pz", mu.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/muons/{idx}/charge", mu.Charge(), weight, 3, -1, 2)
         for idx, ele in enumerate(electrons, start=1):
             super().FillHist(f"{channel}/Central/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/Central/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
             super().FillHist(f"{channel}/Central/electrons/{idx}/phi", ele.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/Central/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
+            super().FillHist(f"{channel}/Central/electrons/{idx}/energy", ele.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/electrons/{idx}/px", ele.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/electrons/{idx}/py", ele.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/electrons/{idx}/pz", ele.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/electrons/{idx}/charge", ele.Charge(), weight, 3, -1, 2)
         for idx, jet in enumerate(jets, start=1):
             super().FillHist(f"{channel}/Central/jets/{idx}/pt", jet.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/Central/jets/{idx}/eta", jet.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/Central/jets/{idx}/phi", jet.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/Central/jets/{idx}/mass", jet.M(), weight, 100, 0., 100.)
+            super().FillHist(f"{channel}/Central/jets/{idx}/energy", jet.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/jets/{idx}/px", jet.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/jets/{idx}/py", jet.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/jets/{idx}/pz", jet.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/jets/{idx}/charge", jet.Charge(), weight, 200, -1, 1)
             super().FillHist(f"{channel}/Central/jets/{idx}/btagScore", jet.GetTaggerResult(3), weight, 100, 0., 1.)
         for idx, bjet in enumerate(bjets, start=1):
             super().FillHist(f"{channel}/Central/bjets/{idx}/pt", bjet.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/Central/bjets/{idx}/eta", bjet.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/Central/bjets/{idx}/phi", bjet.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/Central/bjets/{idx}/mass", bjet.M(), weight, 100, 0., 100.)
+            super().FillHist(f"{channel}/Central/bjets/{idx}/energy", bjet.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/Central/bjets/{idx}/px", bjet.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/bjets/{idx}/py", bjet.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/bjets/{idx}/pz", bjet.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/Central/bjets/{idx}/charge", bjet.Charge(), weight, 200, -1, 1)
             super().FillHist(f"{channel}/Central/bjets/{idx}/btagScore", bjet.GetTaggerResult(3), weight, 100, 0., 1.)
+        super().FillHist(f"{channel}/Central/muons/size", muons.size(), weight, 10, 0., 10.)
+        super().FillHist(f"{channel}/Central/electrons/size", electrons.size(), weight, 10, 0., 10.)
         super().FillHist(f"{channel}/Central/jets/size", jets.size(), weight, 20, 0., 20.)
         super().FillHist(f"{channel}/Central/bjets/size", bjets.size(), weight, 15, 0., 15.)
         super().FillHist(f"{channel}/Central/METv/pt", METv.Pt(), weight, 300, 0., 300.)
         super().FillHist(f"{channel}/Central/METv/phi", METv.Phi(), weight, 64, -3.2, 3.2)
+        super().FillHist(f"{channel}/Central/METv/energy", METv.E(), weight, 300, 0., 300.)
+        super().FillHist(f"{channel}/Central/METv/px", METv.Px(), weight, 500, -250., 250.)
+        super().FillHist(f"{channel}/Central/METv/py", METv.Py(), weight, 500, -250., 250.)
+        super().FillHist(f"{channel}/Central/METv/pz", METv.Pz(), weight, 500, -250., 250.)
         
         # Fill discrimination variable
         if "1E2Mu" in channel:
@@ -276,38 +302,8 @@ class MatrixEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/Central/nZCand/pt", nZCand.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/Central/nZCand/eta", nZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/Central/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
-            super().FillHist(f"{channel}/Central/nZCand/mass", nZCand.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/Central/nZCand/mass", nZCand.M(), weight, 300, 0., 300.)
          
-        # Fill graph inputs
-        for idx, mu in enumerate(muons, start=1):
-            super().FillHist(f"{channel}/Central/inputs/muons/{idx}/energy", mu.E(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/Central/inputs/muons/{idx}/px", mu.Px(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/Central/inputs/muons/{idx}/py", mu.Py(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/Central/inputs/muons/{idx}/pz", mu.Pz(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/Central/inputs/muons/{idx}/charge", mu.Charge(), weight, 3, -1, 2) 
-        for idx, ele in enumerate(electrons, start=1):
-            super().FillHist(f"{channel}/Central/inputs/electrons/{idx}/energy", ele.E(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/Central/inputs/electrons/{idx}/px", ele.Px(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/Central/inputs/electrons/{idx}/py", ele.Py(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/Central/inputs/electrons/{idx}/pz", ele.Pz(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/Central/inputs/electrons/{idx}/charge", ele.Charge(), weight, 3, -1, 2) 
-        for idx, jet in enumerate(jets, start=1):
-            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/energy", jet.E(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/px", jet.Px(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/py", jet.Py(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/pz", jet.Pz(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/charge", jet.Charge(), weight, 200, -1, 1)
-            super().FillHist(f"{channel}/Central/inputs/jets/{idx}/btagScore", jet.GetTaggerResult(3), weight, 100, 0., 1.)
-        super().FillHist(f"{channel}/Central/inputs/METv/energy", METv.E(), weight, 300, 0., 300.)
-        super().FillHist(f"{channel}/Central/inputs/METv/px", METv.Px(), weight, 500, -250, 250)
-        super().FillHist(f"{channel}/Central/inputs/METv/py", METv.Py(), weight, 500, -250, 250)
-        super().FillHist(f"{channel}/Central/inputs/METv/pz", METv.Pz(), weight, 500, -250, 250) 
-        super().FillHist(f"{channel}/Central/inputs/Nj", jets.size(), weight, 20, 0., 20.)
-        super().FillHist(f"{channel}/Central/inputs/Nb", bjets.size(), weight, 20, 0., 20.)
-        super().FillHist(f"{channel}/Central/inputs/MET", METv.Pt(), weight, 300, 0., 300.)
-        for idx, lep in enumerate(list(electrons)+list(muons), start=1):
-            super().FillHist(f"{channel}/Central/inputs/MT{idx}", (lep+METv).Mt(), weight, 300, 0., 300.)
-        
         # Fill signal dependent distributions 
         for signal in self.signalStrings:
             if "1E2Mu" in channel:

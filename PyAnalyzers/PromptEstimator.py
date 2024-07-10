@@ -338,27 +338,53 @@ class PromptEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/{syst}/muons/{idx}/eta", mu.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/{syst}/muons/{idx}/phi", mu.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/muons/{idx}/mass", mu.M(), weight, 10, 0., 1.)
+            super().FillHist(f"{channel}/{syst}/muons/{idx}/energy", mu.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/muons/{idx}/px", mu.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/muons/{idx}/py", mu.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/muons/{idx}/pz", mu.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/muons/{idx}/charge", mu.Charge(), weight, 3, -1, 2)
         for idx, ele in enumerate(electrons, start=1):
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/pt", ele.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/eta", ele.Eta(), weight, 50, -2.5, 2.5)
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/phi", ele.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/electrons/{idx}/mass", ele.M(), weight, 100, 0., 1.)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/energy", ele.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/px", ele.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/py", ele.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/pz", ele.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/electrons/{idx}/charge", ele.Charge(), weight, 3, -1, 2)
         for idx, jet in enumerate(jets, start=1):
             super().FillHist(f"{channel}/{syst}/jets/{idx}/pt", jet.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/jets/{idx}/eta", jet.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/{syst}/jets/{idx}/phi", jet.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/jets/{idx}/mass", jet.M(), weight, 100, 0., 100.)
+            super().FillHist(f"{channel}/{syst}/jets/{idx}/energy", jet.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/jets/{idx}/px", jet.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/jets/{idx}/py", jet.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/jets/{idx}/pz", jet.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/jets/{idx}/charge", jet.Charge(), weight, 200, -1, 1)
             super().FillHist(f"{channel}/{syst}/jets/{idx}/btagScore", jet.GetTaggerResult(3), weight, 100, 0., 1.)
         for idx, bjet in enumerate(bjets, start=1):
             super().FillHist(f"{channel}/{syst}/bjets/{idx}/pt", bjet.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/bjets/{idx}/eta", bjet.Eta(), weight, 48, -2.4, 2.4)
             super().FillHist(f"{channel}/{syst}/bjets/{idx}/phi", bjet.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/bjets/{idx}/mass", bjet.M(), weight, 100, 0., 100.)
+            super().FillHist(f"{channel}/{syst}/bjets/{idx}/energy", bjet.E(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/bjets/{idx}/px", bjet.Px(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/bjets/{idx}/py", bjet.Py(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/bjets/{idx}/pz", bjet.Pz(), weight, 500, -250., 250.)
+            super().FillHist(f"{channel}/{syst}/bjets/{idx}/charge", bjet.Charge(), weight, 200, -1, 1)
             super().FillHist(f"{channel}/{syst}/bjets/{idx}/btagScore", bjet.GetTaggerResult(3), weight, 100, 0., 1.)
+        super().FillHist(f"{channel}/{syst}/muons/size", muons.size(), weight, 10, 0., 10.)
+        super().FillHist(f"{channel}/{syst}/electrons/size", electrons.size(), weight, 10, 0., 10.)
         super().FillHist(f"{channel}/{syst}/jets/size", jets.size(), weight, 20, 0., 20.)
         super().FillHist(f"{channel}/{syst}/bjets/size", bjets.size(), weight, 15, 0., 15.)
         super().FillHist(f"{channel}/{syst}/METv/pt", METv.Pt(), weight, 300, 0., 300.)
         super().FillHist(f"{channel}/{syst}/METv/phi", METv.Phi(), weight, 64, -3.2, 3.2)
+        super().FillHist(f"{channel}/Central/METv/energy", METv.E(), weight, 300, 0., 300.)
+        super().FillHist(f"{channel}/{syst}/METv/px", METv.Px(), weight, 500, -250., 250.)
+        super().FillHist(f"{channel}/{syst}/METv/py", METv.Py(), weight, 500, -250., 250.)
+        super().FillHist(f"{channel}/Central/METv/pz", METv.Pz(), weight, 500, -250., 250.)
         
         if "1E2Mu" in channel:
             pair = pairs
@@ -398,36 +424,6 @@ class PromptEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/{syst}/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/nZCand/mass", nZCand.M(), weight, 300, 0., 300.)
             
-        # graph inputs
-        for idx, mu in enumerate(muons, start=1):
-            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/energy", mu.E(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/px", mu.Px(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/py", mu.Py(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/pz", mu.Pz(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/muons/{idx}/charge", mu.Charge(), weight, 3, -1, 2) 
-        for idx, ele in enumerate(electrons, start=1):
-            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/energy", ele.E(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/px", ele.Px(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/py", ele.Py(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/pz", ele.Pz(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/electrons/{idx}/charge", ele.Charge(), weight, 3, -1, 2) 
-        for idx, jet in enumerate(jets, start=1):
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/energy", jet.E(), weight, 300, 0., 300.)
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/px", jet.Px(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/py", jet.Py(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/pz", jet.Pz(), weight, 500, -250., 250.)
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/charge", jet.Charge(), weight, 200, -1, 1)
-            super().FillHist(f"{channel}/{syst}/inputs/jets/{idx}/btagScore", jet.GetTaggerResult(3), weight, 100, 0., 1.)
-        super().FillHist(f"{channel}/{syst}/inputs/METv/energy", METv.E(), weight, 300, 0., 300.)
-        super().FillHist(f"{channel}/{syst}/inputs/METv/px", METv.Px(), weight, 500, -250, 250)
-        super().FillHist(f"{channel}/{syst}/inputs/METv/py", METv.Py(), weight, 500, -250, 250)
-        super().FillHist(f"{channel}/{syst}/inputs/METv/pz", METv.Pz(), weight, 500, -250, 250)
-        super().FillHist(f"{channel}/{syst}/inputs/Nj", jets.size(), weight, 20, 0., 20.)
-        super().FillHist(f"{channel}/{syst}/inputs/Nb", bjets.size(), weight, 20, 0., 20.)
-        super().FillHist(f"{channel}/{syst}/inputs/MET", METv.Pt(), weight, 300, 0., 300.)
-        for idx, lep in enumerate(list(electrons)+list(muons), start=1):
-            super().FillHist(f"{channel}/{syst}/inputs/MT{idx}", (lep+METv).Mt(), weight, 300, 0., 300.)
-        
         for signal in self.signalStrings:
             if "1E2Mu" in channel:
                 ACand = pairs
