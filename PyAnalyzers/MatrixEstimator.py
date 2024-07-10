@@ -1,3 +1,4 @@
+from ROOT import gSystem
 from ROOT import TriLeptonBase
 from ROOT import TString
 from ROOT.std import vector
