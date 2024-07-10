@@ -44,8 +44,7 @@ DataPreprocess::~DataPreprocess() {
 }
 
 void DataPreprocess::initializeAnalyzer() {
-    // flags
-    MatchChargedHiggs = HasFlag("MatchChargedHiggs");
+    MatchChargedHiggs = HasFlag("MatchChargedHiggs"); // deprecated
     Skim1E2Mu = HasFlag("Skim1E2Mu");
     Skim3Mu = HasFlag("Skim3Mu");
 
@@ -90,8 +89,8 @@ void DataPreprocess::executeEvent() {
     // object definition
     vector<Muon> vetoMuons = SelectMuons(rawMuons, MuonIDs.at(2), 10., 2.4);
     vector<Muon> looseMuons = SelectMuons(vetoMuons, MuonIDs.at(1), 10., 2.4);
-    vector<Electron> vetoElectrons = SelectElectrons(rawElectrons, ElectronIDs.at(2), 10., 2.5);
-    vector<Electron> looseElectrons = SelectElectrons(vetoElectrons, ElectronIDs.at(1), 10., 2.5);
+    vector<Electron> vetoElectrons = SelectElectrons(rawElectrons, ElectronIDs.at(2), 15., 2.5);
+    vector<Electron> looseElectrons = SelectElectrons(vetoElectrons, ElectronIDs.at(1), 15., 2.5);
     vector<Jet> jets = SelectJets(rawJets, "tight", 15., 2.4);
     jets = JetsVetoLeptonInside(jets, vetoElectrons, vetoMuons, 0.4);
     vector<Jet> bjets;
@@ -163,13 +162,13 @@ void DataPreprocess::executeEvent() {
     // end event selection
     
     // prompt matching for signal / tt+X events
-    vector<Gen> truth = GetGens();
-    if (! (MCSample.Contains("TTLL") || MCSample.Contains("DYJets"))) {
-        for (const auto &mu: looseMuons)
-            if (! (GetLeptonType(mu, truth) > 0)) return;
-        for (const auto &ele: looseElectrons)
-            if (! (GetLeptonType(ele, truth) > 0)) return;
-    }
+    // vector<Gen> truth = GetGens();
+    // if (! (MCSample.Contains("TTLL") || MCSample.Contains("DYJets"))) {
+    //    for (const auto &mu: looseMuons)
+    //        if (! (GetLeptonType(mu, truth) > 0)) return;
+    //    for (const auto &ele: looseElectrons)
+    //        if (! (GetLeptonType(ele, truth) > 0)) return;
+    // }
         
     // store informations
     METvPt = METv.Pt();
