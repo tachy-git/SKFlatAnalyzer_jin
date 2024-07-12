@@ -20,7 +20,7 @@ source bin/FirstTimeSetup.sh
 source setup.sh
 
 #### Install lhapdf if needed
-./script/build_lhapdf.sh
+./script/install_lhapdf.sh
 
 #### You have to edit user info
 #### First, copy the temply using the command below
@@ -33,6 +33,7 @@ Compile
 
 ```bash
 #### Basic build
+#### Edit script/build.sh to point your working directory
 ./script/build.sh
 
 #### Using singularity image
