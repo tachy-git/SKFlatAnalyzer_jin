@@ -137,7 +137,7 @@ class SampleProcessor:
         assert nfileCheckSum == nTotalFiles
         
         ## Get xsec and sumW
-        if not self.isDATA:
+        if not self.isDATA and self.analyzer!="GetEffLumi":
             sampleInfoPath = f"{self.SAMPLE_DATA_DIR}/CommonSampleInfo/{self.sampleName}.txt"
             if not os.path.exists(sampleInfoPath):
                 raise FileNotFoundError(f"Sample info file not found: {sampleInfoPath}")
