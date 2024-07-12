@@ -44,7 +44,7 @@ DataPreprocess::~DataPreprocess() {
 }
 
 void DataPreprocess::initializeAnalyzer() {
-    MatchChargedHiggs = HasFlag("MatchChargedHiggs"); // deprecated
+    //MatchChargedHiggs = HasFlag("MatchChargedHiggs"); // deprecated
     Skim1E2Mu = HasFlag("Skim1E2Mu");
     Skim3Mu = HasFlag("Skim3Mu");
 
@@ -207,6 +207,7 @@ void DataPreprocess::executeEvent() {
     }
 
     // start matching for signal sample
+    /*
     if (MatchChargedHiggs && MCSample.Contains("MHc")) {
         // Get charged Higgs mass point
         // e.g. TTToHcToWAToMuMu_MHc-130_MA-90 -> MHc-130 -> 130
@@ -317,6 +318,7 @@ void DataPreprocess::executeEvent() {
             return;
         }
     }
+    */
     Events->Fill();
     return;
 }

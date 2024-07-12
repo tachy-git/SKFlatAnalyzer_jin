@@ -20,7 +20,9 @@ public:
     TH2D *hElIDSF;
     TH2D *hEl23Leg1_Data, *hEl23Leg1_MC;
     TH2D *hEl12Leg2_Data, *hEl12Leg2_MC;
-    TH2D *hMuFR, *hElFR;
+    TH2D *hMuFR_Central, *hMuFR_PromptNormUp, *hMuFR_PromptNormDown, *hMuFR_MotherJetPtUp, *hMuFR_MotherJetPtDown, *hMuFR_RequireHeavyTag, *hMuFR_MC;
+    TH2D *hElFR_Central, *hElFR_PromptNormUp, *hElFR_PromptNormDown, *hElFR_MotherJetPtUp, *hElFR_MotherJetPtDown, *hElFR_RequireHeavyTag, *hElFR_MC;
+
     TriLeptonBase();
     ~TriLeptonBase();
     void initializeAnalyzer();
@@ -36,9 +38,9 @@ public:
     double getEMuTriggerEff(vector<Electron> &electrons, vector<Muon> &muons, bool isDATA, int sys);
     double getEMuTriggerSF(vector<Electron> &electrons, vector<Muon> &muons, int sys);
     double getDZEfficiency(TString SFkey, bool isDATA);
-    double getMuonFakeProb(const Muon &mu, int sys);
-    double getElectronFakeProb(const Electron &ele, int sys);
-    double getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons, int sys);
+    double getMuonFakeProb(const Muon &mu, const TString &syst);
+    double getElectronFakeProb(const Electron &ele, const TString &syst);
+    double getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons, const TString &syst);
 };
 
 #endif

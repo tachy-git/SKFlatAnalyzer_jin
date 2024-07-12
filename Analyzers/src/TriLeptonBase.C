@@ -7,8 +7,20 @@ TriLeptonBase::~TriLeptonBase() {
     delete hMu17Leg1_MC;
     delete hMu8Leg2_Data;
     delete hMu8Leg2_MC;
-    delete hMuFR;
-    delete hElFR;
+    delete hMuFR_Central;
+    delete hMuFR_PromptNormUp;
+    delete hMuFR_PromptNormDown;
+    delete hMuFR_MotherJetPtUp;
+    delete hMuFR_MotherJetPtDown;
+    delete hMuFR_RequireHeavyTag;
+    delete hMuFR_MC;
+    delete hElFR_Central;
+    delete hElFR_PromptNormUp;
+    delete hElFR_PromptNormDown;
+    delete hElFR_MotherJetPtUp;
+    delete hElFR_MotherJetPtDown;
+    delete hElFR_RequireHeavyTag;
+    delete hElFR_MC;
 }
 
 void TriLeptonBase::initializeAnalyzer() {
@@ -20,7 +32,6 @@ void TriLeptonBase::initializeAnalyzer() {
     //GraphNet = HasFlag("GraphNet");
     //ScaleVar = HasFlag("ScaleVar");
     //WeightVar = HasFlag("WeightVar");
-    FakeStudy = HasFlag("FakeStudy");
 
     // triggers & ID settings
     if (DataEra == "2016preVFP") {
@@ -116,30 +127,32 @@ void TriLeptonBase::initializeAnalyzer() {
     fEl12Leg2->Close();
 
     // muon fake rate
-    if (FakeStudy) {
-        TFile* fMuFR = new TFile(muonIDpath+"/fakerate_qcd_TopHNT_TopHNL.root");
-        hMuFR = (TH2D*)fMuFR->Get("fake rate - (QCD_MuEnriched)");
-        hMuFR->SetDirectory(0);
-        fMuFR->Close();
+    // data driven fake rates
+    TFile *fMuFR_data = new TFile(muonIDpath+"/fakerate_TopHNT_TopHNL.root");
+    hMuFR_Central = (TH2D*)fMuFR_data->Get("fake rate - (Central)"); hMuFR_Central->SetDirectory(0);
+    hMuFR_PromptNormUp = (TH2D*)fMuFR_data->Get("fake rate - (PromptNormUp)"); hMuFR_PromptNormUp->SetDirectory(0);
+    hMuFR_PromptNormDown = (TH2D*)fMuFR_data->Get("fake rate - (PromptNormDown)"); hMuFR_PromptNormDown->SetDirectory(0);
+    hMuFR_MotherJetPtUp = (TH2D*)fMuFR_data->Get("fake rate - (MotherJetPtUp)"); hMuFR_MotherJetPtUp->SetDirectory(0);
+    hMuFR_MotherJetPtDown = (TH2D*)fMuFR_data->Get("fake rate - (MotherJetPtDown)"); hMuFR_MotherJetPtDown->SetDirectory(0);
+    hMuFR_RequireHeavyTag = (TH2D*)fMuFR_data->Get("fake rate - (RequireHeavyTag)"); hMuFR_RequireHeavyTag->SetDirectory(0);
+    fMuFR_data->Close();
+    TFile *fMuFR_MC = new TFile(muonIDpath+"/fakerate_qcd_TopHNT_TopHNL.root");
+    hMuFR_MC = (TH2D*)fMuFR_MC->Get("fake rate - (QCD_MuEnriched)"); hMuFR_MC->SetDirectory(0);
+    fMuFR_MC->Close();
 
-        // electron fake rate
-        TFile* fElFR = new TFile(eleIDPath+"/fakerate_qcd_TopHNT_TopHNL.root");
-        hElFR = (TH2D*)fElFR->Get("fake rate - (QCD_EMEnriched)");
-        hElFR->SetDirectory(0);
-        fElFR->Close();
-    }
-    else {
-        TFile* fMuFR = new TFile(muonIDpath+"/fakerate_TopHNT_TopHNL.root");
-        hMuFR = (TH2D*)fMuFR->Get("fake rate - (Central)");
-        hMuFR->SetDirectory(0);
-        fMuFR->Close();
-
-        // electron fake rate
-        TFile* fElFR = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL.root");
-        hElFR = (TH2D*)fElFR->Get("fake rate - (Central)");
-        hElFR->SetDirectory(0);
-        fElFR->Close();
-    }
+    // electron fake rate
+    // data driven fake rates
+    TFile *fElFR_data = new TFile(eleIDPath+"/fakerate_TopHNT_TopHNL.root");
+    hElFR_Central = (TH2D*)fElFR_data->Get("fake rate - (Central)"); hElFR_Central->SetDirectory(0);
+    hElFR_PromptNormUp = (TH2D*)fElFR_data->Get("fake rate - (PromptNormUp)"); hElFR_PromptNormUp->SetDirectory(0);
+    hElFR_PromptNormDown = (TH2D*)fElFR_data->Get("fake rate - (PromptNormDown)"); hElFR_PromptNormDown->SetDirectory(0);
+    hElFR_MotherJetPtUp = (TH2D*)fElFR_data->Get("fake rate - (MotherJetPtUp)"); hElFR_MotherJetPtUp->SetDirectory(0);
+    hElFR_MotherJetPtDown = (TH2D*)fElFR_data->Get("fake rate - (MotherJetPtDown)"); hElFR_MotherJetPtDown->SetDirectory(0);
+    hElFR_RequireHeavyTag = (TH2D*)fElFR_data->Get("fake rate - (RequireHeavyTag)"); hElFR_RequireHeavyTag->SetDirectory(0);
+    fElFR_data->Close();
+    TFile *fElFR_MC = new TFile(eleIDPath+"/fakerate_qcd_TopHNT_TopHNL.root");
+    hElFR_MC = (TH2D*)fElFR_MC->Get("fake rate - (QCD_EMEnriched)"); hElFR_MC->SetDirectory(0);
+    fElFR_MC->Close();
 
     // Jet tagger
     vector<JetTagging::Parameters> jtps;
@@ -655,43 +668,64 @@ double TriLeptonBase::getEMuTriggerSF(vector<Electron> &electrons, vector<Muon> 
     return effData / effMC;
 }
 
-double TriLeptonBase::getMuonFakeProb(const Muon &mu, int sys) {
+double TriLeptonBase::getMuonFakeProb(const Muon &mu, const TString &syst) {
     double ptCorr = mu.Pt()*(1.+max(0., mu.MiniRelIso()-0.1));
     double absEta = fabs(mu.Eta());
     if (ptCorr < 10.) ptCorr = 10.;
     if (ptCorr > 50.) ptCorr = 49.9;
     if (absEta > 2.4) absEta = 2.399;
+    
+    TH2D *hMuFR = nullptr;
+    if (syst == "Central") hMuFR = hMuFR_Central;
+    else if (syst == "PromptNormUp") hMuFR = hMuFR_PromptNormUp;
+    else if (syst == "PromptNormDown") hMuFR = hMuFR_PromptNormDown;
+    else if (syst == "MotherJetPtUp") hMuFR = hMuFR_MotherJetPtUp;
+    else if (syst == "MotherJetPtDown") hMuFR = hMuFR_MotherJetPtDown;
+    else if (syst == "RequireHeavyTag") hMuFR = hMuFR_RequireHeavyTag;
+    else if (syst == "MC") hMuFR = hMuFR_MC;
+    else {
+        cerr << "[TriLeptonBase::getMuonFakeProb] wrong syst value " << syst << endl;
+        exit(EXIT_FAILURE);
+    }
 
     int thisBin = hMuFR->FindBin(absEta, ptCorr);
-    double value = hMuFR->GetBinContent(thisBin);
-    double error = hMuFR->GetBinError(thisBin);
-    
-    return value + double(sys)*error;
+    return hMuFR->GetBinContent(thisBin);
 }
 
-double TriLeptonBase::getElectronFakeProb(const Electron &ele, int sys) {
+double TriLeptonBase::getElectronFakeProb(const Electron &ele, const TString &syst) {
     double ptCorr = ele.Pt()*(1.+max(0., ele.MiniRelIso()-0.1));
     double absEta = fabs(ele.scEta());
     if (ptCorr < 15.) ptCorr = 15.;
     if (ptCorr > 50.) ptCorr = 49.9;
     if (absEta > 2.5) absEta = 2.499;
-    int thisBin = hElFR->FindBin(absEta, ptCorr);
-    double value = hElFR->GetBinContent(thisBin);
-    double error = hElFR->GetBinError(thisBin);
 
-    return value + double(sys)*error;
+    TH2D *hElFR = nullptr;
+    if (syst == "Central") hElFR = hElFR_Central;
+    else if (syst == "PromptNormUp") hElFR = hElFR_PromptNormUp;
+    else if (syst == "PromptNormDown") hElFR = hElFR_PromptNormDown;
+    else if (syst == "MotherJetPtUp") hElFR = hElFR_MotherJetPtUp;
+    else if (syst == "MotherJetPtDown") hElFR = hElFR_MotherJetPtDown;
+    else if (syst == "RequireHeavyTag") hElFR = hElFR_RequireHeavyTag;
+    else if (syst == "MC") hElFR = hElFR_MC;
+    else {
+        cerr << "[TriLeptonBase::getElectronFakeProb] wrong syst value " << syst << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    int thisBin = hElFR->FindBin(absEta, ptCorr);
+    return hElFR->GetBinContent(thisBin);
 }
 
-double TriLeptonBase::getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons, int sys) {
+double TriLeptonBase::getFakeWeight(const vector<Muon> &muons, const vector<Electron> &electrons, const TString &syst) {
     double weight = -1.;
     for (const auto &mu: muons) {
         if (mu.PassID(MuonIDs.at(0))) continue;
-        const double fr = getMuonFakeProb(mu, sys);
+        const double fr = getMuonFakeProb(mu, syst);
         weight *= -1.*(fr / (1.-fr));
     }
     for (const auto &ele: electrons) {
         if (ele.PassID(ElectronIDs.at(0))) continue;
-        const double fr = getElectronFakeProb(ele, sys);
+        const double fr = getElectronFakeProb(ele, syst);
         weight *= -1.*(fr / (1.-fr));
     }
     return weight;

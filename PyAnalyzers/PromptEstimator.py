@@ -69,7 +69,6 @@ class PromptEstimator(TriLeptonBase):
         vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets)
         thisChannel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
         if not thisChannel is None:
-            pairs = self.makePair(tightMuons)
             data, scores = self.evalScore(tightMuons, tightElectrons, jets, bjets, METv)
             # make objects as a dictionary
             objects = {"muons": tightMuons,
@@ -77,7 +76,6 @@ class PromptEstimator(TriLeptonBase):
                        "jets": jets,
                        "bjets": bjets,
                        "METv": METv,
-                       "pairs": pairs,
                        "data": data,
                        "scores": scores}
             for syst in self.weightVariations:
@@ -87,14 +85,12 @@ class PromptEstimator(TriLeptonBase):
             vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets = self.defineObjects(rawMuons, rawElectrons, rawJets, syst)
             thisChannel = self.selectEvent(ev, truth, vetoMuons, tightMuons, vetoElectrons, tightElectrons, jets, bjets, METv)
             if not thisChannel is None:
-                pairs = self.makePair(tightMuons)
                 data, scores = self.evalScore(tightMuons, tightElectrons, jets, bjets, METv)
                 objects = {"muons": tightMuons,
                            "electrons": tightElectrons,
                            "jets": jets,
                            "bjets": bjets,
                            "METv": METv,
-                           "pairs": pairs,
                            "data": data,
                            "scores": scores
                            }
@@ -194,7 +190,7 @@ class PromptEstimator(TriLeptonBase):
             passSafeCut = passLeadMu or passLeadEle
             if not passSafeCut: return None
             if not mu1.Charge()+mu2.Charge() == 0: return None
-            pair = self.makePair(tightMuons)
+            pair = mu1 + mu2
             if not pair.M() > 12.: return None 
             if not jets.size() >= 2: return None
             if bjets.size() == 0:
@@ -218,7 +214,8 @@ class PromptEstimator(TriLeptonBase):
             if not mu3.Pt() > 10.: return None
             
             if not abs(mu1.Charge()+mu2.Charge()+mu3.Charge()) == 1: return None
-            pair1, pair2 = self.makePair(tightMuons)
+            mu_ss1, mu_ss2, mu_os = self.configureChargeOf(tightMuons)
+            pair1, pair2 = (mu_ss1+mu_os), (mu_ss2+mu_os)
             if not pair1.M() > 12.: return None
             if not pair2.M() > 12.: return None
             if not jets.size() >= 2: return None
@@ -231,24 +228,21 @@ class PromptEstimator(TriLeptonBase):
                 return "SR3Mu"
         raise EOFError       
 
-    def makePair(self, muons):
-        if muons.size() == 2:
-            return (muons[0] + muons[1])
-        elif muons.size() == 3:
-            mu1, mu2, mu3 = tuple(muons)
-            if mu1.Charge() == mu2.Charge():
-                pair1 = mu1 + mu3
-                pair2 = mu2 + mu3
-            elif mu1.Charge() == mu3.Charge():
-                pair1 = mu1 + mu2
-                pair2 = mu2 + mu3
-            else:   # mu2.Charge() == mu3.Charge()
-                pair1 = mu1 + mu2
-                pair2 = mu1 + mu3
-            return (pair1, pair2)
+    def configureChargeOf(self, muons):
+        if not muons.size() == 3:
+            raise NotImplementedError(f"wrong no. of muons {muons.size()}")
+
+        # The first two is same charged with pt-order, the third one is opposite charged
+        mu1, mu2, mu3 = tuple(muons)
+        if mu1.Charge() == mu2.Charge():
+            return (mu1, mu2, mu3)
+        elif mu1.Charge() == mu3.Charge():
+            return mu1, mu3, mu2
+        elif mu2.Charge() == mu3.Charge():
+            return mu2, mu3, mu1
         else:
-            raise ValueError(f"[PromptEstimator::makePair] wrong no. of muons {muons.size}")
-            
+            raise EOFError()
+
     #### Get scores for each event
     def evalScore(self, muons, electrons, jets, bjets, METv):
         scores = {}
@@ -329,7 +323,6 @@ class PromptEstimator(TriLeptonBase):
         jets = objects["jets"]
         bjets = objects["bjets"]
         METv = objects["METv"]
-        pairs = objects["pairs"]
         data = objects["data"]
         scores = objects["scores"]
         
@@ -388,13 +381,14 @@ class PromptEstimator(TriLeptonBase):
         super().FillHist(f"{channel}/Central/METv/pz", METv.Pz(), weight, 500, -250., 250.)
         
         if "1E2Mu" in channel:
-            pair = pairs
+            pair = muons.at(0) + muons.at(1)
             super().FillHist(f"{channel}/{syst}/pair/pt", pair.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/pair/eta", pair.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/pair/phi", pair.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/pair/mass", pair.M(), weight, 200, 0., 200.)
         else:
-            pair1, pair2 = pairs
+            mu_ss1, mu_ss2, mu_os = self.configureChargeOf(muons)
+            pair1, pair2 = (mu_ss1+mu_os), (mu_ss2+mu_os)
             super().FillHist(f"{channel}/{syst}/stack/pt", pair1.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/stack/eta", pair1.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/stack/phi", pair1.Phi(), weight, 64, -3.2, 3.2)
@@ -406,16 +400,25 @@ class PromptEstimator(TriLeptonBase):
 
         # Fill ZCands
         if "1E2Mu" in channel:
-            ZCand = pairs       # pairs == pair
+            ZCand = muons.at(0) + muons.at(1)
+            nonprompt = electrons.at(0)
             super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/ZCand/mass", ZCand.M(), weight, 200, 0., 200.)
+            super().FillHist(f"{channel}/{syst}/nonprompt/pt", nonprompt.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/nonprompt/eta", nonprompt.Eta(), weight, 50, -2.5, 2.5)
+            super().FillHist(f"{channel}/{syst}/nonprompt/phi", nonprompt.Phi(), weight, 64, -3.2, 3.2)
         else:
-            pair1, pair2 = pairs
+            mu_ss1, mu_ss2, mu_os = self.configureChargeOf(muons)
+            pair1, pair2 = (mu_ss1+mu_os), (mu_ss2+mu_os)
             mZ = 91.2
-            if abs(pair1.M() - mZ) < abs(pair2.M() - mZ): ZCand, nZCand = pair1, pair2
-            else:                                         ZCand, nZCand = pair2, pair1
+            if abs(pair1.M() - mZ) < abs(pair2.M() - mZ): 
+                ZCand, nZCand = pair1, pair2
+                nonprompt = mu_ss2
+            else:                                         
+                ZCand, nZCand = pair2, pair1
+                nonprompt = mu_ss1
             super().FillHist(f"{channel}/{syst}/ZCand/pt", ZCand.Pt(), weight, 300, 0., 300.)
             super().FillHist(f"{channel}/{syst}/ZCand/eta", ZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/ZCand/phi", ZCand.Phi(), weight, 64, -3.2, 3.2)
@@ -424,16 +427,20 @@ class PromptEstimator(TriLeptonBase):
             super().FillHist(f"{channel}/{syst}/nZCand/eta", nZCand.Eta(), weight, 100, -5., 5.)
             super().FillHist(f"{channel}/{syst}/nZCand/phi", nZCand.Phi(), weight, 64, -3.2, 3.2)
             super().FillHist(f"{channel}/{syst}/nZCand/mass", nZCand.M(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/nonprompt/pt", nonprompt.Pt(), weight, 300, 0., 300.)
+            super().FillHist(f"{channel}/{syst}/nonprompt/eta", nonprompt.Eta(), weight, 48, -2.4, 2.4)
+            super().FillHist(f"{channel}/{syst}/nonprompt/phi", nonprompt.Phi(), weight, 64, -3.2, 3.2)
             
         for signal in self.signalStrings:
             if "1E2Mu" in channel:
-                ACand = pairs
+                ACand = muons.at(0) + muons.at(1)
                 super().FillHist(f"{channel}/{syst}/{signal}/ACand/pt", ACand.Pt(), weight, 300, 0., 300.)
                 super().FillHist(f"{channel}/{syst}/{signal}/ACand/eta", ACand.Eta(), weight, 100, -5., 5.)
                 super().FillHist(f"{channel}/{syst}/{signal}/ACand/phi", ACand.Phi(), weight, 64, -3.2, 3.2)
                 super().FillHist(f"{channel}/{syst}/{signal}/ACand/mass", ACand.M(), weight, 200, 0., 200.)
             else:
-                pair1, pair2 = pairs
+                mu_ss1, mu_ss2, mu_os = self.configureChargeOf(muons)
+                pair1, pair2 = (mu_ss1+mu_os), (mu_ss2+mu_os)
                 mA = int(signal.split("_")[1].split("-")[1]) 
                 if abs(pair1.M() - mA) < abs(pair2.M() - mA): ACand, nACand = pair1, pair2
                 else:                                         ACand, nACand = pair2, pair2
