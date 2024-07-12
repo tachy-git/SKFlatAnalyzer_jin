@@ -17,7 +17,7 @@ if [[ $ERA == "2016"* ]]; then
         exit 1
     fi
     SKFlat.py -a MeasFakeRateV4 -i $DATASTREAM               -n 10 -e $ERA --userflags $CHANNEL,$FLAG &
-    SKFlat.py -a MeasFakeRateV4 -l SampleLists/fakeHevay.txt -n 20 -e $ERA --userflags $CHANNEL,$FLAG &
+    SKFlat.py -a MeasFakeRateV4 -l SampleLists/fakeHeavy.txt -n 20 -e $ERA --userflags $CHANNEL,$FLAG &
     SKFlat.py -a MeasFakeRateV4 -l SampleLists/fakeLight.txt -n 10 -e $ERA --userflags $CHANNEL,$FLAG &
     SKFlat.py -a MeasFakeRateV4 -l SampleLists/${QCD}.txt    -n 10 -e $ERA --userflags $CHANNEL,$FLAG &
 elif [[ $ERA == "2017" ]]; then
